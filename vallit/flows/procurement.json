@@ -1,0 +1,55 @@
+{
+  "id": "run-REQ-2025-00001",
+  "playbook": "procurement_approval_v1",
+  "context": {
+    "req_id": "REQ-2025-00001",
+    "teams_channel": "dummy-channel"
+  },
+  "steps": [
+    {
+      "id": "notion_fetch",
+      "type": "notion.get_page",
+      "input": {
+        "req_id": "{{context.req_id}}"
+      },
+      "idempotency_key": "REQ-2025-00001:notion_fetch"
+    },
+    {
+      "id": "teams_send_card",
+      "type": "teams.send_adaptive_card",
+      "input": {
+        "channel": "{{context.teams_channel}}",
+        "card_template": "procurement_approval_v1",
+        "variables": {
+          "req_id": "{{context.req_id}}"
+        }
+      }
+    },
+    {
+      "id": "inbox_wait",
+      "type": "inbox.await_decision",
+      "input": {
+        "req_id": "{{context.req_id}}",
+        "timeout": "P3D"
+      }
+    },
+    {
+      "id": "notion_update",
+      "type": "notion.update_page",
+      "input": {
+        "page_id": "page_1",
+        "properties": {
+          "Status": "Freigegeben"
+        }
+      }
+    },
+    {
+      "id": "notify_success",
+      "type": "teams.post_message",
+      "input": {
+        "channel": "{{context.teams_channel}}",
+        "text": "Beschaffung freigegeben."
+      }
+    }
+  ]
+}
