@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Syntra AI Workflow Management</title>
+    <meta name="description"
+        content="Monitor your AI workflows, analyze insights, and optimize your business processes with the Syntra dashboard.">
+    <link rel="stylesheet" href="/styles/globals.css">
+    <link rel="stylesheet" href="/styles/components/buttons.css">
+    <link rel="stylesheet" href="/styles/components/cards.css">
+    <link rel="stylesheet" href="/styles/pages/dashboard.css">
+</head>
+
+<body>
+    <!-- Navigation -->
+    <header class="navbar">
+        <div class="container">
+            <div class="nav-content">
+                <div class="nav-brand">
+                    <a href="/" class="brand-link">Syntra</a>
+                </div>
+                <nav>
+                    <ul class="nav-links">
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/features">Features</a></li>
+                        <li><a href="/about">About</a></li>
+                        <li><a href="/contact">Contact</a></li>
+                        <li><a href="/login" class="btn btn-primary">Login</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Dashboard Header -->
+        <section class="section dashboard-header">
+            <div class="container">
+                <div class="dashboard-header-content">
+                    <div class="welcome-section">
+                        <h1 class="heading-1">Dashboard</h1>
+                        <p class="text-large">Welcome to your Syntra control center. Monitor your AI workflows, analyze
+                            insights, and optimize your business processes.</p>
+                    </div>
+                    <div class="user-info">
+                        <div class="user-avatar">👤</div>
+                        <span class="user-name">Demo User</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dashboard Stats -->
+        <section class="section">
+            <div class="container">
+                <div class="grid-4">
+                    <div class="stat-card">
+                        <div class="stat-icon">🤖</div>
+                        <div class="stat-value">24</div>
+                        <div class="stat-label">Active Workflows</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📊</div>
+                        <div class="stat-value">98.7%</div>
+                        <div class="stat-label">Uptime</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⚡</div>
+                        <div class="stat-value">1,247</div>
+                        <div class="stat-label">Tasks Automated</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-value">$12.4K</div>
+                        <div class="stat-label">Cost Savings</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Dashboard Content -->
+        <section class="section">
+            <div class="container">
+                <div class="grid-2">
+                    <!-- Workflow Management -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h2 class="heading-2">Workflow Management</h2>
+                            <a href="#" class="btn btn-secondary btn-small">Manage</a>
+                        </div>
+                        <div class="card-content">
+                            <div class="workflow-list">
+                                <div class="workflow-item">
+                                    <div class="workflow-status active"></div>
+                                    <div class="workflow-info">
+                                        <div class="workflow-name">Data Processing Pipeline</div>
+                                        <div class="workflow-stats">Last run: 2 min ago</div>
+                                    </div>
+                                </div>
+                                <div class="workflow-item">
+                                    <div class="workflow-status active"></div>
+                                    <div class="workflow-info">
+                                        <div class="workflow-name">Customer Onboarding</div>
+                                        <div class="workflow-stats">Last run: 15 min ago</div>
+                                    </div>
+                                </div>
+                                <div class="workflow-item">
+                                    <div class="workflow-status warning"></div>
+                                    <div class="workflow-info">
+                                        <div class="workflow-name">Report Generation</div>
+                                        <div class="workflow-stats">Last run: 2 hours ago</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Analytics Overview -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h2 class="heading-2">Analytics Overview</h2>
+                            <a href="#" class="btn btn-secondary btn-small">View Details</a>
+                        </div>
+                        <div class="card-content">
+                            <div class="analytics-placeholder">
+                                <div class="placeholder-visual">
+                                    <div class="visual-title">Performance Metrics</div>
+                                    <div class="visual-description">Charts and graphs showing key performance indicators
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <!-- Recent Activity -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h2 class="heading-2">Recent Activity</h2>
+                        </div>
+                        <div class="card-content">
+                            <div class="activity-list">
+                                <div class="activity-item">
+                                    <div class="activity-icon">✅</div>
+                                    <div class="activity-info">
+                                        <div class="activity-text">Workflow "Data Sync" completed successfully</div>
+                                        <div class="activity-time">2 minutes ago</div>
+                                    </div>
+                                </div>
+                                <div class="activity-item">
+                                    <div class="activity-icon">📊</div>
+                                    <div class="activity-info">
+                                        <div class="activity-text">New analytics report generated</div>
+                                        <div class="activity-time">15 minutes ago</div>
+                                    </div>
+                                </div>
+                                <div class="activity-item">
+                                    <div class="activity-icon">⚠️</div>
+                                    <div class="activity-info">
+                                        <div class="activity-text">Alert: Unusual pattern detected in customer data
+                                        </div>
+                                        <div class="activity-time">1 hour ago</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h2 class="heading-2">Quick Actions</h2>
+                        </div>
+                        <div class="card-content">
+                            <div class="quick-actions">
+                                <button class="action-button" onclick="createWorkflow()">
+                                    <div class="action-icon">➕</div>
+                                    <div class="action-text">Create Workflow</div>
+                                </button>
+                                <button class="action-button" onclick="generateReport()">
+                                    <div class="action-icon">📈</div>
+                                    <div class="action-text">Generate Report</div>
+                                </button>
+                                <button class="action-button" onclick="openSettings()">
+                                    <div class="action-icon">🔧</div>
+                                    <div class="action-text">System Settings</div>
+                                </button>
+                                <button class="action-button" onclick="viewAnalytics()">
+                                    <div class="action-icon">📊</div>
+                                    <div class="action-text">View Analytics</div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Demo Notice -->
+        <section class="section">
+            <div class="container">
+                <div class="demo-notice">
+                    <div class="notice-icon">ℹ️</div>
+                    <div class="notice-content">
+                        <h3 class="heading-3">Demo Dashboard</h3>
+                        <p>This is a preview of the Syntra dashboard. In the full version, you'll have access to
+                            real-time workflow monitoring, advanced analytics, and comprehensive automation controls.
+                        </p>
+                        <a href="/contact" class="btn btn-primary">Get Full Access</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="copyright">© 2024 Syntra</div>
+                <nav class="footer-links">
+                    <a href="/impressum">Impressum</a>
+                    <a href="/datenschutz">Datenschutz</a>
+                </nav>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/scripts/navigation.js"></script>
+    <script src="/scripts/dashboard.js"></script>
+</body>
+
+</html>

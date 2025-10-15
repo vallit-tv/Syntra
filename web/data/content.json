@@ -1,0 +1,85 @@
+{
+    "site": {
+        "name": "Syntra",
+        "tagline": "AI-Powered Workflow Automation & Analytics",
+        "description": "Transform your business with intelligent automation and data-driven insights."
+    },
+    "navigation": [
+        {
+            "href": "/",
+            "label": "Home"
+        },
+        {
+            "href": "/features",
+            "label": "Features"
+        },
+        {
+            "href": "/about",
+            "label": "About"
+        },
+        {
+            "href": "/contact",
+            "label": "Contact"
+        }
+    ],
+    "homepage": {
+        "hero": {
+            "title": "AI-Powered Workflow Automation & Analytics",
+            "subtitle": "Transform your business with intelligent automation and data-driven insights. Syntra helps companies optimize processes, understand their signals, and make smarter decisions.",
+            "primaryCTA": {
+                "text": "Request Demo",
+                "href": "/contact"
+            },
+            "secondaryCTA": {
+                "text": "Learn More",
+                "href": "/features"
+            }
+        },
+        "valueProps": [
+            {
+                "icon": "🤖",
+                "title": "Automate Workflows",
+                "description": "Reduce manual tasks with intelligent automation that learns from your processes and adapts to your business needs."
+            },
+            {
+                "icon": "📊",
+                "title": "Analyze Signals",
+                "description": "Understand your business data with AI-powered pattern recognition that identifies trends and opportunities in real-time."
+            },
+            {
+                "icon": "⚡",
+                "title": "Optimize Processes",
+                "description": "Make data-driven improvements with actionable insights that help you streamline operations and boost efficiency."
+            }
+        ],
+        "howItWorks": [
+            {
+                "step": 1,
+                "title": "Connect Your Systems",
+                "description": "Integrate with your existing tools and data sources. Our AI learns your current workflows and processes."
+            },
+            {
+                "step": 2,
+                "title": "AI Analyzes & Learns",
+                "description": "Our intelligent system identifies patterns, bottlenecks, and optimization opportunities in your operations."
+            },
+            {
+                "step": 3,
+                "title": "Automate & Optimize",
+                "description": "Implement intelligent automation and receive actionable insights to continuously improve your business processes."
+            }
+        ],
+        "cta": {
+            "title": "Ready to Transform Your Business?",
+            "subtitle": "Join forward-thinking companies that are already using AI to automate workflows and gain valuable insights from their data.",
+            "primaryCTA": {
+                "text": "Request Demo",
+                "href": "/contact"
+            },
+            "secondaryCTA": {
+                "text": "Explore Features",
+                "href": "/features"
+            }
+        }
+    }
+}

@@ -1,0 +1,33 @@
+/* Contact Page - Clean CSS only */
+
+/* Contact form specific styles */
+.contact-form-container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.contact-form {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* Contact info cards */
+.contact-info-icon {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+/* Form enhancements */
+.form-input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .contact-form {
+        padding: 1.5rem;
+    }
+}
