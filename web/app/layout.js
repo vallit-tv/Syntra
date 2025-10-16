@@ -1,4 +1,4 @@
-// Clean layout - minimal and simple
+// Syntra Layout - Complete with navigation and footer
 import './globals.css'
 
 export default function RootLayout({ children }) {
@@ -20,7 +20,44 @@ export default function RootLayout({ children }) {
                 <link rel="canonical" href="https://syntra.vercel.app" />
             </head>
             <body>
-                {children}
+                {/* Navigation */}
+                <header className="navbar">
+                    <div className="container">
+                        <div className="nav-content">
+                            <div className="nav-brand">
+                                <a href="/" className="brand-link">Syntra</a>
+                            </div>
+                            <nav>
+                                <ul className="nav-links">
+                                    <li><a href="/">Home</a></li>
+                                    <li><a href="/features">Features</a></li>
+                                    <li><a href="/about">About</a></li>
+                                    <li><a href="/contact">Contact</a></li>
+                                    <li><a href="/login" className="btn btn-primary">Login</a></li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </header>
+
+                {/* Main Content */}
+                <main>
+                    {children}
+                </main>
+
+                {/* Footer */}
+                <footer className="footer">
+                    <div className="container">
+                        <div className="footer-content">
+                            <div className="copyright">© 2024 Syntra</div>
+                            <nav className="footer-links">
+                                <a href="/impressum">Impressum</a>
+                                <a href="/datenschutz">Datenschutz</a>
+                            </nav>
+                        </div>
+                    </div>
+                </footer>
+
                 {/* Include JavaScript for interactive features */}
                 <script src="/scripts/navigation.js"></script>
                 <script src="/scripts/forms.js"></script>

@@ -31,7 +31,7 @@ const nextConfig = {
   },
 
   // Static exports for better performance
-  output: 'standalone',
+  // output: 'standalone', // Disabled for Vercel compatibility
 
   // Headers for security and performance
   async headers() {
