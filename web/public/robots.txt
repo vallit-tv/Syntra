@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://syntra.vercel.app/sitemap.xml
+
+# Disallow admin areas
+Disallow: /api/
+Disallow: /_next/
+Disallow: /admin/

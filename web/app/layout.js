@@ -13,6 +13,11 @@ export default function RootLayout({ children }) {
                 <link rel="stylesheet" href="/styles/components/buttons.css" />
                 <link rel="stylesheet" href="/styles/components/cards.css" />
                 <link rel="stylesheet" href="/styles/components/forms.css" />
+
+                {/* SEO Meta Tags */}
+                <meta name="robots" content="index, follow" />
+                <meta name="googlebot" content="index, follow" />
+                <link rel="canonical" href="https://syntra.vercel.app" />
             </head>
             <body>
                 {children}

@@ -1,17 +1,77 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // This is the main configuration for Next.js
-  // reactStrictMode helps catch bugs during development
+  // Production optimizations for Vercel
   reactStrictMode: true,
 
-  // We'll keep TypeScript checking off since we're using plain JavaScript
+  // Performance optimizations
+  swcMinify: true,
+  compress: true,
+
+  // Static file serving
+  trailingSlash: false,
+
+  // Image optimization
+  images: {
+    domains: [],
+    formats: ['image/webp', 'image/avif'],
+  },
+
+  // Build optimizations
   typescript: {
     ignoreBuildErrors: true,
   },
 
-  // We'll also ignore ESLint errors for now to focus on learning
   eslint: {
     ignoreDuringBuilds: true,
+  },
+
+  // Vercel-specific optimizations
+  experimental: {
+    // optimizeCss: true, // Disabled due to critters dependency issue
+  },
+
+  // Static exports for better performance
+  output: 'standalone',
+
+  // Headers for security and performance
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'origin-when-cross-origin',
+          },
+        ],
+      },
+      {
+        source: '/styles/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/scripts/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+    ];
   },
 };
 
