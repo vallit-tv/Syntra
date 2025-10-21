@@ -1,33 +1,9 @@
 {
     "version": 2,
-    "buildCommand": "npm run build",
-    "outputDirectory": ".next",
-    "installCommand": "npm install",
     "framework": "nextjs",
-    "routes": [
-        {
-            "src": "/styles/(.*)",
-            "dest": "/styles/$1"
-        },
-        {
-            "src": "/scripts/(.*)",
-            "dest": "/scripts/$1"
-        },
-        {
-            "src": "/templates/(.*)",
-            "dest": "/templates/$1"
-        },
-        {
-            "src": "/data/(.*)",
-            "dest": "/data/$1"
-        }
-    ],
     "functions": {
         "app/api/notion-webhook/route.js": {
             "maxDuration": 30
         }
-    },
-    "env": {
-        "VERCEL_ENV": "production"
     }
 }

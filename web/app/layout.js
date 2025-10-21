@@ -9,10 +9,7 @@ export default function RootLayout({ children }) {
                 <meta name="description" content="Transform your business with AI-driven workflow automation and intelligent analytics. Syntra helps companies optimize processes and understand their data signals." />
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
                 <link rel="icon" href="/favicon.ico" />
-                {/* Include component CSS */}
-                <link rel="stylesheet" href="/styles/components/buttons.css" />
-                <link rel="stylesheet" href="/styles/components/cards.css" />
-                <link rel="stylesheet" href="/styles/components/forms.css" />
+                {/* Component CSS is included in globals.css */}
 
                 {/* SEO Meta Tags */}
                 <meta name="robots" content="index, follow" />
@@ -58,9 +55,7 @@ export default function RootLayout({ children }) {
                     </div>
                 </footer>
 
-                {/* Include JavaScript for interactive features */}
-                <script src="/scripts/navigation.js"></script>
-                <script src="/scripts/forms.js"></script>
+                {/* JavaScript will be added later when needed */}
             </body>
         </html>
     )

@@ -1,0 +1,335 @@
+{
+    "templates": [
+        {
+            "id": "notion-page-analyzer",
+            "name": "Notion Page Analyzer",
+            "description": "Automatically analyze new Notion pages and extract insights",
+            "category": "notion",
+            "trigger": {
+                "type": "notion",
+                "config": {
+                    "event_types": [
+                        "page.created",
+                        "page.updated"
+                    ],
+                    "conditions": [
+                        {
+                            "type": "database_match",
+                            "value": "{{user.database_id}}"
+                        }
+                    ]
+                }
+            },
+            "steps": [
+                {
+                    "id": "analyze_page",
+                    "type": "ai_analysis",
+                    "name": "Analyze Page Content",
+                    "config": {
+                        "analysis_type": "notion_page",
+                        "data": "{{input.page_content}}"
+                    },
+                    "next": "extract_insights"
+                },
+                {
+                    "id": "extract_insights",
+                    "type": "data_transform",
+                    "name": "Extract Key Insights",
+                    "config": {
+                        "input": "{{step_analyze_page.result}}",
+                        "mapping": {
+                            "summary": "summary",
+                            "action_items": "action_items",
+                            "categories": "categories",
+                            "sentiment": "sentiment"
+                        }
+                    },
+                    "next": "update_notion"
+                },
+                {
+                    "id": "update_notion",
+                    "type": "notion_action",
+                    "name": "Update Notion Page",
+                    "config": {
+                        "action": "update_page",
+                        "page_id": "{{input.page_id}}",
+                        "properties": {
+                            "AI Summary": {
+                                "rich_text": "{{step_extract_insights.result.summary}}"
+                            },
+                            "Categories": {
+                                "multi_select": "{{step_extract_insights.result.categories}}"
+                            },
+                            "Sentiment": {
+                                "select": "{{step_extract_insights.result.sentiment}}"
+                            }
+                        }
+                    },
+                    "next": "notify_completion"
+                },
+                {
+                    "id": "notify_completion",
+                    "type": "notification",
+                    "name": "Notify Completion",
+                    "config": {
+                        "type": "success",
+                        "message": "Page analysis completed for {{input.page_title}}"
+                    }
+                }
+            ],
+            "error_handling": {
+                "retry_count": 2,
+                "fallback_action": "notify"
+            }
+        },
+        {
+            "id": "data-categorizer",
+            "name": "Data Categorizer",
+            "description": "Automatically categorize and tag incoming data",
+            "category": "data_processing",
+            "trigger": {
+                "type": "webhook",
+                "config": {
+                    "endpoint": "/webhook/data-input"
+                }
+            },
+            "steps": [
+                {
+                    "id": "analyze_data",
+                    "type": "ai_analysis",
+                    "name": "Analyze Data",
+                    "config": {
+                        "analysis_type": "general",
+                        "data": "{{input.data}}"
+                    },
+                    "next": "categorize"
+                },
+                {
+                    "id": "categorize",
+                    "type": "data_transform",
+                    "name": "Apply Categories",
+                    "config": {
+                        "input": "{{step_analyze_data.result}}",
+                        "mapping": {
+                            "category": "categories.0",
+                            "confidence": "confidence",
+                            "tags": "patterns"
+                        }
+                    },
+                    "next": "check_confidence"
+                },
+                {
+                    "id": "check_confidence",
+                    "type": "condition",
+                    "name": "Check Confidence Level",
+                    "config": {
+                        "condition": {
+                            "field": "{{step_categorize.result.confidence}}",
+                            "operator": "greater_than",
+                            "value": 0.8
+                        }
+                    },
+                    "next": {
+                        "true": "store_result",
+                        "false": "manual_review"
+                    }
+                },
+                {
+                    "id": "store_result",
+                    "type": "webhook",
+                    "name": "Store Result",
+                    "config": {
+                        "url": "{{input.store_url}}",
+                        "method": "POST",
+                        "body": "{{step_categorize.result}}"
+                    }
+                },
+                {
+                    "id": "manual_review",
+                    "type": "notification",
+                    "name": "Request Manual Review",
+                    "config": {
+                        "type": "warning",
+                        "message": "Low confidence categorization requires manual review"
+                    }
+                }
+            ],
+            "error_handling": {
+                "retry_count": 1,
+                "fallback_action": "notify"
+            }
+        },
+        {
+            "id": "automated-reporting",
+            "name": "Automated Reporting",
+            "description": "Generate and send automated reports based on data analysis",
+            "category": "reporting",
+            "trigger": {
+                "type": "schedule",
+                "config": {
+                    "cron": "0 9 * * 1",
+                    "timezone": "UTC"
+                }
+            },
+            "steps": [
+                {
+                    "id": "collect_data",
+                    "type": "webhook",
+                    "name": "Collect Data",
+                    "config": {
+                        "url": "{{input.data_source_url}}",
+                        "method": "GET"
+                    },
+                    "next": "analyze_trends"
+                },
+                {
+                    "id": "analyze_trends",
+                    "type": "ai_analysis",
+                    "name": "Analyze Trends",
+                    "config": {
+                        "analysis_type": "general",
+                        "data": "{{step_collect_data.result}}"
+                    },
+                    "next": "generate_report"
+                },
+                {
+                    "id": "generate_report",
+                    "type": "data_transform",
+                    "name": "Generate Report",
+                    "config": {
+                        "input": "{{step_analyze_trends.result}}",
+                        "mapping": {
+                            "title": "Weekly Report - {{input.week}}",
+                            "summary": "summary",
+                            "key_insights": "insights",
+                            "recommendations": "recommendations",
+                            "metrics": "patterns"
+                        }
+                    },
+                    "next": "create_notion_page"
+                },
+                {
+                    "id": "create_notion_page",
+                    "type": "notion_action",
+                    "name": "Create Report Page",
+                    "config": {
+                        "action": "create_page",
+                        "database_id": "{{input.reports_database_id}}",
+                        "properties": {
+                            "Title": {
+                                "title": "{{step_generate_report.result.title}}"
+                            },
+                            "Summary": {
+                                "rich_text": "{{step_generate_report.result.summary}}"
+                            },
+                            "Date": {
+                                "date": "{{context.timestamp}}"
+                            }
+                        }
+                    },
+                    "next": "send_notification"
+                },
+                {
+                    "id": "send_notification",
+                    "type": "notification",
+                    "name": "Send Notification",
+                    "config": {
+                        "type": "info",
+                        "message": "Weekly report generated and saved to Notion"
+                    }
+                }
+            ],
+            "error_handling": {
+                "retry_count": 3,
+                "fallback_action": "notify"
+            }
+        },
+        {
+            "id": "alert-generator",
+            "name": "Alert Generator",
+            "description": "Monitor data and generate alerts for important events",
+            "category": "monitoring",
+            "trigger": {
+                "type": "webhook",
+                "config": {
+                    "endpoint": "/webhook/monitor"
+                }
+            },
+            "steps": [
+                {
+                    "id": "check_thresholds",
+                    "type": "condition",
+                    "name": "Check Alert Thresholds",
+                    "config": {
+                        "condition": {
+                            "field": "{{input.value}}",
+                            "operator": "greater_than",
+                            "value": "{{input.threshold}}"
+                        }
+                    },
+                    "next": {
+                        "true": "analyze_alert",
+                        "false": "log_normal"
+                    }
+                },
+                {
+                    "id": "analyze_alert",
+                    "type": "ai_analysis",
+                    "name": "Analyze Alert Context",
+                    "config": {
+                        "analysis_type": "general",
+                        "data": "{{input}}"
+                    },
+                    "next": "determine_priority"
+                },
+                {
+                    "id": "determine_priority",
+                    "type": "condition",
+                    "name": "Determine Alert Priority",
+                    "config": {
+                        "condition": {
+                            "field": "{{step_analyze_alert.result.confidence}}",
+                            "operator": "greater_than",
+                            "value": 0.9
+                        }
+                    },
+                    "next": {
+                        "true": "high_priority_alert",
+                        "false": "standard_alert"
+                    }
+                },
+                {
+                    "id": "high_priority_alert",
+                    "type": "notification",
+                    "name": "High Priority Alert",
+                    "config": {
+                        "type": "urgent",
+                        "message": "URGENT: {{step_analyze_alert.result.summary}}"
+                    }
+                },
+                {
+                    "id": "standard_alert",
+                    "type": "notification",
+                    "name": "Standard Alert",
+                    "config": {
+                        "type": "warning",
+                        "message": "Alert: {{step_analyze_alert.result.summary}}"
+                    }
+                },
+                {
+                    "id": "log_normal",
+                    "type": "notification",
+                    "name": "Log Normal Operation",
+                    "config": {
+                        "type": "info",
+                        "message": "Normal operation logged"
+                    }
+                }
+            ],
+            "error_handling": {
+                "retry_count": 1,
+                "fallback_action": "notify"
+            }
+        }
+    ]
+}
