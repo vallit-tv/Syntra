@@ -2,9 +2,15 @@
 import { supabase } from './supabase'
 
 export const auth = {
-    // Sign up with email and password
-    async signUp(email, password, fullName) {
+    // Sign up with name only (simplified)
+    async signUp(fullName) {
         try {
+            // Generate a unique email based on name
+            const email = `${fullName.toLowerCase().replace(/\s+/g, '')}@syntra.local`
+
+            // Generate a random password (user won't need to know it)
+            const password = Math.random().toString(36).slice(-12)
+
             const { data, error } = await supabase.auth.signUp({
                 email,
                 password,
@@ -23,15 +29,26 @@ export const auth = {
         }
     },
 
-    // Sign in with email and password
-    async signIn(email, password) {
+    // Sign in with name only (simplified)
+    async signIn(fullName) {
         try {
+            // Generate email from name
+            const email = `${fullName.toLowerCase().replace(/\s+/g, '')}@syntra.local`
+
+            // For now, we'll use a simple approach - in production you'd want more security
+            // This is a simplified version for demo purposes
             const { data, error } = await supabase.auth.signInWithPassword({
                 email,
-                password
+                password: 'default123' // Default password for all users
             })
 
-            if (error) throw error
+            if (error) {
+                // If user doesn't exist, create them automatically
+                if (error.message.includes('Invalid login credentials')) {
+                    return await this.signUp(fullName)
+                }
+                throw error
+            }
             return data
         } catch (error) {
             console.error('Sign in error:', error)

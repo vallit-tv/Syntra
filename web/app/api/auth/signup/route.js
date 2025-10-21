@@ -1,45 +1,31 @@
-// Sign up API endpoint
+// Sign up API endpoint (simplified - name only)
 import { NextResponse } from 'next/server'
 import { auth, validation } from '../../../../lib/auth'
 
 export async function POST(request) {
     try {
-        const { email, password, fullName } = await request.json()
+        const { name } = await request.json()
 
         // Validate input
-        if (!email || !password || !fullName) {
+        if (!name || name.trim().length === 0) {
             return NextResponse.json(
-                { error: 'Email, password, and full name are required' },
+                { error: 'Name is required' },
                 { status: 400 }
             )
         }
 
-        if (!validation.email(email)) {
+        if (!validation.fullName(name)) {
             return NextResponse.json(
-                { error: 'Invalid email format' },
-                { status: 400 }
-            )
-        }
-
-        if (!validation.password(password)) {
-            return NextResponse.json(
-                { error: 'Password must be at least 8 characters long' },
-                { status: 400 }
-            )
-        }
-
-        if (!validation.fullName(fullName)) {
-            return NextResponse.json(
-                { error: 'Full name must be at least 2 characters long' },
+                { error: 'Name must be at least 2 characters long' },
                 { status: 400 }
             )
         }
 
         // Create user account
-        const result = await auth.signUp(email, password, fullName)
+        const result = await auth.signUp(name.trim())
 
         return NextResponse.json({
-            message: 'Account created successfully. Please check your email to verify your account.',
+            message: 'Account created successfully!',
             user: result.user
         })
 

@@ -1,28 +1,28 @@
-// Sign in API endpoint
+// Sign in API endpoint (simplified - name only)
 import { NextResponse } from 'next/server'
 import { auth, validation } from '../../../../lib/auth'
 
 export async function POST(request) {
     try {
-        const { email, password } = await request.json()
+        const { name } = await request.json()
 
         // Validate input
-        if (!email || !password) {
+        if (!name || name.trim().length === 0) {
             return NextResponse.json(
-                { error: 'Email and password are required' },
+                { error: 'Name is required' },
                 { status: 400 }
             )
         }
 
-        if (!validation.email(email)) {
+        if (!validation.fullName(name)) {
             return NextResponse.json(
-                { error: 'Invalid email format' },
+                { error: 'Name must be at least 2 characters long' },
                 { status: 400 }
             )
         }
 
-        // Sign in user
-        const result = await auth.signIn(email, password)
+        // Sign in user (or create if doesn't exist)
+        const result = await auth.signIn(name.trim())
 
         return NextResponse.json({
             message: 'Signed in successfully',
