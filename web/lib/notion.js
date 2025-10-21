@@ -4,7 +4,7 @@ import crypto from 'crypto'
 
 // Initialize Notion client
 const notion = new Client({
-    auth: process.env.NOTION_TOKEN,
+  auth: process.env.NOTION_TOKEN || 'placeholder-token',
 })
 
 // Helper functions for Notion operations

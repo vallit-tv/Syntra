@@ -1,10 +1,59 @@
 // Middleware for protected routes
-import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
+import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 
 export async function middleware(req) {
-    const res = NextResponse.next()
-    const supabase = createMiddlewareClient({ req, res })
+    let res = NextResponse.next({
+        request: {
+            headers: req.headers,
+        },
+    })
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key',
+        {
+            cookies: {
+                get(name) {
+                    return req.cookies.get(name)?.value
+                },
+                set(name, value, options) {
+                    req.cookies.set({
+                        name,
+                        value,
+                        ...options,
+                    })
+                    res = NextResponse.next({
+                        request: {
+                            headers: req.headers,
+                        },
+                    })
+                    res.cookies.set({
+                        name,
+                        value,
+                        ...options,
+                    })
+                },
+                remove(name, options) {
+                    req.cookies.set({
+                        name,
+                        value: '',
+                        ...options,
+                    })
+                    res = NextResponse.next({
+                        request: {
+                            headers: req.headers,
+                        },
+                    })
+                    res.cookies.set({
+                        name,
+                        value: '',
+                        ...options,
+                    })
+                },
+            },
+        }
+    )
 
     // Get the current session
     const {
@@ -12,7 +61,7 @@ export async function middleware(req) {
     } = await supabase.auth.getSession()
 
     // Define protected routes
-    const protectedRoutes = ['/dashboard', '/dashboard/analytics', '/dashboard/workflows', '/dashboard/integrations']
+    const protectedRoutes = ['/dashboard', '/dashboard/analytics', '/dashboard/workflows', '/dashboard/integrations', '/dashboard/chat']
     const authRoutes = ['/login', '/register']
 
     const { pathname } = req.nextUrl
