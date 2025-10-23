@@ -30,6 +30,23 @@ const nextConfig = {
     // optimizeCss: true, // Disabled due to critters dependency issue
   },
 
+  // Disable PostCSS processing to avoid Tailwind CSS module resolution errors
+  webpack: (config, { isServer }) => {
+    // Remove PostCSS loader
+    config.module.rules.forEach((rule) => {
+      if (rule.oneOf) {
+        rule.oneOf.forEach((oneOf) => {
+          if (oneOf.use && Array.isArray(oneOf.use)) {
+            oneOf.use = oneOf.use.filter((use) => {
+              return !(typeof use === 'object' && use.loader && use.loader.includes('postcss-loader'));
+            });
+          }
+        });
+      }
+    });
+    return config;
+  },
+
   // Static exports for better performance
   // output: 'standalone', // Disabled for Vercel compatibility
 
