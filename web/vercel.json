@@ -1,9 +1,0 @@
-{
-    "version": 2,
-    "framework": "nextjs",
-    "functions": {
-        "app/api/notion-webhook/route.js": {
-            "maxDuration": 30
-        }
-    }
-}

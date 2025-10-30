@@ -1,66 +1,98 @@
-# Vallit
+# Syntra - Simple Flask Application
 
-A modern Next.js marketing website for vallit.net with Notion webhook integration.
+A clean, simple Flask application built with Python, HTML, CSS, and JavaScript.
 
 ## Project Structure
 
 ```
-Vallit/
-├── web/                    # Next.js web application
-│   ├── app/               # Next.js App Router pages
-│   ├── components/        # React components
-│   ├── lib/              # Utility functions
-│   ├── package.json      # Dependencies
-│   ├── tailwind.config.ts # Tailwind CSS config
-│   ├── supabase.sql      # Database schema
-│   └── README.md         # Detailed setup instructions
-├── vallit/               # Python backend (existing)
+/
+├── app.py                 # Main Flask application (all routes)
+├── auth.py                # Authentication logic
+├── db.py                  # Database operations (Supabase)
+├── requirements.txt       # Python dependencies
+├── .env.example          # Environment variables template
+├── templates/            # HTML templates
+│   ├── base.html         # Base template with header/footer
+│   ├── index.html        # Homepage
+│   ├── login.html        # Login page
+│   ├── register.html     # Registration page
+│   ├── dashboard.html    # User dashboard
+│   └── ...               # Other pages
+├── static/
+│   ├── css/
+│   │   └── style.css     # All CSS styles
+│   ├── js/
+│   │   └── main.js       # JavaScript functions
+│   └── images/           # Images
 └── README.md             # This file
 ```
 
-## Quick Start
+## Setup
 
-1. **Navigate to the web app:**
+1. **Create virtual environment:**
    ```bash
-   cd web
+   python3 -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    ```
 
 2. **Install dependencies:**
    ```bash
-   pnpm install
+   pip install -r requirements.txt
    ```
 
-3. **Set up environment:**
+3. **Setup environment:**
    ```bash
-   cp env.example .env.local
-   # Edit .env.local with your values
+   cp .env.example .env
+   # Edit .env with your Supabase credentials
    ```
 
-4. **Start development server:**
+4. **Run application:**
    ```bash
-   pnpm dev
+   python app.py
    ```
 
-5. **Open in browser:**
+5. **Open browser:**
    ```
-   http://localhost:3000
+   http://localhost:5000
    ```
 
-## Features
+## Files Explained
 
-- ✅ Modern Next.js 14 with App Router
-- ✅ TypeScript & Tailwind CSS
-- ✅ Responsive design with shadcn/ui components
-- ✅ SEO optimized (metadata, sitemap, robots.txt)
-- ✅ Notion webhook API integration
-- ✅ Supabase audit system
-- ✅ German legal pages (Impressum, Datenschutz)
+### `app.py`
+- Main Flask application
+- All routes (pages and APIs)
+- Simple and easy to understand
 
-## Deployment
+### `auth.py`
+- Handles login/register/logout
+- Session management
+- Secure token-based authentication
 
-The web app is ready to deploy to Vercel. See `web/README.md` for detailed setup instructions.
+### `db.py`
+- All database operations
+- Connects to Supabase
+- Functions for users, API keys, etc.
 
-## Development
+### Templates
+- `base.html` - Header, footer, navigation (used by all pages)
+- Other HTML files - Individual page content
 
-- **Web App:** `cd web && pnpm dev`
-- **Python Backend:** `cd vallit && source .venv/bin/activate`
+### Static Files
+- `static/css/style.css` - All styling
+- `static/js/main.js` - JavaScript functions
+
+## How It Works
+
+1. **User visits a page** → Flask renders HTML template
+2. **User submits form** → JavaScript sends data to API endpoint
+3. **API processes request** → Uses `auth.py` and `db.py`
+4. **Response sent back** → JavaScript updates page
+
+## Adding Features
+
+1. **New page?** → Add route in `app.py`, create HTML in `templates/`
+2. **New API?** → Add route in `app.py` under `# APIs` section
+3. **Database query?** → Add function in `db.py`
+4. **Styling?** → Add CSS to `static/css/style.css`
+
+Simple and straightforward!
