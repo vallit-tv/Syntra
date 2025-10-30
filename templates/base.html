@@ -11,35 +11,33 @@
     <!-- SEO Meta Tags -->
     <meta name="robots" content="index, follow">
     <meta name="googlebot" content="index, follow">
-    <link rel="canonical" href="https://syntra.vercel.app">
+    <link rel="canonical" href="https://www.vallit.net">
 </head>
 <body>
     <!-- Navigation -->
-    <header class="bg-white/90 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
-        <div class="container mx-auto px-4">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center">
-                    <a href="{{ url_for('index') }}" class="flex items-center space-x-2">
-                        <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
-                            <span class="text-white font-bold text-sm">S</span>
-                        </div>
-                        <span class="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Syntra</span>
-                    </a>
-                </div>
-                <nav class="hidden md:flex items-center space-x-8">
-                    <a href="{{ url_for('index') }}" class="text-gray-600 hover:text-gray-900 font-medium transition-colors">Home</a>
-                    <a href="{{ url_for('features') }}" class="text-gray-600 hover:text-gray-900 font-medium transition-colors">Features</a>
-                    <a href="{{ url_for('about') }}" class="text-gray-600 hover:text-gray-900 font-medium transition-colors">About</a>
-                    <a href="{{ url_for('contact') }}" class="text-gray-600 hover:text-gray-900 font-medium transition-colors">Contact</a>
+    <header>
+        <div class="container">
+            <div class="header-inner">
+                <a href="{{ url_for('index') }}" class="logo">
+                    <div class="logo-icon">S</div>
+                    <span class="logo-text">Syntra</span>
+                </a>
+                
+                <nav>
+                    <ul class="nav-links">
+                        <li><a href="{{ url_for('index') }}">Home</a></li>
+                        <li><a href="{{ url_for('features') }}">Features</a></li>
+                        <li><a href="{{ url_for('about') }}">About</a></li>
+                        <li><a href="{{ url_for('contact') }}">Contact</a></li>
+                    </ul>
                 </nav>
-                <div class="flex items-center space-x-4">
+                
+                <div class="header-actions">
                     {% if session.user_id %}
-                        <a href="{{ url_for('dashboard') }}" class="text-gray-600 hover:text-gray-900 font-medium transition-colors">Dashboard</a>
-                        <a href="{{ url_for('logout') }}" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all duration-200 shadow-lg hover:shadow-xl">Logout</a>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Dashboard</a>
+                        <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
                     {% else %}
-                        <a href="{{ url_for('login') }}" class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl">
-                            Get Started
-                        </a>
+                        <a href="{{ url_for('login') }}" class="btn btn-primary">Get Started</a>
                     {% endif %}
                 </div>
             </div>
@@ -49,9 +47,9 @@
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-            <div class="container mx-auto px-4 py-4">
+            <div class="container" style="padding-top: 1rem;">
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} bg-{{ 'green' if category == 'success' else 'red' if category == 'error' else 'blue' }}-100 border border-{{ 'green' if category == 'success' else 'red' if category == 'error' else 'blue' }}-400 text-{{ 'green' if category == 'success' else 'red' if category == 'error' else 'blue' }}-700 px-4 py-3 rounded mb-4">
+                    <div class="alert alert-{{ category if category != 'message' else 'info' }}">
                         {{ message }}
                     </div>
                 {% endfor %}
@@ -65,52 +63,41 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 text-white">
-        <div class="container mx-auto px-4 py-12">
-            <div class="grid md:grid-cols-4 gap-8">
-                <div class="md:col-span-2">
-                    <div class="flex items-center space-x-2 mb-4">
-                        <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
-                            <span class="text-white font-bold text-sm">S</span>
-                        </div>
-                        <span class="text-xl font-bold">Syntra</span>
-                    </div>
-                    <p class="text-gray-400 mb-4 max-w-md">
-                        AI-powered workflow automation and analytics platform that helps businesses optimize processes and make data-driven decisions.
-                    </p>
-                    <div class="flex space-x-4">
-                        <a href="#" class="text-gray-400 hover:text-white transition-colors">Twitter</a>
-                        <a href="#" class="text-gray-400 hover:text-white transition-colors">LinkedIn</a>
-                        <a href="#" class="text-gray-400 hover:text-white transition-colors">GitHub</a>
-                    </div>
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="{{ url_for('index') }}" class="logo">
+                        <div class="logo-icon">S</div>
+                        <span class="logo-text">Syntra</span>
+                    </a>
+                    <p>AI-powered workflow automation and analytics platform that helps businesses optimize processes and make data-driven decisions.</p>
                 </div>
-                <div>
-                    <h3 class="font-semibold mb-4">Product</h3>
-                    <ul class="space-y-2 text-gray-400">
-                        <li><a href="{{ url_for('features') }}" class="hover:text-white transition-colors">Features</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">Pricing</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">Documentation</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">API</a></li>
+                <div class="footer-links">
+                    <h4>Product</h4>
+                    <ul>
+                        <li><a href="{{ url_for('features') }}">Features</a></li>
+                        <li><a href="#">Pricing</a></li>
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">API</a></li>
                     </ul>
                 </div>
-                <div>
-                    <h3 class="font-semibold mb-4">Company</h3>
-                    <ul class="space-y-2 text-gray-400">
-                        <li><a href="{{ url_for('about') }}" class="hover:text-white transition-colors">About</a></li>
-                        <li><a href="{{ url_for('contact') }}" class="hover:text-white transition-colors">Contact</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">Careers</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">Blog</a></li>
+                <div class="footer-links">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="{{ url_for('about') }}">About</a></li>
+                        <li><a href="{{ url_for('contact') }}">Contact</a></li>
+                        <li><a href="#">Careers</a></li>
+                        <li><a href="#">Blog</a></li>
                     </ul>
                 </div>
             </div>
-            <div class="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-                <div class="text-gray-400 text-sm">
-                    © 2024 Syntra. All rights reserved.
-                </div>
-                <nav class="flex space-x-6 mt-4 md:mt-0">
-                    <a href="{{ url_for('impressum') }}" class="text-gray-400 hover:text-white text-sm transition-colors">Impressum</a>
-                    <a href="{{ url_for('datenschutz') }}" class="text-gray-400 hover:text-white text-sm transition-colors">Datenschutz</a>
-                    <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors">Terms</a>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Syntra. All rights reserved.</p>
+                <nav>
+                    <a href="{{ url_for('impressum') }}">Impressum</a>
+                    <a href="{{ url_for('datenschutz') }}">Datenschutz</a>
+                    <a href="#">Terms</a>
                 </nav>
             </div>
         </div>
