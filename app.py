@@ -14,13 +14,39 @@ app.permanent_session_lifetime = timedelta(minutes=30)
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
+# Error handlers
+@app.errorhandler(500)
+def internal_error(error):
+    """Handle 500 errors"""
+    import traceback
+    error_msg = traceback.format_exc()
+    print(f"ERROR: {error_msg}")  # Log to Vercel logs
+    return jsonify({'error': 'Internal Server Error', 'message': str(error)}), 500
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    """Handle all exceptions"""
+    import traceback
+    error_msg = traceback.format_exc()
+    print(f"ERROR: {error_msg}")  # Log to Vercel logs
+    return jsonify({'error': 'An error occurred', 'message': str(e)}), 500
+
 # ============================================================================
 # PAGES
 # ============================================================================
 
+@app.route('/health')
+def health():
+    """Health check endpoint"""
+    return jsonify({'status': 'ok', 'message': 'Flask app is running'}), 200
+
 @app.route('/')
 def index():
-    return render_template('index.html')
+    try:
+        return render_template('index.html')
+    except Exception as e:
+        print(f"Index route error: {str(e)}")
+        return f"Error loading page: {str(e)}", 500
 
 @app.route('/about')
 def about():
@@ -53,9 +79,13 @@ def datenschutz():
 @app.route('/dashboard')
 @auth.login_required
 def dashboard():
-    user = auth.current_user()
-    api_keys = db.get_api_keys(user['id'])
-    return render_template('dashboard.html', user=user, api_keys=api_keys)
+    try:
+        user = auth.current_user()
+        api_keys = db.get_api_keys(user['id'])
+        return render_template('dashboard.html', user=user, api_keys=api_keys)
+    except Exception as e:
+        print(f"Dashboard error: {str(e)}")
+        return redirect(url_for('login'))
 
 @app.route('/logout')
 def logout():
