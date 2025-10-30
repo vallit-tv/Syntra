@@ -61,11 +61,11 @@ def features():
     return render_template('features.html')
 
 @app.route('/login')
-def login_page():
+def login():
     return render_template('login.html')
 
 @app.route('/register')
-def register_page():
+def register():
     return render_template('register.html')
 
 @app.route('/impressum')
