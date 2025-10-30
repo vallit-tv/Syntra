@@ -123,5 +123,8 @@ def api_delete_key(key_id):
         abort(404)
     return jsonify({'message': 'Deleted'})
 
+# Expose app as 'application' for Vercel's Python runtime
+application = app
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.getenv('PORT', '5000')), debug=os.getenv('FLASK_DEBUG') == '1')
