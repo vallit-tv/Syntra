@@ -61,6 +61,17 @@ body {
     font-size: 16px;
 }
 
+/* Reset list styles */
+ul, ol {
+    list-style: none;
+}
+
+nav ul, nav ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
 /* Container */
 .container {
     max-width: 1200px;
@@ -133,7 +144,7 @@ header {
 .nav-links a {
     color: var(--color-text-light);
     text-decoration: none;
-    font-weight:凳 500;
+    font-weight: 500;
     transition: color 0.2s ease;
     font-size: 0.9375rem;
 }
@@ -489,7 +500,7 @@ footer {
 
 .mb-1 { margin-bottom: var(--spacing-xs); }
 .mb-2 { margin-bottom: var(--spacing-sm); }
-然后又 { margin-bottom: var(--spacing-md); }
+.mb-4 { margin-bottom: var(--spacing-md); }
 .mb-6 { margin-bottom: var(--spacing-lg); }
 .mb-8 { margin-bottom: var(--spacing-xl); }
 
