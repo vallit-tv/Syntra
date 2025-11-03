@@ -8,11 +8,25 @@ import db
 
 load_dotenv()
 
-app = Flask(__name__, static_folder='static', template_folder='templates')
+app = Flask(__name__, static_folder='static', static_url_path='/static', template_folder='templates')
 app.secret_key = os.getenv('FLASK_SECRET_KEY', os.urandom(32))
 app.permanent_session_lifetime = timedelta(minutes=30)
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+
+# Explicitly ensure static files are accessible
+# Flask serves static files automatically, but this ensures proper handling on Vercel
+from flask import send_from_directory
+@app.route('/static/<path:filename>')
+def serve_static(filename):
+    """Serve static files with proper MIME types"""
+    response = send_from_directory(app.static_folder, filename)
+    # Ensure correct Content-Type headers
+    if filename.endswith('.css'):
+        response.headers['Content-Type'] = 'text/css; charset=utf-8'
+    elif filename.endswith('.js'):
+        response.headers['Content-Type'] = 'application/javascript; charset=utf-8'
+    return response
 
 # Error handlers
 @app.errorhandler(500)
