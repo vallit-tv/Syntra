@@ -40,15 +40,27 @@ def get_user_by_id(user_id: str) -> Optional[Dict]:
         return None
 
 
-def create_user(name: str, token_hash: str) -> Dict:
-    """Create new user"""
+def create_user(name: str, password_hash: str = None, is_password_set: bool = False) -> Dict:
+    """Create new user (admin only)"""
     data = {
         'name': name,
-        'token_hash': token_hash,
+        'password_hash': password_hash,
+        'is_password_set': is_password_set,
         'created_at': datetime.utcnow().isoformat()
     }
     result = get_db().table('users').insert(data).execute()
     return result.data[0]
+
+def update_user_password(user_id: str, password_hash: str) -> bool:
+    """Update user password"""
+    try:
+        get_db().table('users').update({
+            'password_hash': password_hash,
+            'is_password_set': True
+        }).eq('id', user_id).execute()
+        return True
+    except:
+        return False
 
 
 def hash_token(token: str) -> str:

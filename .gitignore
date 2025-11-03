@@ -1,6 +1,11 @@
 node_modules
 .vercel
 
+# Environment variables (contains secrets)
+.env
+.env.local
+.env.*.local
+
 # ML Model files (can be very large)
 models/**/checkpoints/
 models/**/cache/

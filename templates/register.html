@@ -9,12 +9,17 @@
             <h1 class="section-title" style="font-size: 2rem;">Create Account</h1>
         </div>
         <div class="card" style="max-width: 400px; margin: 0 auto;">
-            <form id="registerForm">
+            <div style="background: #dbeafe; border: 1px solid #3b82f6; border-radius: var(--radius-md); padding: var(--spacing-md); margin-bottom: var(--spacing-lg);">
+                <p style="margin: 0; color: #1e40af; font-size: 0.875rem;">
+                    <strong>Admin Only:</strong> Create a user account. The user will set their password on first login.
+                </p>
+            </div>
+            <form id="createUserForm">
                 <div class="form-group">
-                    <label for="name" class="form-label">Name</label>
-                    <input type="text" id="name" name="name" required minlength="2" class="form-input" placeholder="Enter your name">
+                    <label for="name" class="form-label">User Name</label>
+                    <input type="text" id="name" name="name" required minlength="2" class="form-input" placeholder="Enter user name">
                 </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%;">Register</button>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Create User</button>
             </form>
             <p class="text-center mt-4" style="color: var(--color-text-light);">
                 Already have an account? <a href="{{ url_for('login') }}" style="color: var(--color-primary);">Login here</a>
@@ -25,9 +30,9 @@
 
 {% block scripts %}
 <script>
-handleFormSubmit('registerForm', '/api/auth/register', (result) => {
-    alert('Registration successful! Your token: ' + result.token + '\nPlease save this token securely.');
-    window.location.href = '/dashboard';
+handleFormSubmit('createUserForm', '/api/admin/create-user', (result) => {
+    alert('User created successfully! They can now login and set their password.');
+    document.getElementById('name').value = '';
 });
 </script>
 {% endblock %}

@@ -15,13 +15,13 @@
                     <input type="text" id="name" name="name" required class="form-input" placeholder="Enter your name">
                 </div>
                 <div class="form-group">
-                    <label for="token" class="form-label">Token</label>
-                    <input type="password" id="token" name="token" required class="form-input" placeholder="Enter your token">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" id="password" name="password" required class="form-input" placeholder="Enter your password">
                 </div>
                 <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
             </form>
             <p class="text-center mt-4" style="color: var(--color-text-light);">
-                Don't have an account? <a href="{{ url_for('register') }}" style="color: var(--color-primary);">Register here</a>
+                First time? Your account must be created by an administrator first.
             </p>
         </div>
     </div>
@@ -31,6 +31,14 @@
 <script>
 handleFormSubmit('loginForm', '/api/auth/login', (result) => {
     window.location.href = '/dashboard';
+}, (error) => {
+    // Check if password needs to be set
+    if (error.toLowerCase().includes('password not set') || error.toLowerCase().includes('set your password')) {
+        const name = document.getElementById('name').value;
+        if (name) {
+            window.location.href = `/setup-password?name=${encodeURIComponent(name)}`;
+        }
+    }
 });
 </script>
 {% endblock %}

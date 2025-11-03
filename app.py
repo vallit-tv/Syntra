@@ -16,17 +16,32 @@ app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
 # Explicitly ensure static files are accessible
 # Flask serves static files automatically, but this ensures proper handling on Vercel
-from flask import send_from_directory
+from flask import send_from_directory, make_response
+import mimetypes
+
 @app.route('/static/<path:filename>')
 def serve_static(filename):
-    """Serve static files with proper MIME types"""
-    response = send_from_directory(app.static_folder, filename)
-    # Ensure correct Content-Type headers
-    if filename.endswith('.css'):
-        response.headers['Content-Type'] = 'text/css; charset=utf-8'
-    elif filename.endswith('.js'):
-        response.headers['Content-Type'] = 'application/javascript; charset=utf-8'
-    return response
+    """Serve static files with proper MIME types and caching headers"""
+    try:
+        file_path = os.path.join(app.static_folder, filename)
+        if not os.path.exists(file_path):
+            abort(404)
+        
+        # Determine MIME type
+        mimetype, _ = mimetypes.guess_type(file_path)
+        if not mimetype:
+            if filename.endswith('.css'):
+                mimetype = 'text/css'
+            elif filename.endswith('.js'):
+                mimetype = 'application/javascript'
+        
+        response = make_response(send_from_directory(app.static_folder, filename))
+        response.headers['Content-Type'] = f'{mimetype}; charset=utf-8' if mimetype in ['text/css', 'text/html', 'application/javascript'] else mimetype
+        response.headers['Cache-Control'] = 'public, max-age=3600'
+        return response
+    except Exception as e:
+        print(f"Error serving static file {filename}: {str(e)}")
+        abort(404)
 
 # Error handlers
 @app.errorhandler(500)
@@ -82,6 +97,10 @@ def login():
 def register():
     return render_template('register.html')
 
+@app.route('/setup-password')
+def setup_password():
+    return render_template('setup-password.html')
+
 @app.route('/impressum')
 def impressum():
     return render_template('impressum.html')
@@ -110,27 +129,43 @@ def logout():
 # APIs
 # ============================================================================
 
-@app.route('/api/auth/register', methods=['POST'])
-def api_register():
+@app.route('/api/admin/create-user', methods=['POST'])
+def api_create_user():
+    """Admin endpoint to create a new user (password not set yet)"""
     data = request.get_json() or {}
     name = (data.get('name') or '').strip()
     if len(name) < 2:
         return jsonify({'error': 'Name must be at least 2 characters'}), 400
     try:
-        user, token = auth.register(name)
-        return jsonify({'message': 'Registered', 'user': user, 'token': token})
+        user = auth.create_user_admin(name)
+        return jsonify({'message': 'User created. They can now set their password on first login.', 'user': {'id': user['id'], 'name': user['name']}})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/auth/setup-password', methods=['POST'])
+def api_setup_password():
+    """Setup password for first-time login"""
+    data = request.get_json() or {}
+    name = (data.get('name') or '').strip()
+    password = data.get('password') or ''
+    if not name or not password:
+        return jsonify({'error': 'Name and password required'}), 400
+    try:
+        user = auth.setup_password(name, password)
+        return jsonify({'message': 'Password set successfully', 'user': {'id': user['id'], 'name': user['name']}})
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
 @app.route('/api/auth/login', methods=['POST'])
 def api_login():
+    """Login with name and password"""
     data = request.get_json() or {}
     name = (data.get('name') or '').strip()
-    token = (data.get('token') or '').strip()
-    if not name or not token:
-        return jsonify({'error': 'Name and token required'}), 400
+    password = data.get('password') or ''
+    if not name or not password:
+        return jsonify({'error': 'Name and password required'}), 400
     try:
-        user = auth.login(name, token)
+        user = auth.login(name, password)
         return jsonify({'message': 'Logged in', 'user': user})
     except Exception as e:
         return jsonify({'error': str(e)}), 401

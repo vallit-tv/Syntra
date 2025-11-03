@@ -1,7 +1,7 @@
 // Common JavaScript functions
 
 // Form handling
-function handleFormSubmit(formId, endpoint, onSuccess) {
+function handleFormSubmit(formId, endpoint, onSuccess, onError) {
     const form = document.getElementById(formId);
     if (!form) return;
     
@@ -21,10 +21,20 @@ function handleFormSubmit(formId, endpoint, onSuccess) {
             if (response.ok && onSuccess) {
                 onSuccess(result);
             } else {
-                alert(result.error || 'Error occurred');
+                const errorMsg = result.error || 'Error occurred';
+                if (onError) {
+                    onError(errorMsg);
+                } else {
+                    alert(errorMsg);
+                }
             }
         } catch (error) {
-            alert('Network error: ' + error.message);
+            const errorMsg = 'Network error: ' + error.message;
+            if (onError) {
+                onError(errorMsg);
+            } else {
+                alert(errorMsg);
+            }
         }
     });
 }
