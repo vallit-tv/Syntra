@@ -6,19 +6,24 @@
     <title>{% block title %}Syntra – AI-Powered Workflow Automation & Analytics{% endblock %}</title>
     <meta name="description" content="{% block description %}Transform your business with AI-driven workflow automation and intelligent analytics. Syntra helps companies optimize processes and understand their data signals.{% endblock %}">
     <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
-    <!-- CSS with multiple fallback approaches -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=4" onerror="this.onerror=null;this.href='/static/css/style.css?v=4';">
-    <style>
-        /* Critical CSS fallback - inline essential styles */
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
-        header { background: rgba(255, 255, 255, 0.95); border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 100; }
-        .header-inner { display: flex; align-items: center; justify-content: space-between; padding: 1rem 0; }
-        .nav-links { display: flex; list-style: none; gap: 2rem; margin: 0; padding: 0; }
-        .nav-links a { text-decoration: none; color: #6b7280; }
-        .btn { padding: 0.5rem 1.5rem; border-radius: 0.5rem; text-decoration: none; display: inline-block; }
-        .btn-primary { background: linear-gradient(135deg, #2563eb, #9333ea); color: white; }
-    </style>
+    <!-- Load CSS file, fallback to inline if it fails -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=5" id="main-css">
+    <script>
+        // Fallback: If CSS fails to load, inject it inline
+        window.addEventListener('load', function() {
+            var cssLink = document.getElementById('main-css');
+            if (cssLink && !cssLink.sheet) {
+                fetch('{{ url_for("static", filename="css/style.css") }}?v=5')
+                    .then(r => r.text())
+                    .then(css => {
+                        var style = document.createElement('style');
+                        style.textContent = css;
+                        document.head.appendChild(style);
+                    })
+                    .catch(e => console.error('CSS load failed:', e));
+            }
+        });
+    </script>
     
     <!-- SEO Meta Tags -->
     <meta name="robots" content="index, follow">

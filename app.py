@@ -1,7 +1,7 @@
 """Main Flask application"""
 from datetime import timedelta
 import os
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify, abort
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, abort, send_file
 from dotenv import load_dotenv
 import auth
 import db
@@ -24,7 +24,10 @@ def serve_static(filename):
     """Serve static files with proper MIME types and caching headers"""
     try:
         file_path = os.path.join(app.static_folder, filename)
+        
+        # Check if file exists
         if not os.path.exists(file_path):
+            print(f"Static file not found: {file_path}")
             abort(404)
         
         # Determine MIME type
@@ -34,13 +37,28 @@ def serve_static(filename):
                 mimetype = 'text/css'
             elif filename.endswith('.js'):
                 mimetype = 'application/javascript'
+            elif filename.endswith('.png'):
+                mimetype = 'image/png'
+            elif filename.endswith('.jpg') or filename.endswith('.jpeg'):
+                mimetype = 'image/jpeg'
+            elif filename.endswith('.svg'):
+                mimetype = 'image/svg+xml'
         
-        response = make_response(send_from_directory(app.static_folder, filename))
-        response.headers['Content-Type'] = f'{mimetype}; charset=utf-8' if mimetype in ['text/css', 'text/html', 'application/javascript'] else mimetype
+        # Use send_file for better control
+        response = send_file(file_path, mimetype=mimetype)
+        
+        # Set proper headers
+        if mimetype in ['text/css', 'text/html', 'application/javascript']:
+            response.headers['Content-Type'] = f'{mimetype}; charset=utf-8'
+        else:
+            response.headers['Content-Type'] = mimetype
+        
         response.headers['Cache-Control'] = 'public, max-age=3600'
         return response
     except Exception as e:
         print(f"Error serving static file {filename}: {str(e)}")
+        import traceback
+        traceback.print_exc()
         abort(404)
 
 # Error handlers

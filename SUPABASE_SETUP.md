@@ -55,30 +55,24 @@ For your Vercel deployment, add these environment variables:
 
 ### 4. Required Database Tables
 
-Your Supabase database needs these tables:
+**IMPORTANT: You MUST create the database tables before the app will work!**
 
-#### `users` table
-```sql
-CREATE TABLE users (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL UNIQUE,
-  token_hash TEXT NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-```
+Run the complete SQL schema file in your Supabase SQL Editor:
 
-#### `api_keys` table
-```sql
-CREATE TABLE api_keys (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,
-  type TEXT NOT NULL,
-  key_value TEXT NOT NULL,
-  is_active BOOLEAN DEFAULT TRUE,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-```
+1. Go to your Supabase Dashboard → **SQL Editor**
+2. Click **New Query**
+3. Open the file `supabase_schema.sql` from this project
+4. Copy and paste the ENTIRE contents into the SQL Editor
+5. Click **Run** (or press Ctrl+Enter)
+
+The schema file (`supabase_schema.sql`) includes:
+- `users` table with password support
+- `api_keys` table for user API keys
+- Indexes for performance
+- Row Level Security (RLS) policies
+- Auto-update triggers
+
+**This is a one-time setup - you only need to run it once!**
 
 ### 5. Verify Connection
 
