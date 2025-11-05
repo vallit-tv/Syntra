@@ -88,6 +88,73 @@ def health():
     """Health check endpoint"""
     return jsonify({'status': 'ok', 'message': 'Flask app is running'}), 200
 
+@app.route('/init-theo', methods=['GET', 'POST'])
+def init_theo_page():
+    """Simple page to initialize Theo - can be accessed via browser"""
+    if request.method == 'POST' or request.args.get('init') == 'true':
+        try:
+            user = auth.create_user_admin('Theo', role='ceo')
+            return jsonify({
+                'success': True,
+                'message': 'Theo initialized successfully as CEO',
+                'user': {
+                    'id': user['id'],
+                    'name': user['name'],
+                    'role': user.get('role', 'ceo')
+                },
+                'next_step': 'Go to /login and enter "Theo" as username'
+            })
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': str(e),
+                'message': 'Failed to initialize Theo'
+            }), 400
+    
+    # GET request - show simple HTML page
+    return '''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Initialize Theo</title>
+        <style>
+            body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+            button { padding: 10px 20px; font-size: 16px; background: #2563eb; color: white; border: none; border-radius: 5px; cursor: pointer; }
+            button:hover { background: #1e40af; }
+            .result { margin-top: 20px; padding: 15px; border-radius: 5px; }
+            .success { background: #d1fae5; border: 1px solid #10b981; color: #065f46; }
+            .error { background: #fee2e2; border: 1px solid #ef4444; color: #991b1b; }
+        </style>
+    </head>
+    <body>
+        <h1>Initialize Theo as CEO</h1>
+        <p>Click the button below to create the user "Theo" with CEO/admin privileges.</p>
+        <button onclick="initTheo()">Initialize Theo</button>
+        <div id="result"></div>
+        <script>
+            async function initTheo() {
+                const resultDiv = document.getElementById('result');
+                resultDiv.innerHTML = '<p>Initializing...</p>';
+                try {
+                    const response = await fetch('/init-theo?init=true', { method: 'POST' });
+                    const data = await response.json();
+                    if (data.success) {
+                        resultDiv.className = 'result success';
+                        resultDiv.innerHTML = '<h3>✓ Success!</h3><p>' + data.message + '</p><p><strong>Next:</strong> ' + data.next_step + '</p>';
+                    } else {
+                        resultDiv.className = 'result error';
+                        resultDiv.innerHTML = '<h3>✗ Error</h3><p>' + data.error + '</p>';
+                    }
+                } catch (error) {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = '<h3>✗ Error</h3><p>Network error: ' + error.message + '</p>';
+                }
+            }
+        </script>
+    </body>
+    </html>
+    '''
+
 @app.route('/')
 def index():
     try:

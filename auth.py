@@ -92,16 +92,29 @@ def verify_password(password: str, password_hash: str) -> bool:
 
 def create_user_admin(name: str, role: str = 'user') -> dict:
     """Create user by admin (user exists but password not set yet)"""
-    existing = db.get_user_by_name(name)
-    if existing:
-        # Update role if needed
-        if role and existing.get('role') != role:
-            db.update_user_role(existing['id'], role)
-            existing = db.get_user_by_id(existing['id'])
-        return existing
-    
-    user = db.create_user(name, is_password_set=False, role=role)
-    return user
+    try:
+        existing = db.get_user_by_name(name)
+        if existing:
+            # Update role if needed
+            if role and existing.get('role') != role:
+                print(f"Updating user '{name}' role to '{role}'")
+                db.update_user_role(existing['id'], role)
+                existing = db.get_user_by_id(existing['id'])
+            return existing
+        
+        print(f"Creating new user '{name}' with role '{role}'")
+        user = db.create_user(name, is_password_set=False, role=role)
+        print(f"User '{name}' created successfully with ID: {user.get('id')}")
+        return user
+    except Exception as e:
+        print(f"Error in create_user_admin for '{name}': {e}")
+        import traceback
+        traceback.print_exc()
+        # Try to get existing user if creation failed
+        existing = db.get_user_by_name(name)
+        if existing:
+            return existing
+        raise
 
 
 def setup_password(name: str, password: str, ip_address: str = None) -> dict:
@@ -194,14 +207,31 @@ def check_user_status(name: str, ip_address: str = None) -> dict:
         # Return generic error to prevent enumeration
         return {'exists': False, 'needs_password': False, 'error': 'Rate limit exceeded'}
     
-    user = db.get_user_by_name(name)
-    if not user:
+    try:
+        user = db.get_user_by_name(name)
+        if not user:
+            # Auto-create Theo if he doesn't exist (for initial setup)
+            if name.lower() == 'theo':
+                try:
+                    user = create_user_admin('Theo', role='ceo')
+                except Exception as e:
+                    # If user already exists (race condition), fetch again
+                    user = db.get_user_by_name('Theo')
+                    if not user:
+                        record_rate_limit_attempt(identifier, 'check-user', failed=True)
+                        return {'exists': False, 'needs_password': False}
+            else:
+                record_rate_limit_attempt(identifier, 'check-user', failed=True)
+                return {'exists': False, 'needs_password': False}
+        
+        # User exists - check password status
+        needs_password = not user.get('is_password_set', False)
+        return {'exists': True, 'needs_password': needs_password}
+    except Exception as e:
+        # Log error but don't reveal info
+        print(f"Error checking user status: {e}")
         record_rate_limit_attempt(identifier, 'check-user', failed=True)
         return {'exists': False, 'needs_password': False}
-    
-    # User exists - check password status
-    needs_password = not user.get('is_password_set', False)
-    return {'exists': True, 'needs_password': needs_password}
 
 
 def logout():

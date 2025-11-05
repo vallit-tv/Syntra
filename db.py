@@ -27,7 +27,10 @@ def get_user_by_name(name: str) -> Optional[Dict]:
     try:
         result = get_db().table('users').select('*').eq('name', name).execute()
         return result.data[0] if result.data else None
-    except:
+    except Exception as e:
+        print(f"Error getting user by name '{name}': {e}")
+        import traceback
+        traceback.print_exc()
         return None
 
 
@@ -54,13 +57,28 @@ def create_user(name: str, password_hash: str = None, is_password_set: bool = Fa
     
     try:
         result = get_db().table('users').insert(data).execute()
+        print(f"Successfully created user: {name} with role: {role}")
         return result.data[0]
     except Exception as e:
+        error_str = str(e).lower()
+        print(f"Error creating user '{name}': {e}")
         # If role column doesn't exist, try without it
-        if role and 'role' in str(e).lower():
+        if role and ('role' in error_str or 'column' in error_str):
+            print(f"Retrying without role column...")
             data.pop('role', None)
-            result = get_db().table('users').insert(data).execute()
-            return result.data[0]
+            try:
+                result = get_db().table('users').insert(data).execute()
+                print(f"Successfully created user: {name} without role")
+                return result.data[0]
+            except Exception as e2:
+                print(f"Error creating user without role: {e2}")
+                raise
+        # If user already exists, that's okay - return the existing user
+        if 'duplicate' in error_str or 'unique' in error_str or 'already exists' in error_str:
+            print(f"User '{name}' already exists, fetching...")
+            existing = get_user_by_name(name)
+            if existing:
+                return existing
         raise
 
 
