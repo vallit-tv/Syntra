@@ -105,10 +105,19 @@ def init_theo_page():
                 'next_step': 'Go to /login and enter "Theo" as username'
             })
         except Exception as e:
+            error_msg = str(e)
+            # Check if it's a table not found error
+            if 'table' in error_msg.lower() and 'users' in error_msg.lower():
+                error_msg = (
+                    "Database tables not found! You need to create the tables first. "
+                    "Go to your Supabase Dashboard → SQL Editor and run the contents of "
+                    "'supabase_schema.sql'. See DATABASE_SETUP.md for detailed instructions."
+                )
             return jsonify({
                 'success': False,
-                'error': str(e),
-                'message': 'Failed to initialize Theo'
+                'error': error_msg,
+                'message': 'Failed to initialize Theo',
+                'help': 'If you see "table not found", you need to run the SQL schema in Supabase first.'
             }), 400
     
     # GET request - show simple HTML page
