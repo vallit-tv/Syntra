@@ -2,9 +2,3 @@ Flask==3.0.0
 supabase==2.3.0
 python-dotenv==1.0.0
 requests==2.31.0
-
-# ML Model Dependencies
-transformers>=4.35.0
-torch>=2.0.0
-accelerate>=0.24.0
-datasets>=2.14.0
