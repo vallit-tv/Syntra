@@ -15,7 +15,46 @@ def get_db() -> Client:
     key = os.getenv('SUPABASE_SERVICE_KEY') or os.getenv('SUPABASE_KEY')
     if not url or not key:
         raise RuntimeError('Set SUPABASE_URL and SUPABASE_SERVICE_KEY in .env')
-    return create_client(url, key)
+    
+    # Create client - handle proxy-related issues
+    # The proxy error might come from Vercel environment or httpx library
+    # Temporarily unset proxy env vars if they exist
+    proxy_vars = ['HTTP_PROXY', 'HTTPS_PROXY', 'http_proxy', 'https_proxy', 'ALL_PROXY', 'all_proxy']
+    saved_proxies = {}
+    
+    for var in proxy_vars:
+        if var in os.environ:
+            saved_proxies[var] = os.environ[var]
+            del os.environ[var]
+    
+    try:
+        # Try simple positional arguments
+        client = create_client(url, key)
+        return client
+    except Exception as e:
+        error_msg = str(e).lower()
+        print(f"Error creating Supabase client: {e}")
+        
+        # If it's a proxy error, try keyword args
+        if 'proxy' in error_msg or 'unexpected keyword' in error_msg:
+            try:
+                print("Retrying with keyword arguments...")
+                client = create_client(supabase_url=url, supabase_key=key)
+                return client
+            except Exception as e2:
+                print(f"Error with keyword args: {e2}")
+                raise RuntimeError(
+                    f'Supabase client initialization failed. '
+                    f'Error: {e2}. '
+                    f'This might be a version compatibility issue. '
+                    f'Please check your Supabase credentials and ensure '
+                    f'SUPABASE_URL and SUPABASE_SERVICE_KEY are set correctly.'
+                )
+        raise RuntimeError(f'Failed to create Supabase client: {e}')
+    finally:
+        # Restore proxy env vars
+        for var, value in saved_proxies.items():
+            os.environ[var] = value
 
 
 # ============================================================================
