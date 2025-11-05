@@ -8,6 +8,7 @@
     <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
     <!-- Load CSS file, fallback to inline if it fails -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=5" id="main-css">
+    {% block extra_css %}{% endblock %}
     <script>
         // Fallback: If CSS fails to load, inject it inline
         window.addEventListener('load', function() {

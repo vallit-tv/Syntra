@@ -1,0 +1,61 @@
+{% extends "dashboard/base.html" %}
+
+{% block breadcrumbs %}
+<a href="{{ url_for('dashboard_overview') }}">Dashboard</a>
+<span class="breadcrumbs-separator">/</span>
+<span>Analytics</span>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="page-header">
+    <h1 class="page-title">Analytics</h1>
+    <p class="page-description">Track your workflow performance and system metrics.</p>
+</div>
+
+<!-- Placeholder for Analytics -->
+<div class="dashboard-card">
+    <div class="empty-state">
+        <div class="empty-state-icon">📈</div>
+        <h3 class="empty-state-title">Analytics Coming Soon</h3>
+        <p class="empty-state-description">
+            Analytics and metrics tracking will be available here. 
+            This will include workflow execution statistics, performance metrics, and usage analytics.
+        </p>
+    </div>
+</div>
+
+<!-- Placeholder Structure for Future Charts -->
+<div class="dashboard-card" style="opacity: 0.5; pointer-events: none;">
+    <div class="card-header">
+        <h2 class="card-title">Workflow Execution Metrics</h2>
+    </div>
+    <div style="height: 300px; background: var(--color-bg-light); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: var(--color-text-light);">
+        Chart placeholder - Workflow execution over time
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card" style="opacity: 0.5;">
+        <div class="stat-header">
+            <span class="stat-label">Total Executions</span>
+            <div class="stat-icon blue">📊</div>
+        </div>
+        <div class="stat-value">-</div>
+    </div>
+    <div class="stat-card" style="opacity: 0.5;">
+        <div class="stat-header">
+            <span class="stat-label">Success Rate</span>
+            <div class="stat-icon green">✓</div>
+        </div>
+        <div class="stat-value">-</div>
+    </div>
+    <div class="stat-card" style="opacity: 0.5;">
+        <div class="stat-header">
+            <span class="stat-label">Average Duration</span>
+            <div class="stat-icon orange">⏱️</div>
+        </div>
+        <div class="stat-value">-</div>
+    </div>
+</div>
+{% endblock %}
+

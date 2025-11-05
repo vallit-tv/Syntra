@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard – Syntra{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=1">
+{% endblock %}
+
+{% block content %}
+<!-- Sidebar Overlay (Mobile) -->
+<div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+<div class="dashboard-container">
+    <!-- Sidebar Navigation -->
+    <aside id="dashboardSidebar" class="dashboard-sidebar">
+        <div class="sidebar-header">
+            <a href="{{ url_for('dashboard_overview') }}" class="sidebar-logo">
+                <div class="logo-icon">S</div>
+                <span class="logo-text">Syntra</span>
+            </a>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('dashboard_overview') }}" class="nav-item">
+                <span class="nav-item-icon">📊</span>
+                <span class="nav-item-text">Overview</span>
+            </a>
+            <a href="{{ url_for('dashboard_workflows') }}" class="nav-item">
+                <span class="nav-item-icon">⚙️</span>
+                <span class="nav-item-text">Workflows</span>
+            </a>
+            <a href="{{ url_for('dashboard_api_keys') }}" class="nav-item">
+                <span class="nav-item-icon">🔑</span>
+                <span class="nav-item-text">API Keys</span>
+            </a>
+            <a href="{{ url_for('dashboard_integrations') }}" class="nav-item">
+                <span class="nav-item-icon">🔌</span>
+                <span class="nav-item-text">Integrations</span>
+            </a>
+            <a href="{{ url_for('dashboard_settings') }}" class="nav-item">
+                <span class="nav-item-icon">⚙️</span>
+                <span class="nav-item-text">Settings</span>
+            </a>
+            <a href="{{ url_for('dashboard_analytics') }}" class="nav-item">
+                <span class="nav-item-icon">📈</span>
+                <span class="nav-item-text">Analytics</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="dashboard-content">
+        <!-- Top Bar -->
+        <div class="dashboard-topbar">
+            <div class="topbar-left">
+                <button id="sidebarToggle" class="sidebar-toggle" aria-label="Toggle sidebar">
+                    <span style="font-size: 1.5rem;">☰</span>
+                </button>
+                <nav class="breadcrumbs">
+                    <a href="{{ url_for('index') }}">Home</a>
+                    <span class="breadcrumbs-separator">/</span>
+                    {% block breadcrumbs %}<span>Dashboard</span>{% endblock %}
+                </nav>
+            </div>
+            <div class="topbar-right">
+                <div class="user-menu">
+                    <button id="userMenuButton" class="user-menu-button">
+                        <div class="user-avatar">{{ user.name[0].upper() }}</div>
+                        <div class="user-info">
+                            <span class="user-name">{{ user.name }}</span>
+                            <span class="user-role">{{ user.get('role', 'user') }}</span>
+                        </div>
+                        <span style="font-size: 0.875rem;">▼</span>
+                    </button>
+                    <div id="userMenuDropdown" class="user-menu-dropdown">
+                        <a href="{{ url_for('dashboard_settings') }}" class="dropdown-item">
+                            <span>⚙️</span>
+                            <span>Settings</span>
+                        </a>
+                        <a href="{{ url_for('logout') }}" class="dropdown-item danger">
+                            <span>🚪</span>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            {% block dashboard_content %}{% endblock %}
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}?v=1"></script>
+<script>
+// Update sidebar overlay display
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebar = document.getElementById('dashboardSidebar');
+    
+    if (sidebarToggle && sidebarOverlay && sidebar) {
+        // Initial state for mobile
+        if (window.innerWidth <= 768) {
+            sidebarOverlay.style.display = 'none';
+        }
+        
+        sidebarToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('show');
+            if (sidebar.classList.contains('show')) {
+                sidebarOverlay.style.display = 'block';
+                setTimeout(() => sidebarOverlay.classList.add('show'), 10);
+            } else {
+                sidebarOverlay.classList.remove('show');
+                setTimeout(() => {
+                    if (!sidebar.classList.contains('show')) {
+                        sidebarOverlay.style.display = 'none';
+                    }
+                }, 300);
+            }
+        });
+        
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                sidebar.classList.remove('show');
+                sidebarOverlay.classList.remove('show');
+                sidebarOverlay.style.display = 'none';
+            }
+        });
+    }
+});
+</script>
+{% block dashboard_scripts %}{% endblock %}
+{% endblock %}
+

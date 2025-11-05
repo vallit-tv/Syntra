@@ -1,0 +1,129 @@
+{% extends "dashboard/base.html" %}
+
+{% block breadcrumbs %}
+<span>Overview</span>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="page-header">
+    <h1 class="page-title">Dashboard</h1>
+    <p class="page-description">Welcome back, {{ user.name }}! Here's an overview of your account.</p>
+</div>
+
+<!-- Stats Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-label">Active Workflows</span>
+            <div class="stat-icon blue">⚙️</div>
+        </div>
+        <div class="stat-value">{{ active_workflows_count|default(0) }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-label">API Keys</span>
+            <div class="stat-icon purple">🔑</div>
+        </div>
+        <div class="stat-value">{{ api_keys_count|default(0) }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-label">Integrations</span>
+            <div class="stat-icon green">🔌</div>
+        </div>
+        <div class="stat-value">{{ integrations_count|default(0) }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-label">Recent Activity</span>
+            <div class="stat-icon orange">📊</div>
+        </div>
+        <div class="stat-value">{{ recent_activity_count|default(0) }}</div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="dashboard-card">
+    <div class="card-header">
+        <h2 class="card-title">Quick Actions</h2>
+    </div>
+    <div class="card-grid">
+        <a href="{{ url_for('dashboard_workflows') }}?action=create" class="card-item">
+            <div class="card-item-header">
+                <h3 class="card-item-title">Create Workflow</h3>
+                <span>⚙️</span>
+            </div>
+            <p class="card-item-body">Set up a new automation workflow</p>
+        </a>
+        <a href="{{ url_for('dashboard_api_keys') }}?action=add" class="card-item">
+            <div class="card-item-header">
+                <h3 class="card-item-title">Add API Key</h3>
+                <span>🔑</span>
+            </div>
+            <p class="card-item-body">Connect external services</p>
+        </a>
+        <a href="{{ url_for('dashboard_integrations') }}" class="card-item">
+            <div class="card-item-header">
+                <h3 class="card-item-title">Manage Integrations</h3>
+                <span>🔌</span>
+            </div>
+            <p class="card-item-body">Configure n8n and other services</p>
+        </a>
+    </div>
+</div>
+
+<!-- Recent Workflows -->
+<div class="dashboard-card">
+    <div class="card-header">
+        <h2 class="card-title">Recent Workflows</h2>
+        <div class="card-actions">
+            <a href="{{ url_for('dashboard_workflows') }}" class="btn btn-secondary btn-sm">View All</a>
+        </div>
+    </div>
+    {% if recent_workflows %}
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Status</th>
+                    <th>Last Run</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for workflow in recent_workflows[:5] %}
+                <tr>
+                    <td>
+                        <a href="{{ url_for('dashboard_workflow_detail', workflow_id=workflow.id) }}" style="font-weight: 600; color: var(--color-primary); text-decoration: none;">
+                            {{ workflow.name }}
+                        </a>
+                    </td>
+                    <td>
+                        <span class="status-badge {{ workflow.status|lower }}">
+                            <span class="status-badge-dot"></span>
+                            {{ workflow.status }}
+                        </span>
+                    </td>
+                    <td>{{ workflow.last_run|default('Never') }}</td>
+                    <td>
+                        <div class="table-actions">
+                            <a href="{{ url_for('dashboard_workflow_detail', workflow_id=workflow.id) }}" class="btn btn-secondary btn-sm">Edit</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">⚙️</div>
+        <h3 class="empty-state-title">No workflows yet</h3>
+        <p class="empty-state-description">Create your first workflow to get started with automation.</p>
+        <a href="{{ url_for('dashboard_workflows') }}?action=create" class="btn btn-primary">Create Workflow</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

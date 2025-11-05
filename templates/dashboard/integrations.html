@@ -1,0 +1,206 @@
+{% extends "dashboard/base.html" %}
+
+{% block breadcrumbs %}
+<a href="{{ url_for('dashboard_overview') }}">Dashboard</a>
+<span class="breadcrumbs-separator">/</span>
+<span>Integrations</span>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="page-header">
+    <h1 class="page-title">Integrations</h1>
+    <p class="page-description">Connect and manage your external services and automation tools.</p>
+</div>
+
+<div class="card-grid">
+    <!-- n8n Integration -->
+    <div class="card-item">
+        <div class="card-item-header">
+            <div>
+                <h3 class="card-item-title">n8n</h3>
+                <span class="status-badge {{ 'active' if n8n_connected else 'inactive' }}">
+                    <span class="status-badge-dot"></span>
+                    {{ 'Connected' if n8n_connected else 'Not Connected' }}
+                </span>
+            </div>
+            <div style="font-size: 2rem;">⚙️</div>
+        </div>
+        <div class="card-item-body">
+            <p>Connect your n8n instance to manage and execute workflows directly from Syntra.</p>
+            {% if n8n_connected %}
+            <p style="margin-top: var(--spacing-sm);"><strong>Status:</strong> Connected</p>
+            <p><strong>Instance:</strong> {{ n8n_instance_url|default('Configured') }}</p>
+            {% endif %}
+        </div>
+        <div class="card-item-footer">
+            {% if n8n_connected %}
+            <button onclick="disconnectN8n()" class="btn btn-danger btn-sm">Disconnect</button>
+            <button onclick="configureN8n()" class="btn btn-secondary btn-sm">Configure</button>
+            {% else %}
+            <button onclick="connectN8n()" class="btn btn-primary btn-sm">Connect</button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Notion Integration -->
+    <div class="card-item">
+        <div class="card-item-header">
+            <div>
+                <h3 class="card-item-title">Notion</h3>
+                <span class="status-badge {{ 'active' if notion_connected else 'inactive' }}">
+                    <span class="status-badge-dot"></span>
+                    {{ 'Connected' if notion_connected else 'Not Connected' }}
+                </span>
+            </div>
+            <div style="font-size: 2rem;">📝</div>
+        </div>
+        <div class="card-item-body">
+            <p>Integrate with Notion to sync data and automate workflows.</p>
+        </div>
+        <div class="card-item-footer">
+            {% if notion_connected %}
+            <button onclick="disconnectNotion()" class="btn btn-danger btn-sm">Disconnect</button>
+            <button onclick="configureNotion()" class="btn btn-secondary btn-sm">Configure</button>
+            {% else %}
+            <button onclick="connectNotion()" class="btn btn-primary btn-sm">Connect</button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- OpenAI Integration -->
+    <div class="card-item">
+        <div class="card-item-header">
+            <div>
+                <h3 class="card-item-title">OpenAI</h3>
+                <span class="status-badge {{ 'active' if openai_connected else 'inactive' }}">
+                    <span class="status-badge-dot"></span>
+                    {{ 'Connected' if openai_connected else 'Not Connected' }}
+                </span>
+            </div>
+            <div style="font-size: 2rem;">🤖</div>
+        </div>
+        <div class="card-item-body">
+            <p>Enable AI-powered features with OpenAI integration.</p>
+        </div>
+        <div class="card-item-footer">
+            {% if openai_connected %}
+            <button onclick="disconnectOpenAI()" class="btn btn-danger btn-sm">Disconnect</button>
+            <button onclick="configureOpenAI()" class="btn btn-secondary btn-sm">Configure</button>
+            {% else %}
+            <a href="{{ url_for('dashboard_api_keys') }}?type=OpenAI" class="btn btn-primary btn-sm">Add API Key</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Integration Configuration Modal (placeholder) -->
+<div id="integrationModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: var(--radius-lg); padding: var(--spacing-xl); max-width: 500px; width: 90%;">
+        <h2 id="modalTitle" style="margin-bottom: var(--spacing-lg);">Configure Integration</h2>
+        <div id="modalContent"></div>
+        <div style="display: flex; gap: var(--spacing-md); margin-top: var(--spacing-lg);">
+            <button onclick="closeModal()" class="btn btn-secondary">Cancel</button>
+            <button onclick="saveIntegration()" class="btn btn-primary">Save</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block dashboard_scripts %}
+<script>
+function connectN8n() {
+    document.getElementById('modalTitle').textContent = 'Connect n8n';
+    document.getElementById('modalContent').innerHTML = `
+        <div class="form-group">
+            <label class="form-label">n8n API URL</label>
+            <input type="text" id="n8nUrl" class="form-input" placeholder="https://your-n8n-instance.com">
+        </div>
+        <div class="form-group">
+            <label class="form-label">API Key</label>
+            <input type="password" id="n8nKey" class="form-input" placeholder="Enter n8n API key">
+        </div>
+    `;
+    document.getElementById('integrationModal').style.display = 'flex';
+}
+
+function configureN8n() {
+    connectN8n();
+}
+
+function disconnectN8n() {
+    if (confirm('Are you sure you want to disconnect n8n?')) {
+        fetch('/api/integrations/n8n/disconnect', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                } else {
+                    location.reload();
+                }
+            })
+            .catch(err => alert('Error: ' + err));
+    }
+}
+
+function connectNotion() {
+    alert('Notion integration coming soon. Please add a Notion API key in the API Keys section.');
+}
+
+function configureNotion() {
+    connectNotion();
+}
+
+function disconnectNotion() {
+    if (confirm('Are you sure you want to disconnect Notion?')) {
+        fetch('/api/integrations/notion/disconnect', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                } else {
+                    location.reload();
+                }
+            })
+            .catch(err => alert('Error: ' + err));
+    }
+}
+
+function configureOpenAI() {
+    window.location.href = '{{ url_for("dashboard_api_keys") }}?type=OpenAI';
+}
+
+function disconnectOpenAI() {
+    if (confirm('Are you sure you want to disconnect OpenAI?')) {
+        // Remove OpenAI API key
+        alert('Please remove the OpenAI API key from the API Keys section.');
+    }
+}
+
+function closeModal() {
+    document.getElementById('integrationModal').style.display = 'none';
+}
+
+function saveIntegration() {
+    const url = document.getElementById('n8nUrl')?.value;
+    const key = document.getElementById('n8nKey')?.value;
+    
+    if (url && key) {
+        fetch('/api/integrations/n8n/connect', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ url: url, api_key: key })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert('Error: ' + data.error);
+            } else {
+                location.reload();
+            }
+        })
+        .catch(err => alert('Error: ' + err));
+    }
+}
+</script>
+{% endblock %}
+

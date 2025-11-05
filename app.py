@@ -207,12 +207,118 @@ def datenschutz():
 @app.route('/dashboard')
 @auth.login_required
 def dashboard():
+    """Redirect to dashboard overview"""
+    return redirect(url_for('dashboard_overview'))
+
+# Dashboard Routes
+@app.route('/dashboard/overview')
+@auth.login_required
+def dashboard_overview():
+    """Dashboard overview page"""
     try:
         user = auth.current_user()
         api_keys = db.get_api_keys(user['id'])
-        return render_template('dashboard.html', user=user, api_keys=api_keys)
+        
+        # Placeholder data - to be replaced with actual data from database
+        return render_template('dashboard/overview.html', 
+                             user=user,
+                             active_workflows_count=0,
+                             api_keys_count=len(api_keys),
+                             integrations_count=0,
+                             recent_activity_count=0,
+                             recent_workflows=[])
     except Exception as e:
-        print(f"Dashboard error: {str(e)}")
+        print(f"Dashboard overview error: {str(e)}")
+        return redirect(url_for('login'))
+
+@app.route('/dashboard/workflows')
+@auth.login_required
+def dashboard_workflows():
+    """Workflows list page"""
+    try:
+        user = auth.current_user()
+        # Placeholder - to be replaced with actual workflows from database
+        workflows = []
+        return render_template('dashboard/workflows.html', user=user, workflows=workflows)
+    except Exception as e:
+        print(f"Dashboard workflows error: {str(e)}")
+        return redirect(url_for('login'))
+
+@app.route('/dashboard/workflows/create')
+@auth.login_required
+def dashboard_workflow_create():
+    """Create new workflow page"""
+    try:
+        user = auth.current_user()
+        return render_template('dashboard/workflow-detail.html', user=user, workflow=None)
+    except Exception as e:
+        print(f"Dashboard workflow create error: {str(e)}")
+        return redirect(url_for('login'))
+
+@app.route('/dashboard/workflows/<workflow_id>')
+@auth.login_required
+def dashboard_workflow_detail(workflow_id):
+    """Workflow detail/edit page"""
+    try:
+        user = auth.current_user()
+        # Placeholder - to be replaced with actual workflow from database
+        workflow = {'id': workflow_id, 'name': 'Sample Workflow', 'status': 'inactive', 'description': ''}
+        return render_template('dashboard/workflow-detail.html', user=user, workflow=workflow)
+    except Exception as e:
+        print(f"Dashboard workflow detail error: {str(e)}")
+        return redirect(url_for('login'))
+
+@app.route('/dashboard/api-keys')
+@auth.login_required
+def dashboard_api_keys():
+    """API Keys management page"""
+    try:
+        user = auth.current_user()
+        api_keys = db.get_api_keys(user['id'])
+        return render_template('dashboard/api-keys.html', user=user, api_keys=api_keys)
+    except Exception as e:
+        print(f"Dashboard API keys error: {str(e)}")
+        return redirect(url_for('login'))
+
+@app.route('/dashboard/integrations')
+@auth.login_required
+def dashboard_integrations():
+    """Integrations management page"""
+    try:
+        user = auth.current_user()
+        # Placeholder - to be replaced with actual integration status from database
+        return render_template('dashboard/integrations.html', 
+                             user=user,
+                             n8n_connected=False,
+                             n8n_instance_url=None,
+                             notion_connected=False,
+                             openai_connected=len([k for k in db.get_api_keys(user['id']) if k.get('type', '').lower() == 'openai']) > 0)
+    except Exception as e:
+        print(f"Dashboard integrations error: {str(e)}")
+        return redirect(url_for('login'))
+
+@app.route('/dashboard/settings')
+@auth.login_required
+def dashboard_settings():
+    """Settings page"""
+    try:
+        user = auth.current_user()
+        # Placeholder - to be replaced with actual workflow defaults from database
+        workflow_defaults = {}
+        return render_template('dashboard/settings.html', user=user, workflow_defaults=workflow_defaults)
+    except Exception as e:
+        print(f"Dashboard settings error: {str(e)}")
+        return redirect(url_for('login'))
+
+@app.route('/dashboard/analytics')
+@auth.login_required
+def dashboard_analytics():
+    """Analytics page (placeholder)"""
+    try:
+        user = auth.current_user()
+        return render_template('dashboard/analytics.html', user=user)
+    except Exception as e:
+        print(f"Dashboard analytics error: {str(e)}")
         return redirect(url_for('login'))
 
 @app.route('/logout')
@@ -352,6 +458,111 @@ def api_delete_key(key_id):
     if not db.delete_api_key(key_id, user['id']):
         abort(404)
     return jsonify({'message': 'Deleted'})
+
+# Workflow API Routes
+@app.route('/api/workflows', methods=['GET'])
+@auth.login_required
+def api_list_workflows():
+    """List all workflows for the current user"""
+    user = auth.current_user()
+    # Placeholder - to be replaced with actual database query
+    return jsonify([])
+
+@app.route('/api/workflows', methods=['POST'])
+@auth.login_required
+def api_create_workflow():
+    """Create a new workflow"""
+    user = auth.current_user()
+    data = request.get_json() or {}
+    # Placeholder - to be replaced with actual database insert
+    return jsonify({'message': 'Workflow created', 'id': 'placeholder'})
+
+@app.route('/api/workflows/<workflow_id>', methods=['GET'])
+@auth.login_required
+def api_get_workflow(workflow_id):
+    """Get a specific workflow"""
+    user = auth.current_user()
+    # Placeholder - to be replaced with actual database query
+    return jsonify({'id': workflow_id, 'name': 'Sample Workflow', 'status': 'inactive'})
+
+@app.route('/api/workflows/<workflow_id>', methods=['PUT'])
+@auth.login_required
+def api_update_workflow(workflow_id):
+    """Update a workflow"""
+    user = auth.current_user()
+    data = request.get_json() or {}
+    # Placeholder - to be replaced with actual database update
+    return jsonify({'message': 'Workflow updated'})
+
+@app.route('/api/workflows/<workflow_id>', methods=['DELETE'])
+@auth.login_required
+def api_delete_workflow(workflow_id):
+    """Delete a workflow"""
+    user = auth.current_user()
+    # Placeholder - to be replaced with actual database delete
+    return jsonify({'message': 'Workflow deleted'})
+
+@app.route('/api/workflows/<workflow_id>/run', methods=['POST'])
+@auth.login_required
+def api_run_workflow(workflow_id):
+    """Run a workflow"""
+    user = auth.current_user()
+    # Placeholder - to be replaced with actual workflow execution
+    return jsonify({'message': 'Workflow started'})
+
+# Integration API Routes
+@app.route('/api/integrations/n8n/connect', methods=['POST'])
+@auth.login_required
+def api_connect_n8n():
+    """Connect to n8n instance"""
+    user = auth.current_user()
+    data = request.get_json() or {}
+    # Placeholder - to be replaced with actual n8n connection logic
+    return jsonify({'message': 'n8n connected successfully'})
+
+@app.route('/api/integrations/n8n/disconnect', methods=['POST'])
+@auth.login_required
+def api_disconnect_n8n():
+    """Disconnect from n8n instance"""
+    user = auth.current_user()
+    # Placeholder - to be replaced with actual n8n disconnection logic
+    return jsonify({'message': 'n8n disconnected successfully'})
+
+@app.route('/api/integrations/notion/disconnect', methods=['POST'])
+@auth.login_required
+def api_disconnect_notion():
+    """Disconnect from Notion"""
+    user = auth.current_user()
+    # Placeholder - to be replaced with actual Notion disconnection logic
+    return jsonify({'message': 'Notion disconnected successfully'})
+
+# User Settings API Routes
+@app.route('/api/user/profile', methods=['PUT', 'POST'])
+@auth.login_required
+def api_update_profile():
+    """Update user profile"""
+    user = auth.current_user()
+    data = request.get_json() or {}
+    # Placeholder - to be replaced with actual profile update logic
+    return jsonify({'message': 'Profile updated'})
+
+@app.route('/api/user/password', methods=['POST'])
+@auth.login_required
+def api_change_password():
+    """Change user password"""
+    user = auth.current_user()
+    data = request.get_json() or {}
+    # Placeholder - to be replaced with actual password change logic
+    return jsonify({'message': 'Password changed'})
+
+@app.route('/api/user/workflow-defaults', methods=['POST'])
+@auth.login_required
+def api_save_workflow_defaults():
+    """Save workflow defaults"""
+    user = auth.current_user()
+    data = request.get_json() or {}
+    # Placeholder - to be replaced with actual defaults save logic
+    return jsonify({'message': 'Workflow defaults saved'})
 
 # Expose app as 'application' for Vercel's Python runtime
 application = app
