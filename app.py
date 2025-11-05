@@ -13,6 +13,7 @@ app.secret_key = os.getenv('FLASK_SECRET_KEY', os.urandom(32))
 app.permanent_session_lifetime = timedelta(minutes=30)
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['SESSION_COOKIE_SECURE'] = os.getenv('FLASK_ENV') == 'production'  # Secure cookies in production
 
 # Explicitly ensure static files are accessible
 # Flask serves static files automatically, but this ensures proper handling on Vercel
@@ -168,9 +169,36 @@ def api_setup_password():
     password = data.get('password') or ''
     if not name or not password:
         return jsonify({'error': 'Name and password required'}), 400
+    
+    # Get client IP for rate limiting
+    ip_address = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
+    if ip_address:
+        ip_address = ip_address.split(',')[0].strip()
+    
     try:
-        user = auth.setup_password(name, password)
+        user = auth.setup_password(name, password, ip_address)
         return jsonify({'message': 'Password set successfully', 'user': {'id': user['id'], 'name': user['name']}})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/auth/check-user', methods=['POST'])
+def api_check_user():
+    """Check if user exists and password status (for progressive login)"""
+    data = request.get_json() or {}
+    name = (data.get('name') or '').strip()
+    if not name or len(name) < 2:
+        return jsonify({'error': 'Name is required'}), 400
+    
+    # Get client IP for rate limiting
+    ip_address = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
+    if ip_address:
+        ip_address = ip_address.split(',')[0].strip()
+    
+    try:
+        result = auth.check_user_status(name, ip_address)
+        if result.get('error'):
+            return jsonify({'error': result['error']}), 429
+        return jsonify(result)
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
@@ -182,8 +210,14 @@ def api_login():
     password = data.get('password') or ''
     if not name or not password:
         return jsonify({'error': 'Name and password required'}), 400
+    
+    # Get client IP for rate limiting
+    ip_address = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
+    if ip_address:
+        ip_address = ip_address.split(',')[0].strip()
+    
     try:
-        user = auth.login(name, password)
+        user = auth.login(name, password, ip_address)
         return jsonify({'message': 'Logged in', 'user': user})
     except Exception as e:
         return jsonify({'error': str(e)}), 401
