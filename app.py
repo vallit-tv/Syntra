@@ -321,6 +321,85 @@ def dashboard_analytics():
         print(f"Dashboard analytics error: {str(e)}")
         return redirect(url_for('login'))
 
+@app.route('/dashboard/team')
+@auth.login_required
+def dashboard_team():
+    """Team management page"""
+    try:
+        user = auth.current_user()
+        # Placeholder - to be replaced with actual team data from database
+        team_members = []
+        pending_invitations = []
+        current_user_can_manage = user.get('role') in ['admin', 'ceo']
+        return render_template('dashboard/team.html', 
+                             user=user,
+                             team_members=team_members,
+                             pending_invitations=pending_invitations,
+                             current_user_can_manage=current_user_can_manage)
+    except Exception as e:
+        print(f"Dashboard team error: {str(e)}")
+        return redirect(url_for('login'))
+
+@app.route('/dashboard/organization')
+@auth.login_required
+def dashboard_organization():
+    """Organization settings page"""
+    try:
+        user = auth.current_user()
+        # Placeholder - to be replaced with actual organization data from database
+        organization = {
+            'name': 'My Organization',
+            'slug': 'my-organization',
+            'description': '',
+            'logo_url': None
+        }
+        return render_template('dashboard/organization.html', 
+                             user=user,
+                             organization=organization)
+    except Exception as e:
+        print(f"Dashboard organization error: {str(e)}")
+        return redirect(url_for('login'))
+
+@app.route('/dashboard/billing')
+@auth.login_required
+def dashboard_billing():
+    """Billing and subscription page"""
+    try:
+        user = auth.current_user()
+        # Placeholder - to be replaced with actual billing data
+        current_plan = {
+            'name': 'Free',
+            'status': 'active',
+            'price': 0,
+            'billing_cycle': 'month'
+        }
+        usage = {
+            'workflow_runs': 0,
+            'api_calls': 0,
+            'team_members': 1
+        }
+        limits = {
+            'workflow_runs': 100,
+            'api_calls': 1000,
+            'team_members': 3
+        }
+        usage_percentage = {
+            'workflow_runs': 0,
+            'api_calls': 0,
+            'team_members': 33
+        }
+        return render_template('dashboard/billing.html', 
+                             user=user,
+                             current_plan=current_plan,
+                             usage=usage,
+                             limits=limits,
+                             usage_percentage=usage_percentage,
+                             payment_method=None,
+                             invoices=[])
+    except Exception as e:
+        print(f"Dashboard billing error: {str(e)}")
+        return redirect(url_for('login'))
+
 @app.route('/logout')
 def logout():
     auth.logout()
@@ -563,6 +642,149 @@ def api_save_workflow_defaults():
     data = request.get_json() or {}
     # Placeholder - to be replaced with actual defaults save logic
     return jsonify({'message': 'Workflow defaults saved'})
+
+# ============================================================================
+# Team Management API Routes
+# ============================================================================
+
+@app.route('/api/team/invitations', methods=['POST'])
+@auth.login_required
+def api_create_invitation():
+    """Send team member invitation"""
+    user = auth.current_user()
+    data = request.get_json() or {}
+    # Placeholder - to be replaced with actual invitation creation
+    return jsonify({'message': 'Invitation sent successfully'})
+
+@app.route('/api/team/invitations/<invitation_id>', methods=['DELETE'])
+@auth.login_required
+def api_cancel_invitation(invitation_id):
+    """Cancel a pending invitation"""
+    user = auth.current_user()
+    # Placeholder - to be replaced with actual invitation cancellation
+    return jsonify({'message': 'Invitation cancelled'})
+
+@app.route('/api/team/invitations/<invitation_id>/resend', methods=['POST'])
+@auth.login_required
+def api_resend_invitation(invitation_id):
+    """Resend an invitation email"""
+    user = auth.current_user()
+    # Placeholder - to be replaced with actual resend logic
+    return jsonify({'message': 'Invitation resent'})
+
+@app.route('/api/team/members/<member_id>/role', methods=['PATCH'])
+@auth.login_required
+def api_update_member_role(member_id):
+    """Update team member role"""
+    user = auth.current_user()
+    data = request.get_json() or {}
+    # Placeholder - to be replaced with actual role update
+    return jsonify({'message': 'Role updated successfully'})
+
+@app.route('/api/team/members/<member_id>', methods=['DELETE'])
+@auth.login_required
+def api_remove_member(member_id):
+    """Remove team member"""
+    user = auth.current_user()
+    # Placeholder - to be replaced with actual member removal
+    return jsonify({'message': 'Member removed successfully'})
+
+# ============================================================================
+# Organization API Routes
+# ============================================================================
+
+@app.route('/api/organization', methods=['PATCH'])
+@auth.login_required
+def api_update_organization():
+    """Update organization profile"""
+    user = auth.current_user()
+    data = request.get_json() or {}
+    # Placeholder - to be replaced with actual organization update
+    return jsonify({'message': 'Organization updated successfully'})
+
+@app.route('/api/organization', methods=['DELETE'])
+@auth.login_required
+def api_delete_organization():
+    """Delete organization (admin only)"""
+    user = auth.current_user()
+    # Placeholder - to be replaced with actual organization deletion
+    return jsonify({'message': 'Organization deleted'})
+
+@app.route('/api/organization/logo', methods=['POST'])
+@auth.login_required
+def api_upload_organization_logo():
+    """Upload organization logo"""
+    user = auth.current_user()
+    # Placeholder - to be replaced with actual logo upload logic
+    return jsonify({'message': 'Logo uploaded successfully'})
+
+@app.route('/api/organization/preferences', methods=['PATCH'])
+@auth.login_required
+def api_update_organization_preferences():
+    """Update organization preferences"""
+    user = auth.current_user()
+    data = request.get_json() or {}
+    # Placeholder - to be replaced with actual preferences update
+    return jsonify({'message': 'Preferences updated successfully'})
+
+@app.route('/api/organization/security/2fa', methods=['PATCH'])
+@auth.login_required
+def api_update_2fa_requirement():
+    """Update 2FA requirement"""
+    user = auth.current_user()
+    data = request.get_json() or {}
+    # Placeholder - to be replaced with actual 2FA requirement update
+    return jsonify({'message': '2FA requirement updated'})
+
+# ============================================================================
+# Billing API Routes
+# ============================================================================
+
+@app.route('/api/billing/portal', methods=['POST'])
+@auth.login_required
+def api_billing_portal():
+    """Generate billing portal URL"""
+    user = auth.current_user()
+    # Placeholder - to be replaced with actual billing portal generation
+    return jsonify({'url': 'https://billing.syntra.app/portal'})
+
+@app.route('/api/billing/upgrade', methods=['POST'])
+@auth.login_required
+def api_upgrade_plan():
+    """Upgrade subscription plan"""
+    user = auth.current_user()
+    data = request.get_json() or {}
+    # Placeholder - to be replaced with actual upgrade logic
+    return jsonify({'message': 'Plan upgraded', 'checkout_url': None})
+
+@app.route('/api/billing/downgrade', methods=['POST'])
+@auth.login_required
+def api_downgrade_plan():
+    """Schedule plan downgrade"""
+    user = auth.current_user()
+    data = request.get_json() or {}
+    # Placeholder - to be replaced with actual downgrade logic
+    return jsonify({'message': 'Downgrade scheduled'})
+
+@app.route('/api/billing/payment-method/setup', methods=['POST'])
+@auth.login_required
+def api_setup_payment_method():
+    """Setup or update payment method"""
+    user = auth.current_user()
+    # Placeholder - to be replaced with actual payment setup
+    return jsonify({'setup_url': 'https://billing.syntra.app/setup'})
+
+# ============================================================================
+# n8n Sync API Routes
+# ============================================================================
+
+@app.route('/api/workflows/sync', methods=['POST'])
+@auth.login_required
+def api_sync_n8n_workflows():
+    """Sync workflows with n8n"""
+    user = auth.current_user()
+    # Placeholder - to be replaced with actual n8n sync logic
+    return jsonify({'message': 'Workflows synced successfully', 'synced_count': 0})
 
 # Expose app as 'application' for Vercel's Python runtime
 application = app

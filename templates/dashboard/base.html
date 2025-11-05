@@ -20,28 +20,40 @@
             </a>
         </div>
         <nav class="sidebar-nav">
-            <a href="{{ url_for('dashboard_overview') }}" class="nav-item">
-                <span class="nav-item-icon">📊</span>
-                <span class="nav-item-text">Overview</span>
-            </a>
-            <a href="{{ url_for('dashboard_workflows') }}" class="nav-item">
-                <span class="nav-item-icon">⚙️</span>
+            <a href="{{ url_for('dashboard_workflows') }}" class="nav-item {% if request.endpoint == 'dashboard_workflows' or request.endpoint == 'dashboard_workflow_detail' %}active{% endif %}">
+                <span class="nav-item-icon">
+                    <i data-lucide="workflow" width="20" height="20"></i>
+                </span>
                 <span class="nav-item-text">Workflows</span>
             </a>
-            <a href="{{ url_for('dashboard_api_keys') }}" class="nav-item">
-                <span class="nav-item-icon">🔑</span>
+            <a href="{{ url_for('dashboard_api_keys') }}" class="nav-item {% if request.endpoint == 'dashboard_api_keys' %}active{% endif %}">
+                <span class="nav-item-icon">
+                    <i data-lucide="key" width="20" height="20"></i>
+                </span>
                 <span class="nav-item-text">API Keys</span>
             </a>
-            <a href="{{ url_for('dashboard_integrations') }}" class="nav-item">
-                <span class="nav-item-icon">🔌</span>
+            <a href="{{ url_for('dashboard_integrations') }}" class="nav-item {% if request.endpoint == 'dashboard_integrations' %}active{% endif %}">
+                <span class="nav-item-icon">
+                    <i data-lucide="plug" width="20" height="20"></i>
+                </span>
                 <span class="nav-item-text">Integrations</span>
             </a>
-            <a href="{{ url_for('dashboard_settings') }}" class="nav-item">
-                <span class="nav-item-icon">⚙️</span>
+            <a href="{{ url_for('dashboard_team') }}" class="nav-item {% if request.endpoint == 'dashboard_team' %}active{% endif %}">
+                <span class="nav-item-icon">
+                    <i data-lucide="users" width="20" height="20"></i>
+                </span>
+                <span class="nav-item-text">Team</span>
+            </a>
+            <a href="{{ url_for('dashboard_settings') }}" class="nav-item {% if request.endpoint == 'dashboard_settings' or request.endpoint == 'dashboard_organization' %}active{% endif %}">
+                <span class="nav-item-icon">
+                    <i data-lucide="settings" width="20" height="20"></i>
+                </span>
                 <span class="nav-item-text">Settings</span>
             </a>
-            <a href="{{ url_for('dashboard_analytics') }}" class="nav-item">
-                <span class="nav-item-icon">📈</span>
+            <a href="{{ url_for('dashboard_analytics') }}" class="nav-item {% if request.endpoint == 'dashboard_analytics' %}active{% endif %}">
+                <span class="nav-item-icon">
+                    <i data-lucide="bar-chart-3" width="20" height="20"></i>
+                </span>
                 <span class="nav-item-text">Analytics</span>
             </a>
         </nav>
@@ -53,7 +65,7 @@
         <div class="dashboard-topbar">
             <div class="topbar-left">
                 <button id="sidebarToggle" class="sidebar-toggle" aria-label="Toggle sidebar">
-                    <span style="font-size: 1.5rem;">☰</span>
+                    <i data-lucide="menu" width="20" height="20"></i>
                 </button>
                 <nav class="breadcrumbs">
                     <a href="{{ url_for('index') }}">Home</a>
@@ -69,15 +81,15 @@
                             <span class="user-name">{{ user.name }}</span>
                             <span class="user-role">{{ user.get('role', 'user') }}</span>
                         </div>
-                        <span style="font-size: 0.875rem;">▼</span>
+                        <i data-lucide="chevron-down" width="16" height="16"></i>
                     </button>
                     <div id="userMenuDropdown" class="user-menu-dropdown">
                         <a href="{{ url_for('dashboard_settings') }}" class="dropdown-item">
-                            <span>⚙️</span>
+                            <i data-lucide="settings" width="16" height="16"></i>
                             <span>Settings</span>
                         </a>
                         <a href="{{ url_for('logout') }}" class="dropdown-item danger">
-                            <span>🚪</span>
+                            <i data-lucide="log-out" width="16" height="16"></i>
                             <span>Logout</span>
                         </a>
                     </div>
@@ -96,8 +108,13 @@
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/dashboard.js') }}?v=1"></script>
 <script>
-// Update sidebar overlay display
+// Initialize Lucide icons and handle sidebar
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize icons
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+    
     const sidebarOverlay = document.getElementById('sidebarOverlay');
     const sidebarToggle = document.getElementById('sidebarToggle');
     const sidebar = document.getElementById('dashboardSidebar');
