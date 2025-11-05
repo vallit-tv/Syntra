@@ -56,27 +56,33 @@ ALTER TABLE api_keys ENABLE ROW LEVEL SECURITY;
 -- But we add policies for security if anon key is used elsewhere
 
 -- Policy: Users can read their own data (if using anon key)
-CREATE POLICY IF NOT EXISTS "Users can read own data"
+-- Note: IF NOT EXISTS is not supported for policies, so we drop first if exists
+DROP POLICY IF EXISTS "Users can read own data" ON users;
+CREATE POLICY "Users can read own data"
   ON users FOR SELECT
   USING (auth.uid()::text = id::text);
 
 -- Policy: Users can update their own password
-CREATE POLICY IF NOT EXISTS "Users can update own password"
+DROP POLICY IF EXISTS "Users can update own password" ON users;
+CREATE POLICY "Users can update own password"
   ON users FOR UPDATE
   USING (auth.uid()::text = id::text);
 
 -- Policy: Users can read their own API keys
-CREATE POLICY IF NOT EXISTS "Users can read own API keys"
+DROP POLICY IF EXISTS "Users can read own API keys" ON api_keys;
+CREATE POLICY "Users can read own API keys"
   ON api_keys FOR SELECT
   USING (auth.uid()::text = user_id::text);
 
 -- Policy: Users can insert their own API keys
-CREATE POLICY IF NOT EXISTS "Users can insert own API keys"
+DROP POLICY IF EXISTS "Users can insert own API keys" ON api_keys;
+CREATE POLICY "Users can insert own API keys"
   ON api_keys FOR INSERT
   WITH CHECK (auth.uid()::text = user_id::text);
 
 -- Policy: Users can delete their own API keys
-CREATE POLICY IF NOT EXISTS "Users can delete own API keys"
+DROP POLICY IF EXISTS "Users can delete own API keys" ON api_keys;
+CREATE POLICY "Users can delete own API keys"
   ON api_keys FOR DELETE
   USING (auth.uid()::text = user_id::text);
 
