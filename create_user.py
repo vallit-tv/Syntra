@@ -4,14 +4,13 @@ import os
 import sys
 import requests
 
-def create_user_via_api(name: str, base_url: str = None):
-    """Create user via API endpoint"""
+def create_user_via_api(name: str, base_url: str = None, role: str = 'user'):
+    """Create user via API endpoint with role"""
     if not base_url:
-        # Try to get from environment or use default
         base_url = os.getenv('API_BASE_URL', 'http://localhost:5000')
     
     url = f"{base_url}/api/admin/create-user"
-    payload = {"name": name}
+    payload = {"name": name, "role": role}
     
     try:
         response = requests.post(url, json=payload, timeout=10)
@@ -24,13 +23,14 @@ def create_user_via_api(name: str, base_url: str = None):
     except requests.exceptions.RequestException as e:
         raise ConnectionError(f"Failed to connect to API at {url}: {e}")
 
-def create_user_direct(name: str):
+def create_user_direct(name: str, role: str = 'user'):
     """Create user directly via database"""
     import auth
-    return auth.create_user_admin(name)
+    return auth.create_user_admin(name, role=role)
 
 def main():
     name = "Theo"
+    role = "ceo"  # Make Theo CEO/Admin
     base_url = os.getenv('API_BASE_URL')
     
     # Try API first (if base_url is provided or for deployed environments)
@@ -48,10 +48,11 @@ def main():
         
         print(f"Creating user via API at {base_url}...")
         try:
-            user = create_user_via_api(name, base_url)
-            print(f"✓ User '{name}' created successfully!")
+            user = create_user_via_api(name, base_url, role)
+            print(f"✓ User '{name}' created/updated successfully!")
             print(f"  User ID: {user['id']}")
             print(f"  Name: {user['name']}")
+            print(f"  Role: {user.get('role', role)}")
         except Exception as e:
             print(f"✗ Error creating user via API: {e}")
             sys.exit(1)
@@ -59,10 +60,11 @@ def main():
         # Try direct database access
         print("Creating user via direct database access...")
         try:
-            user = create_user_direct(name)
-            print(f"✓ User '{name}' created successfully!")
+            user = create_user_direct(name, role)
+            print(f"✓ User '{name}' created/updated successfully!")
             print(f"  User ID: {user['id']}")
             print(f"  Name: {user['name']}")
+            print(f"  Role: {user.get('role', role)}")
         except Exception as e:
             print(f"✗ Error creating user directly: {e}")
             print("\nTrying via API instead...")

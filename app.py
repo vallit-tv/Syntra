@@ -151,13 +151,36 @@ def logout():
 @app.route('/api/admin/create-user', methods=['POST'])
 def api_create_user():
     """Admin endpoint to create a new user (password not set yet)"""
+    # Note: In production, this should require admin auth
+    # For now, allowing it for setup purposes
     data = request.get_json() or {}
     name = (data.get('name') or '').strip()
+    role = (data.get('role') or 'user').strip()
     if len(name) < 2:
         return jsonify({'error': 'Name must be at least 2 characters'}), 400
+    if role not in ('user', 'admin', 'ceo'):
+        role = 'user'
     try:
-        user = auth.create_user_admin(name)
-        return jsonify({'message': 'User created. They can now set their password on first login.', 'user': {'id': user['id'], 'name': user['name']}})
+        user = auth.create_user_admin(name, role=role)
+        return jsonify({'message': 'User created. They can now set their password on first login.', 'user': {'id': user['id'], 'name': user['name'], 'role': user.get('role', 'user')}})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/admin/init-theo', methods=['POST'])
+def api_init_theo():
+    """Initialize Theo as CEO - one-time setup endpoint"""
+    # This is a special endpoint to initialize Theo
+    # Should be secured in production
+    try:
+        user = auth.create_user_admin('Theo', role='ceo')
+        return jsonify({
+            'message': 'Theo initialized successfully as CEO',
+            'user': {
+                'id': user['id'],
+                'name': user['name'],
+                'role': user.get('role', 'ceo')
+            }
+        })
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 

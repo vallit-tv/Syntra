@@ -90,13 +90,17 @@ def verify_password(password: str, password_hash: str) -> bool:
     return hash_password(password) == password_hash
 
 
-def create_user_admin(name: str) -> dict:
+def create_user_admin(name: str, role: str = 'user') -> dict:
     """Create user by admin (user exists but password not set yet)"""
     existing = db.get_user_by_name(name)
     if existing:
-        raise ValueError('User already exists')
+        # Update role if needed
+        if role and existing.get('role') != role:
+            db.update_user_role(existing['id'], role)
+            existing = db.get_user_by_id(existing['id'])
+        return existing
     
-    user = db.create_user(name, is_password_set=False)
+    user = db.create_user(name, is_password_set=False, role=role)
     return user
 
 
@@ -215,7 +219,53 @@ def current_user() -> Optional[dict]:
     if not user:
         return None
     
-    return {'id': user['id'], 'name': user['name']}
+    # Get role, default to 'user' if not set
+    role = user.get('role')
+    if not role:
+        # If role field doesn't exist in DB, default to 'user'
+        # For Theo, check if name is Theo and set as CEO
+        if user.get('name', '').lower() == 'theo':
+            role = 'ceo'
+            # Try to update role in DB
+            try:
+                db.update_user_role(user['id'], 'ceo')
+            except:
+                pass
+        else:
+            role = 'user'
+    
+    return {
+        'id': user['id'], 
+        'name': user['name'],
+        'role': role
+    }
+
+
+def is_admin(user: Optional[dict] = None) -> bool:
+    """Check if user is admin or CEO"""
+    if not user:
+        user = current_user()
+    if not user:
+        return False
+    role = user.get('role', 'user')
+    return role in ('admin', 'ceo')
+
+
+def admin_required(f):
+    """Decorator to require admin access"""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        user = current_user()
+        if not user:
+            if request.path.startswith('/api/'):
+                return jsonify({'error': 'Unauthorized'}), 401
+            return redirect(url_for('login'))
+        if not is_admin(user):
+            if request.path.startswith('/api/'):
+                return jsonify({'error': 'Admin access required'}), 403
+            return redirect(url_for('dashboard'))
+        return f(*args, **kwargs)
+    return decorated
 
 
 def login_required(f):

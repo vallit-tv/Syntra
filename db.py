@@ -40,7 +40,7 @@ def get_user_by_id(user_id: str) -> Optional[Dict]:
         return None
 
 
-def create_user(name: str, password_hash: str = None, is_password_set: bool = False) -> Dict:
+def create_user(name: str, password_hash: str = None, is_password_set: bool = False, role: str = 'user') -> Dict:
     """Create new user (admin only)"""
     data = {
         'name': name,
@@ -48,8 +48,34 @@ def create_user(name: str, password_hash: str = None, is_password_set: bool = Fa
         'is_password_set': is_password_set,
         'created_at': datetime.utcnow().isoformat()
     }
-    result = get_db().table('users').insert(data).execute()
-    return result.data[0]
+    # Add role if provided (may not exist in database yet)
+    if role:
+        data['role'] = role
+    
+    try:
+        result = get_db().table('users').insert(data).execute()
+        return result.data[0]
+    except Exception as e:
+        # If role column doesn't exist, try without it
+        if role and 'role' in str(e).lower():
+            data.pop('role', None)
+            result = get_db().table('users').insert(data).execute()
+            return result.data[0]
+        raise
+
+
+def update_user_role(user_id: str, role: str) -> bool:
+    """Update user role"""
+    try:
+        get_db().table('users').update({
+            'role': role
+        }).eq('id', user_id).execute()
+        return True
+    except Exception as e:
+        # If role column doesn't exist, return False (migration needed)
+        if 'role' in str(e).lower() or 'column' in str(e).lower():
+            return False
+        return False
 
 def update_user_password(user_id: str, password_hash: str) -> bool:
     """Update user password"""
