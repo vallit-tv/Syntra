@@ -13,34 +13,7 @@
 </div>
 
 <div class="card-grid">
-    <!-- n8n Integration -->
-    <div class="card-item">
-        <div class="card-item-header">
-            <div>
-                <h3 class="card-item-title">n8n</h3>
-                <span class="status-badge {{ 'active' if n8n_connected else 'inactive' }}">
-                    <span class="status-badge-dot"></span>
-                    {{ 'Connected' if n8n_connected else 'Not Connected' }}
-                </span>
-            </div>
-            <i data-lucide="workflow" width="24" height="24"></i>
-        </div>
-        <div class="card-item-body">
-            <p>Connect your n8n instance to manage and execute workflows directly from Syntra.</p>
-            {% if n8n_connected %}
-            <p style="margin-top: var(--spacing-sm);"><strong>Status:</strong> Connected</p>
-            <p><strong>Instance:</strong> {{ n8n_instance_url|default('Configured') }}</p>
-            {% endif %}
-        </div>
-        <div class="card-item-footer">
-            {% if n8n_connected %}
-            <button onclick="disconnectN8n()" class="btn btn-danger btn-sm">Disconnect</button>
-            <button onclick="configureN8n()" class="btn btn-secondary btn-sm">Configure</button>
-            {% else %}
-            <button onclick="connectN8n()" class="btn btn-primary btn-sm">Connect</button>
-            {% endif %}
-        </div>
-    </div>
+<!-- n8n integration removed - now admin-only via environment variables -->
 
     <!-- Notion Integration -->
     <div class="card-item">
@@ -93,14 +66,19 @@
     </div>
 </div>
 
-<!-- Integration Configuration Modal (placeholder) -->
-<div id="integrationModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 1000; align-items: center; justify-content: center;">
-    <div style="background: white; border-radius: var(--radius-lg); padding: var(--spacing-xl); max-width: 500px; width: 90%;">
-        <h2 id="modalTitle" style="margin-bottom: var(--spacing-lg);">Configure Integration</h2>
+<!-- Integration Configuration Modal -->
+<div id="integrationModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div style="background: white; border-radius: var(--radius-lg); padding: 1.5rem; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-xl);">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+            <h2 id="modalTitle" style="margin: 0; font-size: var(--text-xl); font-weight: var(--font-semibold);">Configure Integration</h2>
+            <button onclick="closeModal()" style="background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: var(--radius-md); color: var(--color-text-light); transition: all 0.15s ease;">
+                <i data-lucide="x" width="20" height="20"></i>
+            </button>
+        </div>
         <div id="modalContent"></div>
-        <div style="display: flex; gap: var(--spacing-md); margin-top: var(--spacing-lg);">
+        <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem; justify-content: flex-end;">
             <button onclick="closeModal()" class="btn btn-secondary">Cancel</button>
-            <button onclick="saveIntegration()" class="btn btn-primary">Save</button>
+            <button onclick="saveIntegration()" class="btn btn-primary">Connect</button>
         </div>
     </div>
 </div>
@@ -108,39 +86,7 @@
 
 {% block dashboard_scripts %}
 <script>
-function connectN8n() {
-    document.getElementById('modalTitle').textContent = 'Connect n8n';
-    document.getElementById('modalContent').innerHTML = `
-        <div class="form-group">
-            <label class="form-label">n8n API URL</label>
-            <input type="text" id="n8nUrl" class="form-input" placeholder="https://your-n8n-instance.com">
-        </div>
-        <div class="form-group">
-            <label class="form-label">API Key</label>
-            <input type="password" id="n8nKey" class="form-input" placeholder="Enter n8n API key">
-        </div>
-    `;
-    document.getElementById('integrationModal').style.display = 'flex';
-}
-
-function configureN8n() {
-    connectN8n();
-}
-
-function disconnectN8n() {
-    if (confirm('Are you sure you want to disconnect n8n?')) {
-        fetch('/api/integrations/n8n/disconnect', { method: 'POST' })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    alert('Error: ' + data.error);
-                } else {
-                    location.reload();
-                }
-            })
-            .catch(err => alert('Error: ' + err));
-    }
-}
+// n8n connection functions removed - n8n is now admin-only via environment variables
 
 function connectNotion() {
     alert('Notion integration coming soon. Please add a Notion API key in the API Keys section.');
@@ -178,28 +124,62 @@ function disconnectOpenAI() {
 
 function closeModal() {
     document.getElementById('integrationModal').style.display = 'none';
+    // Reinitialize icons
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
 }
+
+// Initialize icons on page load
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+});
 
 function saveIntegration() {
     const url = document.getElementById('n8nUrl')?.value;
     const key = document.getElementById('n8nKey')?.value;
     
-    if (url && key) {
-        fetch('/api/integrations/n8n/connect', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ url: url, api_key: key })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                alert('Error: ' + data.error);
-            } else {
-                location.reload();
-            }
-        })
-        .catch(err => alert('Error: ' + err));
+    if (!url || !key) {
+        alert('Please fill in both URL and API key');
+        return;
     }
+    
+    // Show loading state
+    const submitBtn = document.querySelector('#integrationModal button[onclick="saveIntegration()"]');
+    const originalText = submitBtn?.textContent;
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Connecting...';
+    }
+    
+    fetch('/api/integrations/n8n/connect', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ url: url, api_key: key })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert('Error: ' + data.error);
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        } else {
+            alert('n8n connected successfully!');
+            closeModal();
+            location.reload();
+        }
+    })
+    .catch(err => {
+        alert('Error: ' + err);
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+        }
+    });
 }
 </script>
 {% endblock %}

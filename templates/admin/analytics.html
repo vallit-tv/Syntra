@@ -1,0 +1,47 @@
+{% extends "admin/base.html" %}
+
+{% block breadcrumbs %}
+<a href="{{ url_for('admin_dashboard') }}">Admin</a>
+<span class="breadcrumbs-separator">/</span>
+<span>Analytics</span>
+{% endblock %}
+
+{% block admin_content %}
+<div class="page-header">
+    <h1 class="page-title">System Analytics</h1>
+    <p class="page-description">System-wide workflow execution statistics</p>
+</div>
+
+<div class="dashboard-card">
+    <h2>Recent Executions</h2>
+    {% if executions %}
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Workflow</th>
+                    <th>User</th>
+                    <th>Status</th>
+                    <th>Started</th>
+                    <th>Duration</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for exec in executions[:50] %}
+                <tr>
+                    <td>{{ exec.workflow_activations.workflows.name if exec.workflow_activations and exec.workflow_activations.workflows else 'N/A' }}</td>
+                    <td>{{ exec.workflow_activations.user_id[:8] if exec.workflow_activations else 'N/A' }}</td>
+                    <td><span class="status-badge {{ exec.status }}">{{ exec.status }}</span></td>
+                    <td>{{ exec.started_at[:19] if exec.started_at else 'N/A' }}</td>
+                    <td>{{ exec.duration_ms }}ms</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p>No executions yet.</p>
+    {% endif %}
+</div>
+{% endblock %}
+

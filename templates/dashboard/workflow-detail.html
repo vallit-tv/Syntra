@@ -5,187 +5,209 @@
 <span class="breadcrumbs-separator">/</span>
 <a href="{{ url_for('dashboard_workflows') }}">Workflows</a>
 <span class="breadcrumbs-separator">/</span>
-<span>{{ workflow.name|default('New Workflow') }}</span>
+<span>{{ workflow.name }}</span>
 {% endblock %}
 
 {% block dashboard_content %}
 <div class="page-header">
-    <h1 class="page-title">{{ workflow.name|default('New Workflow') }}</h1>
-    <p class="page-description">{{ workflow.description|default('Configure your workflow settings and connect with n8n') }}</p>
+    <h1 class="page-title">{{ workflow.name }}</h1>
+    <p class="page-description">{{ workflow.description or 'Configure and manage this workflow' }}</p>
 </div>
 
-<form id="workflowForm">
-    <div class="dashboard-card">
-        <div class="card-header">
-            <h2 class="card-title">Workflow Details</h2>
-            <div class="card-actions">
-                <label class="status-badge {{ workflow.status|lower if workflow else 'inactive' }}" style="cursor: pointer;">
-                    <input type="checkbox" id="workflowActive" name="active" {{ 'checked' if workflow and workflow.status == 'active' else '' }} style="display: none;">
-                    <span class="status-badge-dot"></span>
-                    <span id="statusText">{{ workflow.status|default('Inactive') }}</span>
-                </label>
-            </div>
-        </div>
-        
-        <div class="form-group">
-            <label for="workflowName" class="form-label">Workflow Name</label>
-            <input type="text" id="workflowName" name="name" class="form-input" value="{{ workflow.name|default('') }}" required placeholder="My Workflow">
-        </div>
-        
-        <div class="form-group">
-            <label for="workflowDescription" class="form-label">Description</label>
-            <textarea id="workflowDescription" name="description" class="form-textarea" rows="3" placeholder="Describe what this workflow does...">{{ workflow.description|default('') }}</textarea>
-        </div>
-    </div>
-
-    <!-- n8n Integration Section -->
-    <div class="dashboard-card">
-        <div class="card-header">
-            <h2 class="card-title">n8n Integration</h2>
-        </div>
-        
-        <div class="form-group">
-            <label for="n8nWorkflowId" class="form-label">n8n Workflow ID</label>
-            <input type="text" id="n8nWorkflowId" name="n8n_workflow_id" class="form-input" value="{{ workflow.n8n_workflow_id|default('') }}" placeholder="Enter n8n workflow ID">
-            <p style="font-size: 0.875rem; color: var(--color-text-light); margin-top: var(--spacing-xs);">
-                Connect this workflow to an n8n workflow by entering its ID.
+{% if not activation %}
+<!-- Not Activated -->
+<div class="dashboard-card" style="background: var(--color-primary-light); border-color: var(--color-primary);">
+    <div style="display: flex; align-items: center; gap: 1rem;">
+        <i data-lucide="info" width="24" height="24" style="color: var(--color-primary);"></i>
+        <div style="flex: 1;">
+            <h3 style="font-size: var(--text-base); font-weight: var(--font-semibold); margin-bottom: 0.25rem;">Workflow Not Activated</h3>
+            <p style="font-size: var(--text-sm); color: var(--color-text-light); margin: 0;">
+                Activate this workflow to start using it. You'll need to configure API keys for required services.
             </p>
         </div>
-        
-        <div class="form-group">
-            <label for="n8nApiUrl" class="form-label">n8n API URL</label>
-            <input type="text" id="n8nApiUrl" name="n8n_api_url" class="form-input" value="{{ workflow.n8n_api_url|default('') }}" placeholder="https://your-n8n-instance.com">
-        </div>
-        
-        <div class="form-group">
-            <label for="n8nApiKey" class="form-label">n8n API Key</label>
-            <input type="password" id="n8nApiKey" name="n8n_api_key" class="form-input" value="{{ workflow.n8n_api_key|default('') }}" placeholder="Enter n8n API key">
-        </div>
-        
-        <div style="padding: var(--spacing-md); background: var(--color-bg-light); border-radius: var(--radius-md); margin-top: var(--spacing-md);">
-            <p style="font-size: 0.875rem; color: var(--color-text-light); margin: 0;">
-                <strong>Note:</strong> n8n integration allows you to manage and execute workflows directly from Syntra. 
-                Make sure your n8n instance is accessible and the API key has the necessary permissions.
-            </p>
-        </div>
+        <button onclick="activateWorkflow()" class="btn btn-primary">Activate Workflow</button>
     </div>
-
-    <!-- Execution History -->
-    {% if workflow and workflow.executions %}
-    <div class="dashboard-card">
-        <div class="card-header">
-            <h2 class="card-title">Execution History</h2>
-        </div>
-        <div class="table-container">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Status</th>
-                        <th>Duration</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for execution in workflow.executions[:10] %}
-                    <tr>
-                        <td>{{ execution.created_at }}</td>
-                        <td>
-                            <span class="status-badge {{ execution.status|lower }}">
-                                <span class="status-badge-dot"></span>
-                                {{ execution.status }}
-                            </span>
-                        </td>
-                        <td>{{ execution.duration|default('N/A') }}</td>
-                        <td>
-                            <button onclick="viewExecution('{{ execution.id }}')" class="btn btn-secondary btn-sm">View</button>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- Actions -->
-    <div style="display: flex; gap: var(--spacing-md); margin-top: var(--spacing-xl);">
-        <button type="submit" class="btn btn-primary">Save Workflow</button>
-        {% if workflow %}
-        <button type="button" onclick="runWorkflow('{{ workflow.id }}')" class="btn btn-secondary">Run Now</button>
-        <a href="{{ url_for('dashboard_workflows') }}" class="btn btn-secondary">Cancel</a>
-        {% else %}
-        <a href="{{ url_for('dashboard_workflows') }}" class="btn btn-secondary">Cancel</a>
+</div>
+{% else %}
+<!-- Activated - Show Configuration -->
+<div class="dashboard-card">
+    <h2 class="card-title">Workflow Status</h2>
+    <div style="display: flex; gap: 1rem; align-items: center;">
+        <span class="status-badge active">
+            <span class="status-badge-dot"></span>
+            Activated
+        </span>
+        <span style="color: var(--color-text-light); font-size: var(--text-sm);">
+            Executions: {{ activation.execution_count or 0 }}
+        </span>
+        {% if activation.last_executed_at %}
+        <span style="color: var(--color-text-light); font-size: var(--text-sm);">
+            Last run: {{ activation.last_executed_at[:19] }}
+        </span>
         {% endif %}
     </div>
-</form>
+</div>
+
+<!-- Required Services / API Keys -->
+{% if required_services %}
+<div class="dashboard-card" style="margin-top: 1.5rem;">
+    <h2 class="card-title">Required API Keys</h2>
+    <p style="color: var(--color-text-light); margin-bottom: 1rem;">Configure API keys for the services this workflow needs.</p>
+    
+    {% for service in required_services %}
+    <div style="padding: 1rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); margin-bottom: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <h3 style="font-size: var(--text-base); font-weight: var(--font-semibold); margin: 0;">{{ service|title }}</h3>
+            {% set service_key = api_keys|selectattr('service_type', 'equalto', service)|first %}
+            {% if service_key %}
+            <span class="status-badge active">Configured</span>
+            {% else %}
+            <span class="status-badge inactive">Not Configured</span>
+            {% endif %}
+        </div>
+        
+        {% if service == 'notion' %}
+        <p style="font-size: var(--text-sm); color: var(--color-text-light); margin-bottom: 0.75rem;">
+            Get your Notion API key from: <a href="https://www.notion.so/my-integrations" target="_blank">Notion Integrations</a>
+        </p>
+        {% elif service == 'google-docs' %}
+        <p style="font-size: var(--text-sm); color: var(--color-text-light); margin-bottom: 0.75rem;">
+            Get your Google API key from: <a href="https://console.cloud.google.com/apis/credentials" target="_blank">Google Cloud Console</a>
+        </p>
+        {% elif service == 'openai' %}
+        <p style="font-size: var(--text-sm); color: var(--color-text-light); margin-bottom: 0.75rem;">
+            Get your OpenAI API key from: <a href="https://platform.openai.com/api-keys" target="_blank">OpenAI Platform</a>
+        </p>
+        {% endif %}
+        
+        <div style="display: flex; gap: 0.5rem;">
+            <input type="password" id="api_key_{{ service }}" class="form-input" placeholder="Enter {{ service }} API key" 
+                   value="{{ service_key.api_key if service_key else '' }}" style="flex: 1;">
+            <button onclick="saveApiKey('{{ service }}')" class="btn btn-primary btn-sm">Save</button>
+            {% if service_key %}
+            <button onclick="deleteApiKey('{{ service }}')" class="btn btn-danger btn-sm">Remove</button>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Run Workflow -->
+<div class="dashboard-card" style="margin-top: 1.5rem;">
+    <h2 class="card-title">Run Workflow</h2>
+    <p style="color: var(--color-text-light); margin-bottom: 1rem;">Execute this workflow manually.</p>
+    <button onclick="runWorkflow()" class="btn btn-primary">
+        <i data-lucide="play" width="16" height="16"></i>
+        Run Workflow
+    </button>
+</div>
+
+<!-- Execution History -->
+<div class="dashboard-card" style="margin-top: 1.5rem;">
+    <h2 class="card-title">Execution History</h2>
+    {% if executions %}
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Started</th>
+                    <th>Duration</th>
+                    <th>Error</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for exec in executions %}
+                <tr>
+                    <td>
+                        <span class="status-badge {{ exec.status }}">
+                            {{ exec.status }}
+                        </span>
+                    </td>
+                    <td>{{ exec.started_at[:19] if exec.started_at else 'N/A' }}</td>
+                    <td>{{ exec.duration_ms }}ms</td>
+                    <td style="color: var(--color-danger);">{{ exec.error_message[:50] if exec.error_message else '-' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p style="color: var(--color-text-light);">No executions yet.</p>
+    {% endif %}
+</div>
+{% endif %}
 {% endblock %}
 
 {% block dashboard_scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const activeCheckbox = document.getElementById('workflowActive');
-    const statusText = document.getElementById('statusText');
-    const statusBadge = activeCheckbox.closest('.status-badge');
-    
-    activeCheckbox.addEventListener('change', function() {
-        if (this.checked) {
-            statusText.textContent = 'Active';
-            statusBadge.className = 'status-badge active';
-        } else {
-            statusText.textContent = 'Inactive';
-            statusBadge.className = 'status-badge inactive';
-        }
-    });
-    
-    // Form submission
-    const form = document.getElementById('workflowForm');
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const formData = new FormData(form);
-        const data = Object.fromEntries(formData);
-        data.active = activeCheckbox.checked;
-        
-        const url = {% if workflow %}'/api/workflows/{{ workflow.id }}'{% else %}'/api/workflows'{% endif %};
-        const method = {% if workflow %}'PUT'{% else %}'POST'{% endif %};
-        
-        fetch(url, {
-            method: method,
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(data)
-        })
+function activateWorkflow() {
+    fetch('/api/workflows/{{ workflow.id }}/activate', { method: 'POST' })
         .then(response => response.json())
         .then(data => {
             if (data.error) {
                 alert('Error: ' + data.error);
             } else {
-                window.location.href = '{{ url_for("dashboard_workflows") }}';
+                location.reload();
             }
         })
         .catch(err => alert('Error: ' + err));
-    });
-});
+}
 
-function runWorkflow(workflowId) {
-    if (confirm('Run this workflow now?')) {
-        fetch(`/api/workflows/${workflowId}/run`, { method: 'POST' })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    alert('Error: ' + data.error);
-                } else {
-                    alert('Workflow started successfully');
-                    location.reload();
-                }
-            })
-            .catch(err => alert('Error: ' + err));
+function saveApiKey(serviceType) {
+    const input = document.getElementById('api_key_' + serviceType);
+    const apiKey = input.value.trim();
+    
+    if (!apiKey) {
+        alert('Please enter an API key');
+        return;
     }
+    
+    fetch('/api/workflows/{{ workflow.id }}/api-keys', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ service_type: serviceType, api_key: apiKey })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert('Error: ' + data.error);
+        } else {
+            alert('API key saved successfully!');
+            location.reload();
+        }
+    })
+    .catch(err => alert('Error: ' + err));
 }
 
-function viewExecution(executionId) {
-    // Placeholder for viewing execution details
-    alert('Execution details view coming soon');
+function deleteApiKey(serviceType) {
+    if (!confirm('Remove this API key?')) return;
+    
+    // Note: This would require a DELETE endpoint
+    alert('API key removal not yet implemented');
 }
+
+function runWorkflow() {
+    if (!confirm('Run this workflow now?')) return;
+    
+    fetch('/api/workflows/{{ workflow.id }}/run', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert('Error: ' + data.error);
+            } else {
+                alert('Workflow started successfully!');
+                location.reload();
+            }
+        })
+        .catch(err => alert('Error: ' + err));
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+});
 </script>
 {% endblock %}
-

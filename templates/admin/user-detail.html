@@ -1,0 +1,53 @@
+{% extends "admin/base.html" %}
+
+{% block breadcrumbs %}
+<a href="{{ url_for('admin_dashboard') }}">Admin</a>
+<span class="breadcrumbs-separator">/</span>
+<a href="{{ url_for('admin_users') }}">Users</a>
+<span class="breadcrumbs-separator">/</span>
+<span>{{ target_user.name }}</span>
+{% endblock %}
+
+{% block admin_content %}
+<div class="page-header">
+    <h1 class="page-title">{{ target_user.name }}</h1>
+    <p class="page-description">User details and workflow activations</p>
+</div>
+
+<div class="dashboard-card">
+    <h2>User Information</h2>
+    <p><strong>Role:</strong> {{ target_user.get('role', 'user') }}</p>
+    <p><strong>Created:</strong> {{ target_user.created_at[:10] if target_user.created_at else 'N/A' }}</p>
+</div>
+
+<div class="dashboard-card" style="margin-top: 1.5rem;">
+    <h2>Workflow Activations</h2>
+    {% if activations %}
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Workflow</th>
+                    <th>Status</th>
+                    <th>Executions</th>
+                    <th>Last Run</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for act in activations %}
+                <tr>
+                    <td>{{ act.workflows.name if act.workflows else 'N/A' }}</td>
+                    <td><span class="status-badge {{ 'active' if act.is_active else 'inactive' }}">{{ 'Active' if act.is_active else 'Inactive' }}</span></td>
+                    <td>{{ act.execution_count or 0 }}</td>
+                    <td>{{ act.last_executed_at[:19] if act.last_executed_at else 'Never' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p>No workflow activations.</p>
+    {% endif %}
+</div>
+{% endblock %}
+

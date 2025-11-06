@@ -81,6 +81,14 @@ def get_user_by_id(user_id: str) -> Optional[Dict]:
     except:
         return None
 
+def get_all_users() -> List[Dict]:
+    """Get all users (admin only)"""
+    try:
+        result = get_db().table('users').select('*').order('created_at', desc=True).execute()
+        return result.data or []
+    except:
+        return []
+
 
 def create_user(name: str, password_hash: str = None, is_password_set: bool = False, role: str = 'user') -> Dict:
     """Create new user (admin only)"""
@@ -185,4 +193,297 @@ def delete_api_key(key_id: str, user_id: str) -> bool:
         return True
     except:
         return False
+
+# ============================================================================
+# INTEGRATIONS OPERATIONS
+# ============================================================================
+
+def get_integration(user_id: str, service_type: str) -> Optional[Dict]:
+    """Get user's integration for a specific service"""
+    try:
+        result = get_db().table('integrations').select('*').eq('user_id', user_id).eq('service_type', service_type).execute()
+        return result.data[0] if result.data else None
+    except:
+        return None
+
+def get_all_integrations(user_id: str) -> List[Dict]:
+    """Get all user's integrations"""
+    try:
+        result = get_db().table('integrations').select('*').eq('user_id', user_id).execute()
+        return result.data or []
+    except:
+        return []
+
+def create_or_update_integration(user_id: str, service_type: str, service_url: str = None, api_key: str = None, config: Dict = None) -> Dict:
+    """Create or update integration"""
+    integration_data = {
+        'user_id': user_id,
+        'service_type': service_type,
+        'is_active': True,
+        'last_connected_at': datetime.utcnow().isoformat(),
+        'updated_at': datetime.utcnow().isoformat()
+    }
+    
+    if service_url:
+        integration_data['service_url'] = service_url
+    if api_key:
+        integration_data['api_key'] = api_key
+    if config:
+        integration_data['config'] = config
+    
+    try:
+        # Try to update existing
+        existing = get_integration(user_id, service_type)
+        if existing:
+            result = get_db().table('integrations').update(integration_data).eq('id', existing['id']).execute()
+            return result.data[0] if result.data else existing
+        
+        # Create new
+        integration_data['created_at'] = datetime.utcnow().isoformat()
+        result = get_db().table('integrations').insert(integration_data).execute()
+        return result.data[0]
+    except Exception as e:
+        print(f"Error creating/updating integration: {e}")
+        raise
+
+def delete_integration(user_id: str, service_type: str) -> bool:
+    """Delete integration"""
+    try:
+        get_db().table('integrations').delete().eq('user_id', user_id).eq('service_type', service_type).execute()
+        return True
+    except:
+        return False
+
+# ============================================================================
+# WORKFLOW OPERATIONS
+# ============================================================================
+
+def get_workflows(public_only: bool = False) -> List[Dict]:
+    """Get workflows (admin sees all, users see public)"""
+    try:
+        query = get_db().table('workflows').select('*')
+        if public_only:
+            query = query.eq('is_public', True).eq('is_active', True)
+        result = query.order('created_at', desc=True).execute()
+        return result.data or []
+    except:
+        return []
+
+def get_workflow_by_id(workflow_id: str) -> Optional[Dict]:
+    """Get workflow by ID"""
+    try:
+        result = get_db().table('workflows').select('*').eq('id', workflow_id).execute()
+        return result.data[0] if result.data else None
+    except:
+        return None
+
+def get_workflow_by_n8n_id(n8n_workflow_id: int) -> Optional[Dict]:
+    """Get workflow by n8n workflow ID"""
+    try:
+        result = get_db().table('workflows').select('*').eq('n8n_workflow_id', n8n_workflow_id).execute()
+        return result.data[0] if result.data else None
+    except:
+        return None
+
+def create_or_update_workflow(workflow_data: Dict) -> Dict:
+    """Create or update workflow (sync from n8n)"""
+    n8n_workflow_id = workflow_data.get('n8n_workflow_id')
+    if not n8n_workflow_id:
+        raise ValueError("n8n_workflow_id is required")
+    
+    # Check if workflow exists
+    existing = get_workflow_by_n8n_id(n8n_workflow_id)
+    
+    workflow_update = {
+        'n8n_workflow_id': n8n_workflow_id,
+        'name': workflow_data.get('name', ''),
+        'description': workflow_data.get('description'),
+        'category': workflow_data.get('category'),
+        'metadata': workflow_data.get('metadata', {}),
+        'updated_at': datetime.utcnow().isoformat()
+    }
+    
+    # Only update these if explicitly provided
+    if 'required_services' in workflow_data:
+        workflow_update['required_services'] = workflow_data['required_services']
+    if 'config_schema' in workflow_data:
+        workflow_update['config_schema'] = workflow_data['config_schema']
+    if 'created_by' in workflow_data:
+        workflow_update['created_by'] = workflow_data['created_by']
+    
+    try:
+        if existing:
+            # Update existing
+            result = get_db().table('workflows').update(workflow_update).eq('id', existing['id']).execute()
+            return result.data[0] if result.data else existing
+        else:
+            # Create new
+            workflow_update['created_at'] = datetime.utcnow().isoformat()
+            workflow_update['is_active'] = workflow_data.get('is_active', True)
+            workflow_update['is_public'] = workflow_data.get('is_public', False)
+            result = get_db().table('workflows').insert(workflow_update).execute()
+            return result.data[0]
+    except Exception as e:
+        print(f"Error creating/updating workflow: {e}")
+        raise
+
+def update_workflow(workflow_id: str, updates: Dict) -> bool:
+    """Update workflow properties"""
+    try:
+        updates['updated_at'] = datetime.utcnow().isoformat()
+        get_db().table('workflows').update(updates).eq('id', workflow_id).execute()
+        return True
+    except:
+        return False
+
+def get_user_workflow_activations(user_id: str) -> List[Dict]:
+    """Get all workflow activations for a user"""
+    try:
+        result = get_db().table('workflow_activations').select('*, workflows(*)').eq('user_id', user_id).order('created_at', desc=True).execute()
+        return result.data or []
+    except:
+        return []
+
+def get_workflow_activation(user_id: str, workflow_id: str) -> Optional[Dict]:
+    """Get specific workflow activation"""
+    try:
+        result = get_db().table('workflow_activations').select('*').eq('user_id', user_id).eq('workflow_id', workflow_id).execute()
+        return result.data[0] if result.data else None
+    except:
+        return None
+
+def activate_workflow(user_id: str, workflow_id: str, config: Dict = None) -> Dict:
+    """Activate a workflow for a user"""
+    try:
+        activation_data = {
+            'user_id': user_id,
+            'workflow_id': workflow_id,
+            'is_active': True,
+            'config': config or {},
+            'created_at': datetime.utcnow().isoformat(),
+            'updated_at': datetime.utcnow().isoformat()
+        }
+        
+        # Check if already exists
+        existing = get_workflow_activation(user_id, workflow_id)
+        if existing:
+            # Update existing
+            result = get_db().table('workflow_activations').update({
+                'is_active': True,
+                'config': config or existing.get('config', {}),
+                'updated_at': datetime.utcnow().isoformat()
+            }).eq('id', existing['id']).execute()
+            return result.data[0] if result.data else existing
+        
+        # Create new
+        result = get_db().table('workflow_activations').insert(activation_data).execute()
+        return result.data[0]
+    except Exception as e:
+        print(f"Error activating workflow: {e}")
+        raise
+
+def deactivate_workflow(user_id: str, workflow_id: str) -> bool:
+    """Deactivate a workflow for a user"""
+    try:
+        get_db().table('workflow_activations').update({
+            'is_active': False,
+            'updated_at': datetime.utcnow().isoformat()
+        }).eq('user_id', user_id).eq('workflow_id', workflow_id).execute()
+        return True
+    except:
+        return False
+
+def get_workflow_api_keys(activation_id: str) -> List[Dict]:
+    """Get API keys for a workflow activation"""
+    try:
+        result = get_db().table('workflow_api_keys').select('*').eq('workflow_activation_id', activation_id).execute()
+        return result.data or []
+    except:
+        return []
+
+def set_workflow_api_key(activation_id: str, service_type: str, api_key: str, config: Dict = None) -> Dict:
+    """Set or update API key for a workflow activation"""
+    try:
+        # Check if exists
+        existing_result = get_db().table('workflow_api_keys').select('*').eq('workflow_activation_id', activation_id).eq('service_type', service_type).execute()
+        existing = existing_result.data[0] if existing_result.data else None
+        
+        key_data = {
+            'workflow_activation_id': activation_id,
+            'service_type': service_type,
+            'api_key': api_key,
+            'config': config or {},
+            'updated_at': datetime.utcnow().isoformat()
+        }
+        
+        if existing:
+            # Update
+            result = get_db().table('workflow_api_keys').update(key_data).eq('id', existing['id']).execute()
+            return result.data[0] if result.data else existing
+        else:
+            # Create
+            key_data['created_at'] = datetime.utcnow().isoformat()
+            result = get_db().table('workflow_api_keys').insert(key_data).execute()
+            return result.data[0]
+    except Exception as e:
+        print(f"Error setting workflow API key: {e}")
+        raise
+
+def delete_workflow_api_key(activation_id: str, service_type: str) -> bool:
+    """Delete API key for a workflow activation"""
+    try:
+        get_db().table('workflow_api_keys').delete().eq('workflow_activation_id', activation_id).eq('service_type', service_type).execute()
+        return True
+    except:
+        return False
+
+def log_workflow_execution(activation_id: str, execution_data: Dict) -> Dict:
+    """Log a workflow execution"""
+    try:
+        execution_log = {
+            'workflow_activation_id': activation_id,
+            'n8n_execution_id': execution_data.get('n8n_execution_id'),
+            'status': execution_data.get('status', 'running'),
+            'input_data': execution_data.get('input_data'),
+            'output_data': execution_data.get('output_data'),
+            'error_message': execution_data.get('error_message'),
+            'started_at': execution_data.get('started_at', datetime.utcnow().isoformat()),
+            'finished_at': execution_data.get('finished_at'),
+            'duration_ms': execution_data.get('duration_ms')
+        }
+        result = get_db().table('workflow_executions').insert(execution_log).execute()
+        
+        # Update activation stats
+        activation = get_db().table('workflow_activations').select('*').eq('id', activation_id).execute()
+        if activation.data:
+            current_count = activation.data[0].get('execution_count', 0)
+            get_db().table('workflow_activations').update({
+                'execution_count': current_count + 1,
+                'last_executed_at': execution_log['started_at'],
+                'updated_at': datetime.utcnow().isoformat()
+            }).eq('id', activation_id).execute()
+        
+        return result.data[0]
+    except Exception as e:
+        print(f"Error logging workflow execution: {e}")
+        raise
+
+def get_workflow_executions(activation_id: str, limit: int = 50) -> List[Dict]:
+    """Get execution history for a workflow activation"""
+    try:
+        result = get_db().table('workflow_executions').select('*').eq('workflow_activation_id', activation_id).order('started_at', desc=True).limit(limit).execute()
+        return result.data or []
+    except:
+        return []
+
+def get_all_workflow_executions(workflow_id: str = None, limit: int = 100) -> List[Dict]:
+    """Get all workflow executions (admin only)"""
+    try:
+        query = get_db().table('workflow_executions').select('*, workflow_activations!inner(workflow_id, user_id, workflows(*))')
+        if workflow_id:
+            query = query.eq('workflow_activations.workflow_id', workflow_id)
+        result = query.order('started_at', desc=True).limit(limit).execute()
+        return result.data or []
+    except:
+        return []
 

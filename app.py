@@ -1,10 +1,11 @@
 """Main Flask application"""
-from datetime import timedelta
+from datetime import timedelta, datetime
 import os
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, abort, send_file
 from dotenv import load_dotenv
 import auth
 import db
+from n8n_service import get_n8n_service
 
 load_dotenv()
 
@@ -93,14 +94,14 @@ def init_theo_page():
     """Simple page to initialize Theo - can be accessed via browser"""
     if request.method == 'POST' or request.args.get('init') == 'true':
         try:
-            user = auth.create_user_admin('Theo', role='ceo')
+            user = auth.create_user_admin('Theo', role='admin')
             return jsonify({
                 'success': True,
-                'message': 'Theo initialized successfully as CEO',
+                'message': 'Theo initialized successfully as Admin',
                 'user': {
                     'id': user['id'],
                     'name': user['name'],
-                    'role': user.get('role', 'ceo')
+                    'role': user.get('role', 'admin')
                 },
                 'next_step': 'Go to /login and enter "Theo" as username'
             })
@@ -219,14 +220,25 @@ def dashboard_overview():
         user = auth.current_user()
         api_keys = db.get_api_keys(user['id'])
         
-        # Placeholder data - to be replaced with actual data from database
+        # Get user's activated workflows
+        activations = db.get_user_workflow_activations(user['id'])
+        active_workflows = [a for a in activations if a.get('is_active')]
+        
+        # Get recent executions
+        recent_executions = []
+        for activation in active_workflows[:5]:  # Top 5 workflows
+            execs = db.get_workflow_executions(activation['id'], limit=5)
+            recent_executions.extend(execs)
+        recent_executions.sort(key=lambda x: x.get('started_at', ''), reverse=True)
+        recent_executions = recent_executions[:10]
+        
         return render_template('dashboard/overview.html', 
                              user=user,
-                             active_workflows_count=0,
+                             active_workflows_count=len(active_workflows),
                              api_keys_count=len(api_keys),
                              integrations_count=0,
-                             recent_activity_count=0,
-                             recent_workflows=[])
+                             recent_activity_count=len(recent_executions),
+                             recent_workflows=active_workflows[:5])
     except Exception as e:
         print(f"Dashboard overview error: {str(e)}")
         return redirect(url_for('login'))
@@ -234,36 +246,69 @@ def dashboard_overview():
 @app.route('/dashboard/workflows')
 @auth.login_required
 def dashboard_workflows():
-    """Workflows list page"""
+    """Workflows list page - shows only public, available workflows"""
     try:
         user = auth.current_user()
-        # Placeholder - to be replaced with actual workflows from database
-        workflows = []
-        return render_template('dashboard/workflows.html', user=user, workflows=workflows)
+        # Get public workflows only (non-admins see only public)
+        is_admin_user = auth.is_admin(user)
+        workflows = db.get_workflows(public_only=not is_admin_user)
+        
+        # Get user's activations
+        activations = db.get_user_workflow_activations(user['id'])
+        activation_map = {act.get('workflow_id'): act for act in activations if act.get('workflows')}
+        
+        # Mark which workflows are activated
+        for workflow in workflows:
+            workflow['is_activated'] = workflow['id'] in activation_map
+            if workflow['is_activated']:
+                workflow['activation'] = activation_map[workflow['id']]
+        
+        return render_template('dashboard/workflows.html', 
+                             user=user, 
+                             workflows=workflows,
+                             is_admin=is_admin_user)
     except Exception as e:
         print(f"Dashboard workflows error: {str(e)}")
         return redirect(url_for('login'))
 
-@app.route('/dashboard/workflows/create')
-@auth.login_required
-def dashboard_workflow_create():
-    """Create new workflow page"""
-    try:
-        user = auth.current_user()
-        return render_template('dashboard/workflow-detail.html', user=user, workflow=None)
-    except Exception as e:
-        print(f"Dashboard workflow create error: {str(e)}")
-        return redirect(url_for('login'))
+# Removed dashboard_workflow_create - users can't create workflows, only activate them
 
 @app.route('/dashboard/workflows/<workflow_id>')
 @auth.login_required
 def dashboard_workflow_detail(workflow_id):
-    """Workflow detail/edit page"""
+    """Workflow detail page - activation and API key configuration"""
     try:
         user = auth.current_user()
-        # Placeholder - to be replaced with actual workflow from database
-        workflow = {'id': workflow_id, 'name': 'Sample Workflow', 'status': 'inactive', 'description': ''}
-        return render_template('dashboard/workflow-detail.html', user=user, workflow=workflow)
+        workflow = db.get_workflow_by_id(workflow_id)
+        if not workflow:
+            return redirect(url_for('dashboard_workflows'))
+        
+        # Check if user can access this workflow (must be public or admin)
+        is_admin_user = auth.is_admin(user)
+        if not workflow.get('is_public') and not is_admin_user:
+            return redirect(url_for('dashboard_workflows'))
+        
+        # Get user's activation
+        activation = db.get_workflow_activation(user['id'], workflow_id)
+        api_keys = []
+        executions = []
+        
+        if activation:
+            api_keys = db.get_workflow_api_keys(activation['id'])
+            executions = db.get_workflow_executions(activation['id'], limit=20)
+        
+        required_services = workflow.get('required_services', [])
+        if isinstance(required_services, str):
+            import json
+            required_services = json.loads(required_services) if required_services else []
+        
+        return render_template('dashboard/workflow-detail.html', 
+                             user=user, 
+                             workflow=workflow,
+                             activation=activation,
+                             api_keys=api_keys,
+                             executions=executions,
+                             required_services=required_services)
     except Exception as e:
         print(f"Dashboard workflow detail error: {str(e)}")
         return redirect(url_for('login'))
@@ -283,16 +328,23 @@ def dashboard_api_keys():
 @app.route('/dashboard/integrations')
 @auth.login_required
 def dashboard_integrations():
-    """Integrations management page"""
+    """Integrations management page - n8n removed (admin-only now)"""
     try:
         user = auth.current_user()
-        # Placeholder - to be replaced with actual integration status from database
+        # n8n is now admin-only, removed from user dashboard
+        
+        notion_integration = db.get_integration(user['id'], 'notion')
+        notion_connected = notion_integration is not None and notion_integration.get('is_active', False)
+        
+        openai_keys = [k for k in db.get_api_keys(user['id']) if k.get('type', '').lower() == 'openai']
+        openai_connected = len(openai_keys) > 0
+        
         return render_template('dashboard/integrations.html', 
                              user=user,
-                             n8n_connected=False,
+                             n8n_connected=False,  # Always False for users
                              n8n_instance_url=None,
-                             notion_connected=False,
-                             openai_connected=len([k for k in db.get_api_keys(user['id']) if k.get('type', '').lower() == 'openai']) > 0)
+                             notion_connected=notion_connected,
+                             openai_connected=openai_connected)
     except Exception as e:
         print(f"Dashboard integrations error: {str(e)}")
         return redirect(url_for('login'))
@@ -309,6 +361,139 @@ def dashboard_settings():
     except Exception as e:
         print(f"Dashboard settings error: {str(e)}")
         return redirect(url_for('login'))
+
+# ============================================================================
+# ADMIN PANEL ROUTES
+# ============================================================================
+
+@app.route('/admin')
+@auth.admin_required
+def admin_dashboard():
+    """Admin dashboard - redirect to workflows"""
+    return redirect(url_for('admin_workflows'))
+
+@app.route('/admin/workflows')
+@auth.admin_required
+def admin_workflows():
+    """Admin workflow management page"""
+    try:
+        user = auth.current_user()
+        n8n_service = get_n8n_service()
+        n8n_configured = n8n_service.is_configured()
+        n8n_status = None
+        if n8n_configured:
+            connected, message = n8n_service.test_connection()
+            n8n_status = {'connected': connected, 'message': message}
+        
+        workflows = db.get_workflows(public_only=False)
+        return render_template('admin/workflows.html',
+                             user=user,
+                             workflows=workflows,
+                             n8n_configured=n8n_configured,
+                             n8n_status=n8n_status)
+    except Exception as e:
+        print(f"Admin workflows error: {str(e)}")
+        return redirect(url_for('dashboard'))
+
+@app.route('/admin/workflows/<workflow_id>')
+@auth.admin_required
+def admin_workflow_detail(workflow_id):
+    """Admin workflow detail page"""
+    try:
+        user = auth.current_user()
+        workflow = db.get_workflow_by_id(workflow_id)
+        if not workflow:
+            return redirect(url_for('admin_workflows'))
+        
+        # Get all executions for this workflow
+        executions = db.get_all_workflow_executions(workflow_id=workflow_id, limit=100)
+        
+        return render_template('admin/workflow-detail.html',
+                             user=user,
+                             workflow=workflow,
+                             executions=executions)
+    except Exception as e:
+        print(f"Admin workflow detail error: {str(e)}")
+        return redirect(url_for('admin_workflows'))
+
+@app.route('/admin/users')
+@auth.admin_required
+def admin_users():
+    """Admin user management page"""
+    try:
+        user = auth.current_user()
+        # Get all users
+        all_users = db.get_all_users()
+        return render_template('admin/users.html',
+                             user=user,
+                             users=all_users)
+    except Exception as e:
+        print(f"Admin users error: {str(e)}")
+        return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/users/<user_id>')
+@auth.admin_required
+def admin_user_detail(user_id):
+    """Admin user detail page"""
+    try:
+        user = auth.current_user()
+        target_user = db.get_user_by_id(user_id)
+        if not target_user:
+            return redirect(url_for('admin_users'))
+        
+        # Get user's workflow activations
+        activations = db.get_user_workflow_activations(user_id)
+        
+        return render_template('admin/user-detail.html',
+                             user=user,
+                             target_user=target_user,
+                             activations=activations)
+    except Exception as e:
+        print(f"Admin user detail error: {str(e)}")
+        return redirect(url_for('admin_users'))
+
+@app.route('/admin/system')
+@auth.admin_required
+def admin_system():
+    """Admin system status page"""
+    try:
+        user = auth.current_user()
+        n8n_service = get_n8n_service()
+        n8n_configured = n8n_service.is_configured()
+        n8n_status = None
+        if n8n_configured:
+            connected, message = n8n_service.test_connection()
+            n8n_status = {'connected': connected, 'message': message, 'url': n8n_service.base_url}
+        
+        # Get system stats
+        total_workflows = len(db.get_workflows(public_only=False))
+        public_workflows = len([w for w in db.get_workflows(public_only=False) if w.get('is_public')])
+        
+        return render_template('admin/system.html',
+                             user=user,
+                             n8n_configured=n8n_configured,
+                             n8n_status=n8n_status,
+                             total_workflows=total_workflows,
+                             public_workflows=public_workflows)
+    except Exception as e:
+        print(f"Admin system error: {str(e)}")
+        return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/analytics')
+@auth.admin_required
+def admin_analytics():
+    """Admin system-wide analytics page"""
+    try:
+        user = auth.current_user()
+        # Get system-wide stats
+        all_executions = db.get_all_workflow_executions(limit=1000)
+        
+        return render_template('admin/analytics.html',
+                             user=user,
+                             executions=all_executions)
+    except Exception as e:
+        print(f"Admin analytics error: {str(e)}")
+        return redirect(url_for('admin_dashboard'))
 
 @app.route('/dashboard/analytics')
 @auth.login_required
@@ -330,7 +515,7 @@ def dashboard_team():
         # Placeholder - to be replaced with actual team data from database
         team_members = []
         pending_invitations = []
-        current_user_can_manage = user.get('role') in ['admin', 'ceo']
+        current_user_can_manage = auth.is_admin(user)
         return render_template('dashboard/team.html', 
                              user=user,
                              team_members=team_members,
@@ -419,7 +604,7 @@ def api_create_user():
     role = (data.get('role') or 'user').strip()
     if len(name) < 2:
         return jsonify({'error': 'Name must be at least 2 characters'}), 400
-    if role not in ('user', 'admin', 'ceo'):
+    if role not in ('user', 'admin', 'ceo'):  # Keep 'ceo' for backward compatibility
         role = 'user'
     try:
         user = auth.create_user_admin(name, role=role)
@@ -429,17 +614,17 @@ def api_create_user():
 
 @app.route('/api/admin/init-theo', methods=['POST'])
 def api_init_theo():
-    """Initialize Theo as CEO - one-time setup endpoint"""
+    """Initialize Theo as Admin - one-time setup endpoint"""
     # This is a special endpoint to initialize Theo
     # Should be secured in production
     try:
-        user = auth.create_user_admin('Theo', role='ceo')
+        user = auth.create_user_admin('Theo', role='admin')
         return jsonify({
-            'message': 'Theo initialized successfully as CEO',
+            'message': 'Theo initialized successfully as Admin',
             'user': {
                 'id': user['id'],
                 'name': user['name'],
-                'role': user.get('role', 'ceo')
+                'role': user.get('role', 'admin')
             }
         })
     except Exception as e:
@@ -538,74 +723,397 @@ def api_delete_key(key_id):
         abort(404)
     return jsonify({'message': 'Deleted'})
 
-# Workflow API Routes
+# ============================================================================
+# ADMIN API ROUTES
+# ============================================================================
+
+@app.route('/api/admin/workflows/sync', methods=['POST'])
+@auth.admin_required
+def api_admin_sync_workflows():
+    """Sync workflows from n8n (admin only)"""
+    user = auth.current_user()
+    n8n_service = get_n8n_service()
+    
+    if not n8n_service.is_configured():
+        return jsonify({'error': 'n8n not configured. Set N8N_URL and N8N_API_KEY environment variables.'}), 400
+    
+    try:
+        # Test connection first
+        connected, message = n8n_service.test_connection()
+        if not connected:
+            return jsonify({'error': message}), 400
+        
+        # Fetch workflows from n8n
+        n8n_workflows = n8n_service.get_workflows()
+        synced_count = 0
+        
+        for n8n_wf in n8n_workflows:
+            # Extract required services from workflow nodes
+            required_services = []
+            nodes = n8n_wf.get('nodes', [])
+            for node in nodes:
+                node_type = node.get('type', '')
+                if 'notion' in node_type.lower():
+                    required_services.append('notion')
+                elif 'googledocs' in node_type.lower() or 'googlesheets' in node_type.lower():
+                    required_services.append('google-docs')
+                elif 'openai' in node_type.lower():
+                    required_services.append('openai')
+            
+            # Remove duplicates
+            required_services = list(set(required_services))
+            
+            workflow_data = {
+                'n8n_workflow_id': n8n_wf.get('id'),
+                'name': n8n_wf.get('name', 'Unnamed Workflow'),
+                'description': n8n_wf.get('settings', {}).get('executionOrder', ''),
+                'category': n8n_wf.get('tags', [{}])[0].get('name', 'automation') if n8n_wf.get('tags') else 'automation',
+                'required_services': required_services,
+                'metadata': n8n_wf,
+                'created_by': user['id'],
+                'is_active': True,
+                'is_public': False  # Default to private, admin can make public
+            }
+            
+            db.create_or_update_workflow(workflow_data)
+            synced_count += 1
+        
+        return jsonify({
+            'message': f'Synced {synced_count} workflows successfully',
+            'synced_count': synced_count
+        })
+    except Exception as e:
+        print(f"Error syncing workflows: {e}")
+        return jsonify({'error': f'Sync failed: {str(e)}'}), 400
+
+@app.route('/api/admin/workflows/<workflow_id>/toggle', methods=['PUT'])
+@auth.admin_required
+def api_admin_toggle_workflow(workflow_id):
+    """Enable/disable workflow (admin only)"""
+    user = auth.current_user()
+    workflow = db.get_workflow_by_id(workflow_id)
+    if not workflow:
+        return jsonify({'error': 'Workflow not found'}), 404
+    
+    data = request.get_json() or {}
+    is_active = data.get('is_active', not workflow.get('is_active', False))
+    
+    success = db.update_workflow(workflow_id, {'is_active': is_active})
+    if success:
+        return jsonify({'message': f'Workflow {"enabled" if is_active else "disabled"}', 'is_active': is_active})
+    else:
+        return jsonify({'error': 'Failed to update workflow'}), 400
+
+@app.route('/api/admin/workflows/<workflow_id>/public', methods=['PUT'])
+@auth.admin_required
+def api_admin_toggle_workflow_public(workflow_id):
+    """Make workflow public/private (admin only)"""
+    user = auth.current_user()
+    workflow = db.get_workflow_by_id(workflow_id)
+    if not workflow:
+        return jsonify({'error': 'Workflow not found'}), 404
+    
+    data = request.get_json() or {}
+    is_public = data.get('is_public', not workflow.get('is_public', False))
+    
+    success = db.update_workflow(workflow_id, {'is_public': is_public})
+    if success:
+        return jsonify({'message': f'Workflow made {"public" if is_public else "private"}', 'is_public': is_public})
+    else:
+        return jsonify({'error': 'Failed to update workflow'}), 400
+
+@app.route('/api/admin/workflows/<workflow_id>/executions', methods=['GET'])
+@auth.admin_required
+def api_admin_get_workflow_executions(workflow_id):
+    """Get all executions for a workflow (admin only)"""
+    user = auth.current_user()
+    executions = db.get_all_workflow_executions(workflow_id=workflow_id, limit=100)
+    return jsonify(executions)
+
+@app.route('/api/admin/workflows/<workflow_id>/execute', methods=['POST'])
+@auth.admin_required
+def api_admin_execute_workflow(workflow_id):
+    """Manually trigger workflow execution (admin only)"""
+    user = auth.current_user()
+    workflow = db.get_workflow_by_id(workflow_id)
+    if not workflow:
+        return jsonify({'error': 'Workflow not found'}), 404
+    
+    n8n_service = get_n8n_service()
+    if not n8n_service.is_configured():
+        return jsonify({'error': 'n8n not configured'}), 400
+    
+    data = request.get_json() or {}
+    input_data = data.get('data', {})
+    
+    try:
+        result = n8n_service.execute_workflow(workflow['n8n_workflow_id'], input_data)
+        if result and 'error' in result:
+            return jsonify({'error': result['error']}), 400
+        return jsonify({'message': 'Workflow executed', 'result': result})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/admin/users', methods=['GET'])
+@auth.admin_required
+def api_admin_list_users():
+    """List all users (admin only)"""
+    users = db.get_all_users()
+    return jsonify(users)
+
+@app.route('/api/admin/users', methods=['POST'])
+@auth.admin_required
+def api_admin_create_user():
+    """Create new user (admin only)"""
+    data = request.get_json() or {}
+    name = (data.get('name') or '').strip()
+    role = (data.get('role') or 'user').strip()
+    
+    if len(name) < 2:
+        return jsonify({'error': 'Name must be at least 2 characters'}), 400
+    if role not in ('user', 'admin'):
+        role = 'user'
+    
+    try:
+        user = auth.create_user_admin(name, role=role)
+        return jsonify({'message': 'User created', 'user': {'id': user['id'], 'name': user['name'], 'role': user.get('role', 'user')}})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/admin/users/<user_id>', methods=['PUT'])
+@auth.admin_required
+def api_admin_update_user(user_id):
+    """Update user (admin only)"""
+    data = request.get_json() or {}
+    updates = {}
+    
+    if 'role' in data:
+        role = data['role'].strip()
+        if role in ('user', 'admin'):
+            updates['role'] = role
+    
+    if updates:
+        success = db.update_user_role(user_id, updates.get('role'))
+        if success:
+            return jsonify({'message': 'User updated'})
+    
+    return jsonify({'error': 'No valid updates'}), 400
+
+@app.route('/api/admin/users/<user_id>', methods=['DELETE'])
+@auth.admin_required
+def api_admin_delete_user(user_id):
+    """Delete user (admin only)"""
+    # Note: This would require a delete_user function in db.py
+    # For now, return error
+    return jsonify({'error': 'User deletion not yet implemented'}), 501
+
+@app.route('/api/admin/users/<user_id>/activations', methods=['GET'])
+@auth.admin_required
+def api_admin_get_user_activations(user_id):
+    """Get user's workflow activations (admin only)"""
+    activations = db.get_user_workflow_activations(user_id)
+    return jsonify(activations)
+
+# ============================================================================
+# USER API ROUTES
+# ============================================================================
+
 @app.route('/api/workflows', methods=['GET'])
 @auth.login_required
 def api_list_workflows():
-    """List all workflows for the current user"""
+    """List available workflows (public only for non-admins)"""
     user = auth.current_user()
-    # Placeholder - to be replaced with actual database query
-    return jsonify([])
-
-@app.route('/api/workflows', methods=['POST'])
-@auth.login_required
-def api_create_workflow():
-    """Create a new workflow"""
-    user = auth.current_user()
-    data = request.get_json() or {}
-    # Placeholder - to be replaced with actual database insert
-    return jsonify({'message': 'Workflow created', 'id': 'placeholder'})
+    is_admin_user = auth.is_admin(user)
+    workflows = db.get_workflows(public_only=not is_admin_user)
+    return jsonify(workflows)
 
 @app.route('/api/workflows/<workflow_id>', methods=['GET'])
 @auth.login_required
 def api_get_workflow(workflow_id):
-    """Get a specific workflow"""
+    """Get workflow details"""
     user = auth.current_user()
-    # Placeholder - to be replaced with actual database query
-    return jsonify({'id': workflow_id, 'name': 'Sample Workflow', 'status': 'inactive'})
+    workflow = db.get_workflow_by_id(workflow_id)
+    if not workflow:
+        return jsonify({'error': 'Workflow not found'}), 404
+    
+    # Check access
+    is_admin_user = auth.is_admin(user)
+    if not workflow.get('is_public') and not is_admin_user:
+        return jsonify({'error': 'Access denied'}), 403
+    
+    return jsonify(workflow)
 
-@app.route('/api/workflows/<workflow_id>', methods=['PUT'])
+@app.route('/api/workflows/<workflow_id>/activate', methods=['POST'])
 @auth.login_required
-def api_update_workflow(workflow_id):
-    """Update a workflow"""
+def api_activate_workflow(workflow_id):
+    """Activate a workflow for the current user"""
     user = auth.current_user()
+    workflow = db.get_workflow_by_id(workflow_id)
+    if not workflow:
+        return jsonify({'error': 'Workflow not found'}), 404
+    
+    # Check if workflow is available
+    is_admin_user = auth.is_admin(user)
+    if not workflow.get('is_public') and not is_admin_user:
+        return jsonify({'error': 'Workflow not available'}), 403
+    
+    if not workflow.get('is_active'):
+        return jsonify({'error': 'Workflow is disabled'}), 400
+    
     data = request.get_json() or {}
-    # Placeholder - to be replaced with actual database update
-    return jsonify({'message': 'Workflow updated'})
+    config = data.get('config', {})
+    
+    try:
+        activation = db.activate_workflow(user['id'], workflow_id, config)
+        return jsonify({'message': 'Workflow activated', 'activation': activation})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
 
-@app.route('/api/workflows/<workflow_id>', methods=['DELETE'])
+@app.route('/api/workflows/<workflow_id>/deactivate', methods=['DELETE'])
 @auth.login_required
-def api_delete_workflow(workflow_id):
-    """Delete a workflow"""
+def api_deactivate_workflow(workflow_id):
+    """Deactivate a workflow for the current user"""
     user = auth.current_user()
-    # Placeholder - to be replaced with actual database delete
-    return jsonify({'message': 'Workflow deleted'})
+    success = db.deactivate_workflow(user['id'], workflow_id)
+    if success:
+        return jsonify({'message': 'Workflow deactivated'})
+    else:
+        return jsonify({'error': 'Failed to deactivate workflow'}), 400
+
+@app.route('/api/workflows/<workflow_id>/api-keys', methods=['POST'])
+@auth.login_required
+def api_set_workflow_api_key(workflow_id):
+    """Add/update API key for a workflow service"""
+    user = auth.current_user()
+    workflow = db.get_workflow_by_id(workflow_id)
+    if not workflow:
+        return jsonify({'error': 'Workflow not found'}), 404
+    
+    # Get or create activation
+    activation = db.get_workflow_activation(user['id'], workflow_id)
+    if not activation:
+        activation = db.activate_workflow(user['id'], workflow_id)
+    
+    data = request.get_json() or {}
+    service_type = data.get('service_type', '').strip()
+    api_key = data.get('api_key', '').strip()
+    config = data.get('config', {})
+    
+    if not service_type or not api_key:
+        return jsonify({'error': 'service_type and api_key are required'}), 400
+    
+    try:
+        key_data = db.set_workflow_api_key(activation['id'], service_type, api_key, config)
+        return jsonify({'message': 'API key saved', 'key': {'id': key_data['id'], 'service_type': service_type}})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/workflows/<workflow_id>/executions', methods=['GET'])
+@auth.login_required
+def api_get_workflow_executions(workflow_id):
+    """Get execution history for user's workflow activation"""
+    user = auth.current_user()
+    activation = db.get_workflow_activation(user['id'], workflow_id)
+    if not activation:
+        return jsonify({'error': 'Workflow not activated'}), 404
+    
+    executions = db.get_workflow_executions(activation['id'], limit=50)
+    return jsonify(executions)
 
 @app.route('/api/workflows/<workflow_id>/run', methods=['POST'])
 @auth.login_required
 def api_run_workflow(workflow_id):
-    """Run a workflow"""
+    """Trigger workflow execution"""
     user = auth.current_user()
-    # Placeholder - to be replaced with actual workflow execution
-    return jsonify({'message': 'Workflow started'})
+    workflow = db.get_workflow_by_id(workflow_id)
+    if not workflow:
+        return jsonify({'error': 'Workflow not found'}), 404
+    
+    activation = db.get_workflow_activation(user['id'], workflow_id)
+    if not activation or not activation.get('is_active'):
+        return jsonify({'error': 'Workflow not activated'}), 400
+    
+    # Get API keys for this activation
+    api_keys = db.get_workflow_api_keys(activation['id'])
+    api_key_map = {key['service_type']: key['api_key'] for key in api_keys}
+    
+    # Check required services
+    required_services = workflow.get('required_services', [])
+    if isinstance(required_services, str):
+        import json
+        required_services = json.loads(required_services) if required_services else []
+    
+    missing_services = [s for s in required_services if s not in api_key_map]
+    if missing_services:
+        return jsonify({'error': f'Missing API keys for: {", ".join(missing_services)}'}), 400
+    
+    n8n_service = get_n8n_service()
+    if not n8n_service.is_configured():
+        return jsonify({'error': 'n8n not configured'}), 400
+    
+    data = request.get_json() or {}
+    input_data = data.get('data', {})
+    
+    # Add API keys to input data
+    input_data['api_keys'] = api_key_map
+    
+    try:
+        # Log execution start
+        execution_log = db.log_workflow_execution(activation['id'], {
+            'status': 'running',
+            'input_data': input_data,
+            'started_at': datetime.utcnow().isoformat()
+        })
+        
+        # Execute workflow
+        result = n8n_service.execute_workflow(workflow['n8n_workflow_id'], input_data)
+        
+        # Update execution log
+        finished_at = datetime.utcnow()
+        try:
+            from dateutil import parser
+            started_at = parser.parse(execution_log['started_at'])
+        except:
+            started_at = datetime.utcnow()
+        duration_ms = int((finished_at - started_at.replace(tzinfo=None) if hasattr(started_at, 'replace') else finished_at).total_seconds() * 1000)
+        
+        status = 'success' if result and 'error' not in result else 'error'
+        error_message = result.get('error') if result and 'error' in result else None
+        
+        # Update the existing execution log instead of creating a new one
+        execution_id = execution_log.get('id')
+        if execution_id:
+            try:
+                db_client = db.get_db()
+                db_client.table('workflow_executions').update({
+                    'n8n_execution_id': result.get('executionId') if result else None,
+                    'status': status,
+                    'output_data': result,
+                    'error_message': error_message,
+                    'finished_at': finished_at.isoformat(),
+                    'duration_ms': duration_ms
+                }).eq('id', execution_id).execute()
+            except Exception as update_error:
+                print(f"Error updating execution log: {update_error}")
+                # If update fails, create a new log entry
+                db.log_workflow_execution(activation['id'], {
+                    'n8n_execution_id': result.get('executionId') if result else None,
+                    'status': status,
+                    'output_data': result,
+                    'error_message': error_message,
+                    'finished_at': finished_at.isoformat(),
+                    'duration_ms': duration_ms
+                })
+        
+        if status == 'error':
+            return jsonify({'error': error_message or 'Workflow execution failed'}), 400
+        
+        return jsonify({'message': 'Workflow executed', 'execution_id': execution_id, 'result': result})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
 
 # Integration API Routes
-@app.route('/api/integrations/n8n/connect', methods=['POST'])
-@auth.login_required
-def api_connect_n8n():
-    """Connect to n8n instance"""
-    user = auth.current_user()
-    data = request.get_json() or {}
-    # Placeholder - to be replaced with actual n8n connection logic
-    return jsonify({'message': 'n8n connected successfully'})
-
-@app.route('/api/integrations/n8n/disconnect', methods=['POST'])
-@auth.login_required
-def api_disconnect_n8n():
-    """Disconnect from n8n instance"""
-    user = auth.current_user()
-    # Placeholder - to be replaced with actual n8n disconnection logic
-    return jsonify({'message': 'n8n disconnected successfully'})
+# n8n connection routes removed - n8n is now configured via environment variables (admin-only)
 
 @app.route('/api/integrations/notion/disconnect', methods=['POST'])
 @auth.login_required
@@ -778,13 +1286,7 @@ def api_setup_payment_method():
 # n8n Sync API Routes
 # ============================================================================
 
-@app.route('/api/workflows/sync', methods=['POST'])
-@auth.login_required
-def api_sync_n8n_workflows():
-    """Sync workflows with n8n"""
-    user = auth.current_user()
-    # Placeholder - to be replaced with actual n8n sync logic
-    return jsonify({'message': 'Workflows synced successfully', 'synced_count': 0})
+# Old sync route removed - now use /api/admin/workflows/sync
 
 # Expose app as 'application' for Vercel's Python runtime
 application = app

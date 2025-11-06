@@ -1,0 +1,59 @@
+{% extends "admin/base.html" %}
+
+{% block breadcrumbs %}
+<a href="{{ url_for('admin_dashboard') }}">Admin</a>
+<span class="breadcrumbs-separator">/</span>
+<span>System</span>
+{% endblock %}
+
+{% block admin_content %}
+<div class="page-header">
+    <h1 class="page-title">System Status</h1>
+    <p class="page-description">Monitor system health and n8n connection.</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-label">Total Workflows</span>
+            <div class="stat-icon blue">
+                <i data-lucide="workflow" width="20" height="20"></i>
+            </div>
+        </div>
+        <div class="stat-value">{{ total_workflows }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-label">Public Workflows</span>
+            <div class="stat-icon green">
+                <i data-lucide="globe" width="20" height="20"></i>
+            </div>
+        </div>
+        <div class="stat-value">{{ public_workflows }}</div>
+    </div>
+</div>
+
+<div class="dashboard-card" style="margin-top: 1.5rem;">
+    <h2 class="card-title">n8n Configuration</h2>
+    <div style="padding: 1rem 0;">
+        <p><strong>Status:</strong> 
+            {% if n8n_configured %}
+                {% if n8n_status and n8n_status.connected %}
+                <span style="color: var(--color-success);">✓ Connected</span>
+                {% else %}
+                <span style="color: var(--color-danger);">✗ {{ n8n_status.message if n8n_status else 'Not connected' }}</span>
+                {% endif %}
+            {% else %}
+            <span style="color: var(--color-warning);">Not configured</span>
+            {% endif %}
+        </p>
+        {% if n8n_status and n8n_status.url %}
+        <p><strong>URL:</strong> {{ n8n_status.url }}</p>
+        {% endif %}
+        <p style="margin-top: 0.5rem; font-size: var(--text-sm); color: var(--color-text-light);">
+            Configure n8n via N8N_URL and N8N_API_KEY environment variables.
+        </p>
+    </div>
+</div>
+{% endblock %}
+

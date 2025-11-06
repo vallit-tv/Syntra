@@ -213,7 +213,7 @@ def check_user_status(name: str, ip_address: str = None) -> dict:
             # Auto-create Theo if he doesn't exist (for initial setup)
             if name.lower() == 'theo':
                 try:
-                    user = create_user_admin('Theo', role='ceo')
+                    user = create_user_admin('Theo', role='admin')
                 except Exception as e:
                     # If user already exists (race condition), fetch again
                     user = db.get_user_by_name('Theo')
@@ -253,12 +253,12 @@ def current_user() -> Optional[dict]:
     role = user.get('role')
     if not role:
         # If role field doesn't exist in DB, default to 'user'
-        # For Theo, check if name is Theo and set as CEO
+        # For Theo, check if name is Theo and set as admin
         if user.get('name', '').lower() == 'theo':
-            role = 'ceo'
+            role = 'admin'
             # Try to update role in DB
             try:
-                db.update_user_role(user['id'], 'ceo')
+                db.update_user_role(user['id'], 'admin')
             except:
                 pass
         else:
@@ -272,13 +272,13 @@ def current_user() -> Optional[dict]:
 
 
 def is_admin(user: Optional[dict] = None) -> bool:
-    """Check if user is admin or CEO"""
+    """Check if user is admin (or ceo for backward compatibility)"""
     if not user:
         user = current_user()
     if not user:
         return False
     role = user.get('role', 'user')
-    return role in ('admin', 'ceo')
+    return role in ('admin', 'ceo')  # Keep 'ceo' for backward compatibility
 
 
 def admin_required(f):

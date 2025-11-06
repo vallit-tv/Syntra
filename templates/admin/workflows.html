@@ -1,0 +1,195 @@
+{% extends "admin/base.html" %}
+
+{% block breadcrumbs %}
+<a href="{{ url_for('admin_dashboard') }}">Admin</a>
+<span class="breadcrumbs-separator">/</span>
+<span>Workflows</span>
+{% endblock %}
+
+{% block admin_content %}
+<div class="page-header">
+    <div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h1 class="page-title">Workflow Management</h1>
+            <p class="page-description">Sync and manage workflows from n8n.</p>
+        </div>
+        <div style="display: flex; gap: 0.75rem; align-items: center;">
+            <button onclick="syncWorkflows()" class="btn btn-secondary" style="display: flex; align-items: center; gap: 0.5rem;">
+                <i data-lucide="refresh-cw" width="16" height="16"></i>
+                Sync from n8n
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- n8n Status -->
+<div class="dashboard-card" style="margin-bottom: 1.5rem;">
+    <h3 style="font-size: var(--text-base); font-weight: var(--font-semibold); margin-bottom: 0.75rem;">n8n Connection Status</h3>
+    {% if n8n_configured %}
+        {% if n8n_status and n8n_status.connected %}
+        <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--color-success);">
+            <i data-lucide="check-circle" width="20" height="20"></i>
+            <span>Connected and ready</span>
+        </div>
+        {% else %}
+        <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--color-danger);">
+            <i data-lucide="alert-circle" width="20" height="20"></i>
+            <span>{{ n8n_status.message if n8n_status else 'Connection failed' }}</span>
+        </div>
+        {% endif %}
+    {% else %}
+    <div style="color: var(--color-warning);">
+        <i data-lucide="alert-triangle" width="20" height="20"></i>
+        <span>n8n not configured. Set N8N_URL and N8N_API_KEY environment variables.</span>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Workflows List -->
+<div class="dashboard-card">
+    <div class="card-header">
+        <h2 class="card-title">All Workflows</h2>
+    </div>
+    {% if workflows %}
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Public</th>
+                    <th>Required Services</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for workflow in workflows %}
+                <tr>
+                    <td>
+                        <a href="{{ url_for('admin_workflow_detail', workflow_id=workflow.id) }}" style="font-weight: var(--font-medium); color: var(--color-text);">
+                            {{ workflow.name }}
+                        </a>
+                    </td>
+                    <td>{{ workflow.category or 'automation' }}</td>
+                    <td>
+                        <span class="status-badge {{ 'active' if workflow.is_active else 'inactive' }}">
+                            <span class="status-badge-dot"></span>
+                            {{ 'Active' if workflow.is_active else 'Disabled' }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="status-badge {{ 'active' if workflow.is_public else 'inactive' }}">
+                            {{ 'Public' if workflow.is_public else 'Private' }}
+                        </span>
+                    </td>
+                    <td>
+                        {% set services = workflow.required_services if workflow.required_services is iterable and workflow.required_services is not string else [] %}
+                        {% if services %}
+                            {% for service in services[:3] %}
+                            <span class="status-badge" style="margin-right: 0.25rem;">{{ service }}</span>
+                            {% endfor %}
+                            {% if services|length > 3 %}+{{ services|length - 3 }}{% endif %}
+                        {% else %}
+                            <span style="color: var(--color-text-light);">None</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button onclick="toggleWorkflow('{{ workflow.id }}', {{ workflow.is_active|lower }})" class="btn btn-sm btn-secondary">
+                                {{ 'Disable' if workflow.is_active else 'Enable' }}
+                            </button>
+                            <button onclick="togglePublic('{{ workflow.id }}', {{ workflow.is_public|lower }})" class="btn btn-sm btn-secondary">
+                                {{ 'Make Private' if workflow.is_public else 'Make Public' }}
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i data-lucide="workflow" width="48" height="48" style="color: var(--color-text-lighter);"></i>
+        <h3 class="empty-state-title">No workflows yet</h3>
+        <p class="empty-state-description">Sync workflows from n8n to get started.</p>
+        <button onclick="syncWorkflows()" class="btn btn-primary">Sync from n8n</button>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block admin_scripts %}
+<script>
+function syncWorkflows() {
+    const btn = event.target.closest('button');
+    const icon = btn.querySelector('i[data-lucide="refresh-cw"]');
+    btn.disabled = true;
+    icon.style.animation = 'spin 1s linear infinite';
+    
+    fetch('/api/admin/workflows/sync', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert('Error: ' + data.error);
+            } else {
+                alert('Synced ' + data.synced_count + ' workflows successfully!');
+                location.reload();
+            }
+        })
+        .catch(err => alert('Error: ' + err))
+        .finally(() => {
+            icon.style.animation = '';
+            btn.disabled = false;
+        });
+}
+
+function toggleWorkflow(workflowId, currentState) {
+    fetch(`/api/admin/workflows/${workflowId}/toggle`, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ is_active: !currentState })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert('Error: ' + data.error);
+        } else {
+            location.reload();
+        }
+    })
+    .catch(err => alert('Error: ' + err));
+}
+
+function togglePublic(workflowId, currentState) {
+    fetch(`/api/admin/workflows/${workflowId}/public`, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ is_public: !currentState })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert('Error: ' + data.error);
+        } else {
+            location.reload();
+        }
+    })
+    .catch(err => alert('Error: ' + err));
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+});
+</script>
+<style>
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+</style>
+{% endblock %}
+
