@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}CEO Dashboard – Syntra{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=2">
+{% endblock %}
+
+{% block content %}
+<div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+<div class="dashboard-container">
+    <aside id="dashboardSidebar" class="dashboard-sidebar">
+        <div class="sidebar-header">
+            <a href="{{ url_for('company_dashboard') }}" class="sidebar-logo">
+                <div class="logo-icon">{{ company.name[0].upper() if company else 'C' }}</div>
+                <span class="logo-text">{{ company.name if company else 'Company' }}</span>
+            </a>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('company_dashboard') }}" class="nav-item {% if request.endpoint == 'company_dashboard' %}active{% endif %}">
+                <span class="nav-item-icon">
+                    <i data-lucide="layout-dashboard" width="20" height="20"></i>
+                </span>
+                <span class="nav-item-text">Dashboard</span>
+            </a>
+            <a href="{{ url_for('company_workflows') }}" class="nav-item {% if request.endpoint.startswith('company_workflows') %}active{% endif %}">
+                <span class="nav-item-icon">
+                    <i data-lucide="workflow" width="20" height="20"></i>
+                </span>
+                <span class="nav-item-text">Workflows</span>
+            </a>
+            <a href="{{ url_for('company_workers') }}" class="nav-item {% if request.endpoint == 'company_workers' %}active{% endif %}">
+                <span class="nav-item-icon">
+                    <i data-lucide="users" width="20" height="20"></i>
+                </span>
+                <span class="nav-item-text">Team</span>
+            </a>
+            <a href="{{ url_for('company_settings') }}" class="nav-item {% if request.endpoint == 'company_settings' %}active{% endif %}">
+                <span class="nav-item-icon">
+                    <i data-lucide="settings" width="20" height="20"></i>
+                </span>
+                <span class="nav-item-text">Settings</span>
+            </a>
+        </nav>
+    </aside>
+
+    <div class="dashboard-content">
+        <div class="dashboard-topbar">
+            <div class="topbar-left">
+                <button id="sidebarToggle" class="sidebar-toggle" aria-label="Toggle sidebar">
+                    <i data-lucide="menu" width="20" height="20"></i>
+                </button>
+                <nav class="breadcrumbs">
+                    <a href="{{ url_for('index') }}">Home</a>
+                    <span class="breadcrumbs-separator">/</span>
+                    <a href="{{ url_for('company_dashboard') }}">{{ company.name if company else 'Company' }}</a>
+                    <span class="breadcrumbs-separator">/</span>
+                    {% block breadcrumbs %}<span>Dashboard</span>{% endblock %}
+                </nav>
+            </div>
+            <div class="topbar-right">
+                <div class="user-menu">
+                    <button id="userMenuButton" class="user-menu-button">
+                        <div class="user-avatar">{{ user.name[0].upper() }}</div>
+                        <div class="user-info">
+                            <span class="user-name">{{ user.name }}</span>
+                            <span class="user-role">CEO</span>
+                        </div>
+                        <i data-lucide="chevron-down" width="16" height="16"></i>
+                    </button>
+                    <div id="userMenuDropdown" class="user-menu-dropdown">
+                        <a href="{{ url_for('company_settings') }}" class="dropdown-item">
+                            <i data-lucide="settings" width="16" height="16"></i>
+                            <span>Settings</span>
+                        </a>
+                        <a href="{{ url_for('logout') }}" class="dropdown-item danger">
+                            <i data-lucide="log-out" width="16" height="16"></i>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <main class="main-content">
+            {% block company_content %}{% endblock %}
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        lucide.createIcons();
+
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebar = document.getElementById('dashboardSidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            sidebarOverlay.classList.toggle('active');
+        });
+
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+            sidebarOverlay.classList.remove('active');
+        });
+
+        const userMenuButton = document.getElementById('userMenuButton');
+        const userMenuDropdown = document.getElementById('userMenuDropdown');
+
+        userMenuButton.addEventListener('click', (event) => {
+            userMenuDropdown.classList.toggle('active');
+            event.stopPropagation();
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!userMenuButton.contains(event.target) && !userMenuDropdown.contains(event.target)) {
+                userMenuDropdown.classList.remove('active');
+            }
+        });
+    });
+</script>
+{% block company_scripts %}{% endblock %}
+{% endblock %}
+

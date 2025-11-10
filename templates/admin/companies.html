@@ -1,0 +1,179 @@
+{% extends "admin/base.html" %}
+
+{% block breadcrumbs %}
+<a href="{{ url_for('admin_dashboard') }}">Admin</a>
+<span class="breadcrumbs-separator">/</span>
+<span>Companies</span>
+{% endblock %}
+
+{% block admin_content %}
+<div class="page-header">
+    <div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h1 class="page-title">Companies</h1>
+            <p class="page-description">Manage companies and assign CEOs.</p>
+        </div>
+        <button onclick="openModal('createCompanyModal')" class="btn btn-primary" style="display: flex; align-items: center; gap: 0.5rem;">
+            <i data-lucide="plus" width="16" height="16"></i>
+            Add Company
+        </button>
+    </div>
+</div>
+
+<div class="dashboard-card">
+    {% if companies %}
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Slug</th>
+                    <th>Users</th>
+                    <th>Created At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for company in companies %}
+                <tr>
+                    <td>
+                        <a href="{{ url_for('admin_company_detail', company_id=company.id) }}" style="font-weight: 600; color: var(--color-primary); text-decoration: none;">
+                            {{ company.name }}
+                        </a>
+                    </td>
+                    <td><code>{{ company.slug }}</code></td>
+                    <td>-</td>
+                    <td>{{ company.created_at|format_datetime }}</td>
+                    <td>
+                        <div class="table-actions">
+                            <a href="{{ url_for('admin_company_detail', company_id=company.id) }}" class="btn btn-secondary btn-sm">
+                                <i data-lucide="eye" width="14" height="14"></i> View
+                            </a>
+                            <button onclick="assignCEO('{{ company.id }}')" class="btn btn-primary btn-sm">
+                                <i data-lucide="user-plus" width="14" height="14"></i> Assign CEO
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">
+            <i data-lucide="building-2" width="32" height="32"></i>
+        </div>
+        <h3 class="empty-state-title">No companies yet</h3>
+        <p class="empty-state-description">Add your first company to get started.</p>
+        <button onclick="openModal('createCompanyModal')" class="btn btn-primary">Add Company</button>
+    </div>
+    {% endif %}
+</div>
+
+<div id="createCompanyModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeModal('createCompanyModal')">&times;</span>
+        <h2>Create Company</h2>
+        <form id="createCompanyForm">
+            <div class="form-group">
+                <label for="companyName" class="form-label">Company Name</label>
+                <input type="text" id="companyName" name="name" class="form-input" required>
+            </div>
+            <div class="form-group">
+                <label for="companySlug" class="form-label">Company Slug</label>
+                <input type="text" id="companySlug" name="slug" class="form-input" required placeholder="company-name">
+                <p class="form-help-text">URL-friendly identifier (lowercase, hyphens allowed).</p>
+            </div>
+            <button type="submit" class="btn btn-primary">Create Company</button>
+        </form>
+    </div>
+</div>
+
+<div id="assignCEOModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeModal('assignCEOModal')">&times;</span>
+        <h2>Assign CEO</h2>
+        <form id="assignCEOForm">
+            <input type="hidden" id="assignCEOCompanyId">
+            <div class="form-group">
+                <label for="ceoName" class="form-label">CEO Name</label>
+                <input type="text" id="ceoName" name="user_name" class="form-input" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Assign CEO</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block dashboard_scripts %}
+<script>
+function openModal(modalId) {
+    document.getElementById(modalId).style.display = 'block';
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
+
+window.onclick = function(event) {
+    if (event.target.classList.contains('modal')) {
+        event.target.style.display = 'none';
+    }
+}
+
+document.getElementById('createCompanyForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const name = document.getElementById('companyName').value;
+    const slug = document.getElementById('companySlug').value;
+
+    fetch('/api/admin/companies', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, slug })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert('Error creating company: ' + data.error);
+        } else {
+            alert('Company created successfully!');
+            closeModal('createCompanyModal');
+            location.reload();
+        }
+    })
+    .catch(err => alert('Error: ' + err));
+});
+
+function assignCEO(companyId) {
+    document.getElementById('assignCEOCompanyId').value = companyId;
+    openModal('assignCEOModal');
+}
+
+document.getElementById('assignCEOForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const companyId = document.getElementById('assignCEOCompanyId').value;
+    const user_name = document.getElementById('ceoName').value;
+
+    fetch(`/api/admin/companies/${companyId}/assign-ceo`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_name })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert('Error assigning CEO: ' + data.error);
+        } else {
+            alert('CEO assigned successfully!');
+            closeModal('assignCEOModal');
+            location.reload();
+        }
+    })
+    .catch(err => alert('Error: ' + err));
+});
+
+lucide.createIcons();
+</script>
+{% endblock %}
+

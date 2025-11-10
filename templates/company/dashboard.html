@@ -1,0 +1,75 @@
+{% extends "company/base.html" %}
+
+{% block breadcrumbs %}
+<span>Dashboard</span>
+{% endblock %}
+
+{% block company_content %}
+<div class="page-header">
+    <h1 class="page-title">Welcome back, {{ user.name }}!</h1>
+    <p class="page-description">Manage your company's workflows and team.</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon" style="background-color: var(--color-primary-light);">
+            <i data-lucide="workflow" width="24" height="24" style="color: var(--color-primary);"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-label">Active Workflows</div>
+            <div class="stat-value">{{ active_workflows_count }}</div>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon" style="background-color: var(--color-success-light);">
+            <i data-lucide="users" width="24" height="24" style="color: var(--color-success);"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-label">Team Members</div>
+            <div class="stat-value">{{ workers_count }}</div>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon" style="background-color: var(--color-warning-light);">
+            <i data-lucide="building-2" width="24" height="24" style="color: var(--color-warning);"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-label">Company</div>
+            <div class="stat-value" style="font-size: var(--text-lg); font-weight: var(--font-semibold);">{{ company.name }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="card-grid">
+    <div class="dashboard-card">
+        <div class="card-header">
+            <h2 class="card-title">Quick Actions</h2>
+        </div>
+        <div class="card-body">
+            <div class="quick-actions">
+                <a href="{{ url_for('company_workflows') }}" class="action-button">
+                    <i data-lucide="workflow" width="20" height="20"></i>
+                    <span>Manage Workflows</span>
+                </a>
+                <a href="{{ url_for('company_workers') }}" class="action-button">
+                    <i data-lucide="user-plus" width="20" height="20"></i>
+                    <span>Add Team Member</span>
+                </a>
+                <a href="{{ url_for('company_settings') }}" class="action-button">
+                    <i data-lucide="settings" width="20" height="20"></i>
+                    <span>Company Settings</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block company_scripts %}
+<script>
+    lucide.createIcons();
+</script>
+{% endblock %}
+

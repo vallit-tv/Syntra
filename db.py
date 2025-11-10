@@ -352,11 +352,10 @@ def get_workflow_activation(user_id: str, workflow_id: str) -> Optional[Dict]:
     except:
         return None
 
-def activate_workflow(user_id: str, workflow_id: str, config: Dict = None) -> Dict:
-    """Activate a workflow for a user"""
+def activate_workflow(user_or_company_id: str, workflow_id: str, config: Dict = None, is_company_level: bool = False) -> Dict:
+    """Activate a workflow for a user or company"""
     try:
         activation_data = {
-            'user_id': user_id,
             'workflow_id': workflow_id,
             'is_active': True,
             'config': config or {},
@@ -364,8 +363,20 @@ def activate_workflow(user_id: str, workflow_id: str, config: Dict = None) -> Di
             'updated_at': datetime.utcnow().isoformat()
         }
         
-        # Check if already exists
-        existing = get_workflow_activation(user_id, workflow_id)
+        if is_company_level:
+            activation_data['company_id'] = user_or_company_id
+            activation_data['user_id'] = None
+            # Check if already exists
+            query = get_db().table('workflow_activations').select('*').eq('company_id', user_or_company_id).eq('workflow_id', workflow_id)
+        else:
+            activation_data['user_id'] = user_or_company_id
+            activation_data['company_id'] = None
+            # Check if already exists
+            query = get_db().table('workflow_activations').select('*').eq('user_id', user_or_company_id).eq('workflow_id', workflow_id)
+        
+        existing_result = query.execute()
+        existing = existing_result.data[0] if existing_result.data else None
+        
         if existing:
             # Update existing
             result = get_db().table('workflow_activations').update({
@@ -382,14 +393,25 @@ def activate_workflow(user_id: str, workflow_id: str, config: Dict = None) -> Di
         print(f"Error activating workflow: {e}")
         raise
 
-def deactivate_workflow(user_id: str, workflow_id: str) -> bool:
-    """Deactivate a workflow for a user"""
+def deactivate_workflow(user_or_company_id: str, workflow_id: str, is_company_level: bool = False) -> bool:
+    """Deactivate a workflow for a user or company"""
     try:
-        get_db().table('workflow_activations').update({
-            'is_active': False,
-            'updated_at': datetime.utcnow().isoformat()
-        }).eq('user_id', user_id).eq('workflow_id', workflow_id).execute()
-        return True
+        query = get_db().table('workflow_activations').select('id')
+        if is_company_level:
+            query = query.eq('company_id', user_or_company_id)
+        else:
+            query = query.eq('user_id', user_or_company_id)
+        query = query.eq('workflow_id', workflow_id)
+        
+        result = query.execute()
+        if result.data:
+            activation_id = result.data[0]['id']
+            get_db().table('workflow_activations').update({
+                'is_active': False,
+                'updated_at': datetime.utcnow().isoformat()
+            }).eq('id', activation_id).execute()
+            return True
+        return False
     except:
         return False
 
@@ -486,4 +508,89 @@ def get_all_workflow_executions(workflow_id: str = None, limit: int = 100) -> Li
         return result.data or []
     except:
         return []
+
+# ============================================================================
+# COMPANY OPERATIONS
+# ============================================================================
+
+def get_companies() -> List[Dict]:
+    """Get all companies (admin only)"""
+    try:
+        result = get_db().table('companies').select('*').order('created_at', desc=True).execute()
+        return result.data or []
+    except:
+        return []
+
+def get_company_by_id(company_id: str) -> Optional[Dict]:
+    """Get company by ID"""
+    try:
+        result = get_db().table('companies').select('*').eq('id', company_id).execute()
+        return result.data[0] if result.data else None
+    except:
+        return None
+
+def get_company_by_slug(slug: str) -> Optional[Dict]:
+    """Get company by slug"""
+    try:
+        result = get_db().table('companies').select('*').eq('slug', slug).execute()
+        return result.data[0] if result.data else None
+    except:
+        return None
+
+def create_company(name: str, slug: str, settings: Dict = None) -> Dict:
+    """Create a new company"""
+    company_data = {
+        'name': name,
+        'slug': slug,
+        'settings': settings or {},
+        'created_at': datetime.utcnow().isoformat(),
+        'updated_at': datetime.utcnow().isoformat()
+    }
+    try:
+        result = get_db().table('companies').insert(company_data).execute()
+        return result.data[0]
+    except Exception as e:
+        print(f"Error creating company: {e}")
+        raise
+
+def update_company(company_id: str, updates: Dict) -> bool:
+    """Update company"""
+    try:
+        updates['updated_at'] = datetime.utcnow().isoformat()
+        get_db().table('companies').update(updates).eq('id', company_id).execute()
+        return True
+    except:
+        return False
+
+def delete_company(company_id: str) -> bool:
+    """Delete company"""
+    try:
+        get_db().table('companies').delete().eq('id', company_id).execute()
+        return True
+    except:
+        return False
+
+def get_company_users(company_id: str) -> List[Dict]:
+    """Get all users for a company"""
+    try:
+        result = get_db().table('users').select('*').eq('company_id', company_id).order('created_at', desc=True).execute()
+        return result.data or []
+    except:
+        return []
+
+def get_company_activations(company_id: str) -> List[Dict]:
+    """Get all workflow activations for a company"""
+    try:
+        result = get_db().table('workflow_activations').select('*, workflows(*)').eq('company_id', company_id).execute()
+        return result.data or []
+    except:
+        return []
+
+def assign_user_to_company(user_id: str, company_id: str) -> bool:
+    """Assign user to a company"""
+    try:
+        get_db().table('users').update({'company_id': company_id}).eq('id', user_id).execute()
+        return True
+    except:
+        return False
 

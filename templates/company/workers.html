@@ -1,0 +1,120 @@
+{% extends "company/base.html" %}
+
+{% block breadcrumbs %}
+<span>Team</span>
+{% endblock %}
+
+{% block company_content %}
+<div class="page-header">
+    <div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h1 class="page-title">Team Members</h1>
+            <p class="page-description">Manage your company's workers and team members.</p>
+        </div>
+        <button onclick="openModal('addWorkerModal')" class="btn btn-primary" style="display: flex; align-items: center; gap: 0.5rem;">
+            <i data-lucide="user-plus" width="16" height="16"></i>
+            Add Team Member
+        </button>
+    </div>
+</div>
+
+<div class="dashboard-card">
+    {% if workers %}
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Role</th>
+                    <th>Created At</th>
+                    <th>Last Login</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for worker in workers %}
+                <tr>
+                    <td>
+                        <span style="font-weight: 600;">{{ worker.name }}</span>
+                    </td>
+                    <td>
+                        <span class="status-badge {{ 'active' if worker.role == 'ceo' else 'inactive' }}">
+                            <span class="status-badge-dot"></span>
+                            {{ worker.role|capitalize }}
+                        </span>
+                    </td>
+                    <td>{{ worker.created_at|format_datetime }}</td>
+                    <td>{{ worker.last_login_at|format_datetime|default('Never') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">
+            <i data-lucide="users" width="32" height="32"></i>
+        </div>
+        <h3 class="empty-state-title">No team members yet</h3>
+        <p class="empty-state-description">Add your first team member to start collaborating.</p>
+        <button onclick="openModal('addWorkerModal')" class="btn btn-primary">Add Team Member</button>
+    </div>
+    {% endif %}
+</div>
+
+<div id="addWorkerModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeModal('addWorkerModal')">&times;</span>
+        <h2>Add Team Member</h2>
+        <form id="addWorkerForm">
+            <div class="form-group">
+                <label for="workerName" class="form-label">Name</label>
+                <input type="text" id="workerName" name="name" class="form-input" required placeholder="Enter team member name">
+            </div>
+            <button type="submit" class="btn btn-primary">Add Team Member</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block company_scripts %}
+<script>
+function openModal(modalId) {
+    document.getElementById(modalId).style.display = 'block';
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
+
+window.onclick = function(event) {
+    if (event.target.classList.contains('modal')) {
+        event.target.style.display = 'none';
+    }
+}
+
+document.getElementById('addWorkerForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const name = document.getElementById('workerName').value;
+
+    fetch('/api/company/workers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert('Error adding team member: ' + data.error);
+        } else {
+            alert('Team member added successfully! They can now login and will be prompted to set a password.');
+            closeModal('addWorkerModal');
+            location.reload();
+        }
+    })
+    .catch(err => alert('Error: ' + err));
+});
+
+lucide.createIcons();
+</script>
+{% endblock %}
+

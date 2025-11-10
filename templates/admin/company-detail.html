@@ -1,0 +1,193 @@
+{% extends "admin/base.html" %}
+
+{% block breadcrumbs %}
+<a href="{{ url_for('admin_dashboard') }}">Admin</a>
+<span class="breadcrumbs-separator">/</span>
+<a href="{{ url_for('admin_companies') }}">Companies</a>
+<span class="breadcrumbs-separator">/</span>
+<span>{{ company.name|default('Company Detail') }}</span>
+{% endblock %}
+
+{% block admin_content %}
+<div class="page-header">
+    <h1 class="page-title">{{ company.name|default('Company Detail') }}</h1>
+    <p class="page-description">Manage company users and workflows.</p>
+</div>
+
+<div class="dashboard-card">
+    <div class="card-header">
+        <h2 class="card-title">Company Information</h2>
+    </div>
+    <div class="card-body">
+        <div class="detail-item">
+            <strong>ID:</strong> {{ company.id }}
+        </div>
+        <div class="detail-item">
+            <strong>Name:</strong> {{ company.name }}
+        </div>
+        <div class="detail-item">
+            <strong>Slug:</strong> <code>{{ company.slug }}</code>
+        </div>
+        <div class="detail-item">
+            <strong>Created At:</strong> {{ company.created_at|format_datetime }}
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-card">
+    <div class="card-header">
+        <h2 class="card-title">Company Users</h2>
+        <button onclick="assignCEO('{{ company.id }}')" class="btn btn-primary btn-sm">
+            <i data-lucide="user-plus" width="14" height="14"></i> Assign CEO
+        </button>
+    </div>
+    <div class="table-container">
+        {% if company_users %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Role</th>
+                    <th>Created At</th>
+                    <th>Last Login</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in company_users %}
+                <tr>
+                    <td>
+                        <a href="{{ url_for('admin_user_detail', user_id=u.id) }}" style="font-weight: 600; color: var(--color-primary); text-decoration: none;">
+                            {{ u.name }}
+                        </a>
+                    </td>
+                    <td>
+                        <span class="status-badge {{ 'active' if u.role == 'ceo' else 'inactive' }}">
+                            <span class="status-badge-dot"></span>
+                            {{ u.role|capitalize }}
+                        </span>
+                    </td>
+                    <td>{{ u.created_at|format_datetime }}</td>
+                    <td>{{ u.last_login_at|format_datetime|default('Never') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state-small">
+            <p class="text-secondary">No users assigned to this company yet.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="dashboard-card">
+    <div class="card-header">
+        <h2 class="card-title">Active Workflows</h2>
+    </div>
+    <div class="table-container">
+        {% if activations %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Workflow</th>
+                    <th>Status</th>
+                    <th>Activated At</th>
+                    <th>Executions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for activation in activations %}
+                <tr>
+                    <td>
+                        {% if activation.workflows %}
+                        <a href="{{ url_for('admin_workflow_detail', workflow_id=activation.workflows.id) }}" style="font-weight: 600; color: var(--color-primary); text-decoration: none;">
+                            {{ activation.workflows.name }}
+                        </a>
+                        {% else %}
+                        N/A
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="status-badge {{ 'active' if activation.is_active else 'inactive' }}">
+                            <span class="status-badge-dot"></span>
+                            {{ 'Active' if activation.is_active else 'Inactive' }}
+                        </span>
+                    </td>
+                    <td>{{ activation.created_at|format_datetime }}</td>
+                    <td>{{ activation.execution_count|default(0) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state-small">
+            <p class="text-secondary">No workflows activated for this company yet.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div id="assignCEOModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeModal('assignCEOModal')">&times;</span>
+        <h2>Assign CEO</h2>
+        <form id="assignCEOForm">
+            <input type="hidden" id="assignCEOCompanyId" value="{{ company.id }}">
+            <div class="form-group">
+                <label for="ceoName" class="form-label">CEO Name</label>
+                <input type="text" id="ceoName" name="user_name" class="form-input" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Assign CEO</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block dashboard_scripts %}
+<script>
+function openModal(modalId) {
+    document.getElementById(modalId).style.display = 'block';
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
+
+window.onclick = function(event) {
+    if (event.target.classList.contains('modal')) {
+        event.target.style.display = 'none';
+    }
+}
+
+function assignCEO(companyId) {
+    document.getElementById('assignCEOCompanyId').value = companyId;
+    openModal('assignCEOModal');
+}
+
+document.getElementById('assignCEOForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const companyId = document.getElementById('assignCEOCompanyId').value;
+    const user_name = document.getElementById('ceoName').value;
+
+    fetch(`/api/admin/companies/${companyId}/assign-ceo`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_name })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert('Error assigning CEO: ' + data.error);
+        } else {
+            alert('CEO assigned successfully!');
+            closeModal('assignCEOModal');
+            location.reload();
+        }
+    })
+    .catch(err => alert('Error: ' + err));
+});
+
+lucide.createIcons();
+</script>
+{% endblock %}
+

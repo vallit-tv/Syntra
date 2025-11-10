@@ -56,20 +56,20 @@ ALTER TABLE integrations ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users can read own integrations" ON integrations;
 CREATE POLICY "Users can read own integrations"
     ON integrations FOR SELECT
-    USING (user_id IS NULL OR auth.uid()::text = user_id::text);
+    USING (user_id IS NULL OR user_id = auth.uid());
 
 DROP POLICY IF EXISTS "Users can insert own integrations" ON integrations;
 CREATE POLICY "Users can insert own integrations"
     ON integrations FOR INSERT
-    WITH CHECK (user_id IS NULL OR auth.uid()::text = user_id::text);
+    WITH CHECK (user_id IS NULL OR user_id = auth.uid());
 
 DROP POLICY IF EXISTS "Users can update own integrations" ON integrations;
 CREATE POLICY "Users can update own integrations"
     ON integrations FOR UPDATE
-    USING (user_id IS NULL OR auth.uid()::text = user_id::text);
+    USING (user_id IS NULL OR user_id = auth.uid());
 
 DROP POLICY IF EXISTS "Users can delete own integrations" ON integrations;
 CREATE POLICY "Users can delete own integrations"
     ON integrations FOR DELETE
-    USING (user_id IS NULL OR auth.uid()::text = user_id::text);
+    USING (user_id IS NULL OR user_id = auth.uid());
 

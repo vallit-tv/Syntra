@@ -1,0 +1,98 @@
+{% extends "admin/base.html" %}
+
+{% block breadcrumbs %}
+<a href="{{ url_for('admin_dashboard') }}">Admin</a>
+<span class="breadcrumbs-separator">/</span>
+<span>n8n Editor</span>
+{% endblock %}
+
+{% block admin_content %}
+<div class="page-header">
+    <h1 class="page-title">n8n Workflow Editor</h1>
+    <p class="page-description">Access your n8n instance to create and manage workflows.</p>
+</div>
+
+<div class="dashboard-card">
+    <div class="card-header">
+        <h2 class="card-title">n8n Connection Status</h2>
+    </div>
+    <div class="card-body">
+        {% if n8n_configured %}
+            {% if n8n_status and n8n_status.connected %}
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                <span class="status-badge active">
+                    <span class="status-badge-dot"></span>
+                    Connected
+                </span>
+                <span style="color: var(--color-text-secondary);">{{ n8n_status.message }}</span>
+            </div>
+            
+            <div class="detail-item">
+                <strong>n8n URL:</strong> <a href="{{ n8n_url }}" target="_blank" rel="noopener noreferrer" style="color: var(--color-primary);">{{ n8n_url }}</a>
+            </div>
+            
+            <div style="margin-top: 2rem;">
+                <a href="{{ n8n_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                    <i data-lucide="external-link" width="16" height="16"></i>
+                    Open n8n Editor
+                </a>
+            </div>
+            {% else %}
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                <span class="status-badge inactive">
+                    <span class="status-badge-dot"></span>
+                    Disconnected
+                </span>
+                <span style="color: var(--color-danger);">{{ n8n_status.message if n8n_status else 'Cannot connect to n8n' }}</span>
+            </div>
+            
+            <div class="detail-item">
+                <strong>n8n URL:</strong> <code>{{ n8n_url }}</code>
+            </div>
+            
+            <p style="margin-top: 1rem; color: var(--color-text-secondary);">
+                Please check that your n8n instance is running and accessible at the configured URL.
+            </p>
+            {% endif %}
+        {% else %}
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+            <span class="status-badge inactive">
+                <span class="status-badge-dot"></span>
+                Not Configured
+            </span>
+        </div>
+        
+        <p style="color: var(--color-text-secondary);">
+            n8n is not configured. Please set the following environment variables:
+        </p>
+        <ul style="margin-top: 1rem; color: var(--color-text-secondary);">
+            <li><code>N8N_URL</code> - Your n8n instance URL</li>
+            <li><code>N8N_API_KEY</code> - Your n8n API key</li>
+        </ul>
+        {% endif %}
+    </div>
+</div>
+
+<div class="dashboard-card">
+    <div class="card-header">
+        <h2 class="card-title">About n8n Integration</h2>
+    </div>
+    <div class="card-body">
+        <p style="margin-bottom: 1rem;">
+            Use the n8n editor to create and manage automation workflows. Once created, you can:
+        </p>
+        <ul style="margin-left: 1.5rem; color: var(--color-text-secondary);">
+            <li>Sync workflows to Syntra using the "Sync with n8n" button in <a href="{{ url_for('admin_workflows') }}" style="color: var(--color-primary);">Admin Workflows</a></li>
+            <li>Mark workflows as public to make them available to companies</li>
+            <li>Monitor workflow executions and manage company activations</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block dashboard_scripts %}
+<script>
+lucide.createIcons();
+</script>
+{% endblock %}
+

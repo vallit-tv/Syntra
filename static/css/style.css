@@ -6,56 +6,62 @@
 }
 
 :root {
-    /* Professional Color Palette */
-    --color-primary: #4F46E5;
-    --color-primary-hover: #4338CA;
+    /* n8n/Notion/Cursor Inspired Color Palette */
+    /* Primary - subtle blue/purple similar to n8n */
+    --color-primary: #6366F1;
+    --color-primary-hover: #4F46E5;
     --color-primary-light: #EEF2FF;
     
-    --color-success: #059669;
+    /* Status Colors */
+    --color-success: #10B981;
     --color-success-light: #D1FAE5;
-    --color-danger: #DC2626;
+    --color-danger: #EF4444;
     --color-danger-light: #FEE2E2;
-    --color-warning: #D97706;
+    --color-warning: #F59E0B;
     --color-warning-light: #FEF3C7;
+    --color-info: #3B82F6;
+    --color-info-light: #DBEAFE;
     
-    /* Professional Grays */
-    --color-text: #171717;
-    --color-text-secondary: #525252;
-    --color-text-light: #737373;
-    --color-text-lighter: #A3A3A3;
+    /* Neutral Grays (Notion-style) */
+    --color-text: #111827;
+    --color-text-secondary: #6B7280;
+    --color-text-light: #9CA3AF;
+    --color-text-lighter: #D1D5DB;
     
     /* Backgrounds */
     --color-bg: #FFFFFF;
     --color-bg-subtle: #FAFAFA;
     --color-bg-muted: #F5F5F5;
-    --color-bg-dark: #0A0A0A;
+    --color-bg-dark: #1F2937;
     
     /* Borders */
-    --color-border: #E5E5E5;
-    --color-border-light: #F5F5F5;
-    --color-border-dark: #D4D4D4;
+    --color-border: #E5E7EB;
+    --color-border-light: #F3F4F6;
+    --color-border-dark: #D1D5DB;
     
-    /* Spacing */
-    --spacing-xs: 0.5rem;
-    --spacing-sm: 0.75rem;
-    --spacing-md: 1rem;
-    --spacing-lg: 1.5rem;
-    --spacing-xl: 2rem;
-    --spacing-2xl: 3rem;
-    --spacing-3xl: 4rem;
-    --spacing-4xl: 5rem;
+    /* Spacing (8px grid system) */
+    --spacing-unit: 8px;
+    --spacing-xs: calc(var(--spacing-unit) * 0.5);  /* 4px */
+    --spacing-sm: var(--spacing-unit);               /* 8px */
+    --spacing-md: calc(var(--spacing-unit) * 2);    /* 16px */
+    --spacing-lg: calc(var(--spacing-unit) * 3);    /* 24px */
+    --spacing-xl: calc(var(--spacing-unit) * 4);    /* 32px */
+    --spacing-2xl: calc(var(--spacing-unit) * 6);   /* 48px */
+    --spacing-3xl: calc(var(--spacing-unit) * 8);   /* 64px */
+    --spacing-4xl: calc(var(--spacing-unit) * 10);  /* 80px */
     
-    /* Typography */
-    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    /* Typography (Inter-inspired) */
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     --font-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
     
     /* Font Sizes */
-    --text-xs: 0.75rem;
-    --text-sm: 0.875rem;
-    --text-base: 1rem;
-    --text-lg: 1.125rem;
-    --text-xl: 1.25rem;
-    --text-2xl: 1.5rem;
+    --text-xs: 0.75rem;      /* 12px */
+    --text-sm: 0.875rem;     /* 14px */
+    --text-base: 1rem;       /* 16px */
+    --text-lg: 1.125rem;     /* 18px */
+    --text-xl: 1.25rem;      /* 20px */
+    --text-2xl: 1.5rem;      /* 24px */
+    --text-3xl: 1.875rem;    /* 30px */
     
     /* Font Weights */
     --font-normal: 400;
@@ -63,17 +69,17 @@
     --font-semibold: 600;
     --font-bold: 700;
     
-    /* Border Radius */
-    --radius-sm: 0.375rem;
-    --radius-md: 0.5rem;
-    --radius-lg: 0.75rem;
-    --radius-xl: 1rem;
+    /* Border Radius (smaller, cleaner) */
+    --radius-sm: 0.25rem;    /* 4px */
+    --radius-md: 0.375rem;   /* 6px */
+    --radius-lg: 0.5rem;     /* 8px */
+    --radius-xl: 0.75rem;    /* 12px */
     
-    /* Shadows - More Subtle */
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
-    --shadow-md: 0 2px 4px 0 rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 4px 8px 0 rgba(0, 0, 0, 0.08);
-    --shadow-xl: 0 8px 16px 0 rgba(0, 0, 0, 0.1);
+    /* Shadows - Very Subtle (Notion-style) */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
 }
 
 body {

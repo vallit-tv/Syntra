@@ -205,6 +205,151 @@ def impressum():
 def datenschutz():
     return render_template('datenschutz.html')
 
+# ============================================================================
+# CEO DASHBOARD ROUTES
+# ============================================================================
+
+@app.route('/company/dashboard')
+@auth.ceo_required
+def company_dashboard():
+    """CEO dashboard overview"""
+    try:
+        user = auth.current_user()
+        company = db.get_company_by_id(user.get('company_id'))
+        if not company:
+            return "No company assigned", 403
+        
+        # Get company activations
+        activations = db.get_company_activations(company['id'])
+        active_count = len([a for a in activations if a.get('is_active')])
+        
+        # Get company users
+        company_users = db.get_company_users(company['id'])
+        
+        return render_template('company/dashboard.html',
+                             user=user,
+                             company=company,
+                             active_workflows_count=active_count,
+                             workers_count=len(company_users))
+    except Exception as e:
+        print(f"CEO dashboard error: {str(e)}")
+        return redirect(url_for('login'))
+
+@app.route('/company/workflows')
+@auth.ceo_required
+def company_workflows():
+    """CEO workflows page - activate workflows for company"""
+    try:
+        user = auth.current_user()
+        company = db.get_company_by_id(user.get('company_id'))
+        if not company:
+            return "No company assigned", 403
+        
+        # Get all public workflows
+        workflows = db.get_workflows(public_only=True)
+        
+        # Get company activations
+        activations = db.get_company_activations(company['id'])
+        activation_map = {act.get('workflow_id'): act for act in activations}
+        
+        # Mark activated workflows
+        for workflow in workflows:
+            workflow['is_activated'] = workflow['id'] in activation_map
+            if workflow['is_activated']:
+                workflow['activation'] = activation_map[workflow['id']]
+        
+        return render_template('company/workflows.html',
+                             user=user,
+                             company=company,
+                             workflows=workflows)
+    except Exception as e:
+        print(f"CEO workflows error: {str(e)}")
+        return redirect(url_for('company_dashboard'))
+
+@app.route('/company/workflows/<workflow_id>')
+@auth.ceo_required
+def company_workflow_detail(workflow_id):
+    """CEO workflow detail - configure API keys for company"""
+    try:
+        user = auth.current_user()
+        company = db.get_company_by_id(user.get('company_id'))
+        if not company:
+            return "No company assigned", 403
+        
+        workflow = db.get_workflow_by_id(workflow_id)
+        if not workflow or not workflow.get('is_public'):
+            return redirect(url_for('company_workflows'))
+        
+        # Get company activation
+        activation = None
+        api_keys = []
+        executions = []
+        
+        for act in db.get_company_activations(company['id']):
+            if act.get('workflow_id') == workflow_id:
+                activation = act
+                api_keys = db.get_workflow_api_keys(act['id'])
+                executions = db.get_workflow_executions(act['id'], limit=20)
+                break
+        
+        required_services = workflow.get('required_services', [])
+        if isinstance(required_services, str):
+            import json
+            required_services = json.loads(required_services) if required_services else []
+        
+        return render_template('company/workflow-detail.html',
+                             user=user,
+                             company=company,
+                             workflow=workflow,
+                             activation=activation,
+                             api_keys=api_keys,
+                             executions=executions,
+                             required_services=required_services)
+    except Exception as e:
+        print(f"CEO workflow detail error: {str(e)}")
+        return redirect(url_for('company_workflows'))
+
+@app.route('/company/workers')
+@auth.ceo_required
+def company_workers():
+    """CEO workers management page"""
+    try:
+        user = auth.current_user()
+        company = db.get_company_by_id(user.get('company_id'))
+        if not company:
+            return "No company assigned", 403
+        
+        workers = db.get_company_users(company['id'])
+        
+        return render_template('company/workers.html',
+                             user=user,
+                             company=company,
+                             workers=workers)
+    except Exception as e:
+        print(f"CEO workers error: {str(e)}")
+        return redirect(url_for('company_dashboard'))
+
+@app.route('/company/settings')
+@auth.ceo_required
+def company_settings():
+    """CEO company settings page"""
+    try:
+        user = auth.current_user()
+        company = db.get_company_by_id(user.get('company_id'))
+        if not company:
+            return "No company assigned", 403
+        
+        return render_template('company/settings.html',
+                             user=user,
+                             company=company)
+    except Exception as e:
+        print(f"CEO settings error: {str(e)}")
+        return redirect(url_for('company_dashboard'))
+
+# ============================================================================
+# WORKER DASHBOARD ROUTES
+# ============================================================================
+
 @app.route('/dashboard')
 @auth.login_required
 def dashboard():
@@ -495,6 +640,66 @@ def admin_analytics():
         print(f"Admin analytics error: {str(e)}")
         return redirect(url_for('admin_dashboard'))
 
+@app.route('/admin/companies')
+@auth.admin_required
+def admin_companies():
+    """Admin companies management page"""
+    try:
+        user = auth.current_user()
+        companies = db.get_companies()
+        return render_template('admin/companies.html',
+                             user=user,
+                             companies=companies)
+    except Exception as e:
+        print(f"Admin companies error: {str(e)}")
+        return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/companies/<company_id>')
+@auth.admin_required
+def admin_company_detail(company_id):
+    """Admin company detail page"""
+    try:
+        user = auth.current_user()
+        company = db.get_company_by_id(company_id)
+        if not company:
+            return redirect(url_for('admin_companies'))
+        
+        company_users = db.get_company_users(company_id)
+        company_activations = db.get_company_activations(company_id)
+        
+        return render_template('admin/company-detail.html',
+                             user=user,
+                             company=company,
+                             company_users=company_users,
+                             activations=company_activations)
+    except Exception as e:
+        print(f"Admin company detail error: {str(e)}")
+        return redirect(url_for('admin_companies'))
+
+@app.route('/admin/n8n')
+@auth.admin_required
+def admin_n8n():
+    """Admin n8n access page"""
+    try:
+        user = auth.current_user()
+        n8n_service = get_n8n_service()
+        n8n_configured = n8n_service.is_configured()
+        n8n_url = n8n_service.base_url if n8n_configured else None
+        n8n_status = None
+        
+        if n8n_configured:
+            connected, message = n8n_service.test_connection()
+            n8n_status = {'connected': connected, 'message': message}
+        
+        return render_template('admin/n8n.html',
+                             user=user,
+                             n8n_configured=n8n_configured,
+                             n8n_url=n8n_url,
+                             n8n_status=n8n_status)
+    except Exception as e:
+        print(f"Admin n8n error: {str(e)}")
+        return redirect(url_for('admin_dashboard'))
+
 @app.route('/dashboard/analytics')
 @auth.login_required
 def dashboard_analytics():
@@ -687,7 +892,19 @@ def api_login():
     
     try:
         user = auth.login(name, password, ip_address)
-        return jsonify({'message': 'Logged in', 'user': user})
+        # Determine redirect based on role
+        role = user.get('role', 'worker')
+        redirect_url = '/dashboard'
+        if role == 'admin':
+            redirect_url = '/admin'
+        elif role == 'ceo':
+            redirect_url = '/company/dashboard'
+        
+        return jsonify({
+            'message': 'Logged in', 
+            'user': user,
+            'redirect': redirect_url
+        })
     except Exception as e:
         return jsonify({'error': str(e)}), 401
 
@@ -913,6 +1130,200 @@ def api_admin_get_user_activations(user_id):
     """Get user's workflow activations (admin only)"""
     activations = db.get_user_workflow_activations(user_id)
     return jsonify(activations)
+
+# Admin Company API Routes
+@app.route('/api/admin/companies', methods=['GET'])
+@auth.admin_required
+def api_admin_list_companies():
+    """List all companies (admin only)"""
+    companies = db.get_companies()
+    return jsonify(companies)
+
+@app.route('/api/admin/companies', methods=['POST'])
+@auth.admin_required
+def api_admin_create_company():
+    """Create a new company (admin only)"""
+    data = request.get_json() or {}
+    name = data.get('name', '').strip()
+    slug = data.get('slug', '').strip().lower()
+    settings = data.get('settings', {})
+    
+    if not name or not slug:
+        return jsonify({'error': 'Name and slug required'}), 400
+    
+    try:
+        company = db.create_company(name, slug, settings)
+        return jsonify({'message': 'Company created', 'company': company})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/admin/companies/<company_id>', methods=['PUT'])
+@auth.admin_required
+def api_admin_update_company(company_id):
+    """Update company (admin only)"""
+    data = request.get_json() or {}
+    updates = {}
+    
+    if 'name' in data:
+        updates['name'] = data['name'].strip()
+    if 'settings' in data:
+        updates['settings'] = data['settings']
+    
+    if updates:
+        success = db.update_company(company_id, updates)
+        if success:
+            return jsonify({'message': 'Company updated'})
+    
+    return jsonify({'error': 'No valid updates'}), 400
+
+@app.route('/api/admin/companies/<company_id>', methods=['DELETE'])
+@auth.admin_required
+def api_admin_delete_company(company_id):
+    """Delete company (admin only)"""
+    success = db.delete_company(company_id)
+    if success:
+        return jsonify({'message': 'Company deleted'})
+    return jsonify({'error': 'Failed to delete company'}), 500
+
+@app.route('/api/admin/companies/<company_id>/assign-ceo', methods=['POST'])
+@auth.admin_required
+def api_admin_assign_ceo(company_id):
+    """Assign a user as CEO to a company (admin only)"""
+    data = request.get_json() or {}
+    user_name = data.get('user_name', '').strip()
+    
+    if not user_name:
+        return jsonify({'error': 'User name required'}), 400
+    
+    try:
+        # Create or get user with CEO role
+        user = auth.create_user_admin(user_name, role='ceo', company_id=company_id)
+        return jsonify({'message': 'CEO assigned', 'user': user})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/admin/companies/<company_id>/users', methods=['GET'])
+@auth.admin_required
+def api_admin_get_company_users(company_id):
+    """Get company users (admin only)"""
+    users = db.get_company_users(company_id)
+    return jsonify(users)
+
+# ============================================================================
+# CEO API ROUTES
+# ============================================================================
+
+@app.route('/api/company/workflows/<workflow_id>/activate', methods=['POST'])
+@auth.ceo_required
+def api_company_activate_workflow(workflow_id):
+    """Activate workflow for company (CEO only)"""
+    user = auth.current_user()
+    company_id = user.get('company_id')
+    
+    if not company_id:
+        return jsonify({'error': 'No company assigned'}), 403
+    
+    try:
+        # Activate workflow for company (not individual user)
+        activation = db.activate_workflow(company_id, workflow_id, is_company_level=True)
+        return jsonify({'message': 'Workflow activated for company', 'activation': activation})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/company/workflows/<workflow_id>/deactivate', methods=['DELETE'])
+@auth.ceo_required
+def api_company_deactivate_workflow(workflow_id):
+    """Deactivate workflow for company (CEO only)"""
+    user = auth.current_user()
+    company_id = user.get('company_id')
+    
+    if not company_id:
+        return jsonify({'error': 'No company assigned'}), 403
+    
+    try:
+        success = db.deactivate_workflow(company_id, workflow_id)
+        if success:
+            return jsonify({'message': 'Workflow deactivated for company'})
+        return jsonify({'error': 'Failed to deactivate'}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/company/workflows/<workflow_id>/api-keys', methods=['POST'])
+@auth.ceo_required
+def api_company_set_workflow_api_key(workflow_id):
+    """Set API key for company workflow (CEO only)"""
+    user = auth.current_user()
+    company_id = user.get('company_id')
+    
+    if not company_id:
+        return jsonify({'error': 'No company assigned'}), 403
+    
+    data = request.get_json() or {}
+    service_type = data.get('service_type', '').strip().lower()
+    api_key = data.get('api_key', '').strip()
+    
+    if not service_type or not api_key:
+        return jsonify({'error': 'service_type and api_key required'}), 400
+    
+    try:
+        # Find company activation
+        activations = db.get_company_activations(company_id)
+        activation = next((a for a in activations if a.get('workflow_id') == workflow_id), None)
+        
+        if not activation:
+            return jsonify({'error': 'Workflow not activated for company'}), 400
+        
+        db.set_workflow_api_key(activation['id'], service_type, api_key)
+        return jsonify({'message': 'API key saved'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/company/workers', methods=['POST'])
+@auth.ceo_required
+def api_company_add_worker():
+    """Add worker to company (CEO only)"""
+    user = auth.current_user()
+    company_id = user.get('company_id')
+    
+    if not company_id:
+        return jsonify({'error': 'No company assigned'}), 403
+    
+    data = request.get_json() or {}
+    worker_name = data.get('name', '').strip()
+    
+    if not worker_name:
+        return jsonify({'error': 'Worker name required'}), 400
+    
+    try:
+        worker = auth.create_user_admin(worker_name, role='worker', company_id=company_id)
+        return jsonify({'message': 'Worker added', 'worker': worker})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/company/settings', methods=['PUT'])
+@auth.ceo_required
+def api_company_update_settings():
+    """Update company settings (CEO only)"""
+    user = auth.current_user()
+    company_id = user.get('company_id')
+    
+    if not company_id:
+        return jsonify({'error': 'No company assigned'}), 403
+    
+    data = request.get_json() or {}
+    updates = {}
+    
+    if 'name' in data:
+        updates['name'] = data['name'].strip()
+    if 'settings' in data:
+        updates['settings'] = data['settings']
+    
+    if updates:
+        success = db.update_company(company_id, updates)
+        if success:
+            return jsonify({'message': 'Company settings updated'})
+    
+    return jsonify({'error': 'No valid updates'}), 400
 
 # ============================================================================
 # USER API ROUTES

@@ -90,7 +90,7 @@ def verify_password(password: str, password_hash: str) -> bool:
     return hash_password(password) == password_hash
 
 
-def create_user_admin(name: str, role: str = 'user') -> dict:
+def create_user_admin(name: str, role: str = 'worker', company_id: str = None) -> dict:
     """Create user by admin (user exists but password not set yet)"""
     try:
         existing = db.get_user_by_name(name)

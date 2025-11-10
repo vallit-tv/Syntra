@@ -1,0 +1,171 @@
+{% extends "company/base.html" %}
+
+{% block breadcrumbs %}
+<span>Workflows</span>
+{% endblock %}
+
+{% block company_content %}
+<div class="page-header">
+    <h1 class="page-title">Workflows</h1>
+    <p class="page-description">Activate and manage automation workflows for your company.</p>
+</div>
+
+<div class="filters-bar">
+    <div style="position: relative; flex: 1; min-width: 240px;">
+        <i data-lucide="search" width="16" height="16" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--color-text-lighter);"></i>
+        <input type="text" id="searchInput" class="search-input" placeholder="Search workflows..." style="padding-left: 2.5rem;">
+    </div>
+    <select id="statusFilter" class="filter-select">
+        <option value="">All Status</option>
+        <option value="activated">Activated</option>
+        <option value="not-activated">Not Activated</option>
+    </select>
+</div>
+
+<div class="dashboard-card">
+    {% if workflows %}
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th>Required Services</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for workflow in workflows %}
+                <tr>
+                    <td>
+                        {% if workflow.is_activated %}
+                        <a href="{{ url_for('company_workflow_detail', workflow_id=workflow.id) }}" style="font-weight: 600; color: var(--color-primary); text-decoration: none;">
+                            {{ workflow.name }}
+                        </a>
+                        {% else %}
+                        <span style="font-weight: 600;">{{ workflow.name }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ workflow.description|default('No description') }}</td>
+                    <td>
+                        {% if workflow.is_activated %}
+                        <span class="status-badge active">
+                            <span class="status-badge-dot"></span>
+                            Activated
+                        </span>
+                        {% else %}
+                        <span class="status-badge inactive">Not Activated</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% set services = workflow.required_services if workflow.required_services is iterable and workflow.required_services is not string else [] %}
+                        {% if services %}
+                            {% for service in services[:2] %}
+                            <span class="status-badge" style="margin-right: 0.25rem; font-size: var(--text-xs);">{{ service }}</span>
+                            {% endfor %}
+                            {% if services|length > 2 %}+{{ services|length - 2 }}{% endif %}
+                        {% else %}
+                            <span style="color: var(--color-text-light); font-size: var(--text-sm);">None</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="table-actions">
+                            {% if workflow.is_activated %}
+                            <a href="{{ url_for('company_workflow_detail', workflow_id=workflow.id) }}" class="btn btn-secondary btn-sm">
+                                <i data-lucide="settings" width="14" height="14"></i>
+                                Configure
+                            </a>
+                            <button onclick="deactivateWorkflow('{{ workflow.id }}')" class="btn btn-danger btn-sm">
+                                Deactivate
+                            </button>
+                            {% else %}
+                            <button onclick="activateWorkflow('{{ workflow.id }}')" class="btn btn-primary btn-sm">
+                                <i data-lucide="power" width="14" height="14"></i>
+                                Activate
+                            </button>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">
+            <i data-lucide="workflow" width="32" height="32"></i>
+        </div>
+        <h3 class="empty-state-title">No workflows available</h3>
+        <p class="empty-state-description">No workflows are currently available. Contact your administrator.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block company_scripts %}
+<script>
+function activateWorkflow(workflowId) {
+    if (confirm('Activate this workflow for your company?')) {
+        fetch(`/api/company/workflows/${workflowId}/activate`, { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                } else {
+                    alert('Workflow activated! Configure API keys to use it.');
+                    window.location.href = `/company/workflows/${workflowId}`;
+                }
+            })
+            .catch(err => alert('Error: ' + err));
+    }
+}
+
+function deactivateWorkflow(workflowId) {
+    if (confirm('Are you sure you want to deactivate this workflow for your company?')) {
+        fetch(`/api/company/workflows/${workflowId}/deactivate`, { method: 'DELETE' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                } else {
+                    location.reload();
+                }
+            })
+            .catch(err => alert('Error: ' + err));
+    }
+}
+
+// Search and filter
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const statusFilter = document.getElementById('statusFilter');
+
+    function filterWorkflows() {
+        const searchText = searchInput.value.toLowerCase();
+        const selectedStatus = statusFilter.value;
+
+        document.querySelectorAll('.table tbody tr').forEach(row => {
+            const name = row.querySelector('td:nth-child(1)').textContent.toLowerCase();
+            const description = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+            const statusBadge = row.querySelector('.status-badge');
+            const isActivated = statusBadge.classList.contains('active');
+
+            const matchesSearch = name.includes(searchText) || description.includes(searchText);
+            const matchesStatus = selectedStatus === '' || 
+                                  (selectedStatus === 'activated' && isActivated) ||
+                                  (selectedStatus === 'not-activated' && !isActivated);
+
+            row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
+        });
+    }
+
+    searchInput.addEventListener('keyup', filterWorkflows);
+    statusFilter.addEventListener('change', filterWorkflows);
+    
+    lucide.createIcons();
+});
+</script>
+{% endblock %}
+

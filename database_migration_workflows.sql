@@ -96,13 +96,13 @@ ALTER TABLE workflow_executions ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users can read public workflows" ON workflows;
 CREATE POLICY "Users can read public workflows"
     ON workflows FOR SELECT
-    USING (is_public = TRUE OR created_by = auth.uid()::text);
+    USING (is_public = TRUE OR created_by = auth.uid());
 
 -- Workflow activations: Users can manage their own
 DROP POLICY IF EXISTS "Users can manage own activations" ON workflow_activations;
 CREATE POLICY "Users can manage own activations"
     ON workflow_activations FOR ALL
-    USING (auth.uid()::text = user_id::text);
+    USING (user_id = auth.uid());
 
 -- Workflow API keys: Users can manage their own
 DROP POLICY IF EXISTS "Users can manage own workflow api keys" ON workflow_api_keys;
@@ -112,7 +112,7 @@ CREATE POLICY "Users can manage own workflow api keys"
         EXISTS (
             SELECT 1 FROM workflow_activations 
             WHERE workflow_activations.id = workflow_api_keys.workflow_activation_id 
-            AND workflow_activations.user_id::text = auth.uid()::text
+            AND workflow_activations.user_id = auth.uid()
         )
     );
 
@@ -124,7 +124,7 @@ CREATE POLICY "Users can view own executions"
         EXISTS (
             SELECT 1 FROM workflow_activations 
             WHERE workflow_activations.id = workflow_executions.workflow_activation_id 
-            AND workflow_activations.user_id::text = auth.uid()::text
+            AND workflow_activations.user_id = auth.uid()
         )
     );
 
