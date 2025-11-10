@@ -6,6 +6,7 @@ import os
 import statistics
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, abort, send_file
 from dotenv import load_dotenv
+from dateutil import parser as date_parser
 import auth
 import db
 from n8n_service import get_n8n_service
@@ -193,7 +194,29 @@ def internal_error(error):
     import traceback
     error_msg = traceback.format_exc()
     print(f"ERROR: {error_msg}")  # Log to Vercel logs
-    return jsonify({'error': 'Internal Server Error', 'message': str(error)}), 500
+    
+    # Check if this is an API request
+    if request.path.startswith('/api/'):
+        return jsonify({
+            'error': 'Internal Server Error',
+            'message': 'An error occurred processing your request. Please try again later.'
+        }), 500
+    
+    # For browser requests, return a simple error page
+    try:
+        return render_template('error.html', error_code=500, error_message='Internal Server Error'), 500
+    except:
+        # If error template doesn't exist, return simple HTML
+        return """
+        <!DOCTYPE html>
+        <html>
+        <head><title>Error 500</title></head>
+        <body>
+            <h1>Internal Server Error</h1>
+            <p>An error occurred processing your request. Please try again later.</p>
+        </body>
+        </html>
+        """, 500
 
 @app.errorhandler(Exception)
 def handle_exception(e):
@@ -201,7 +224,33 @@ def handle_exception(e):
     import traceback
     error_msg = traceback.format_exc()
     print(f"ERROR: {error_msg}")  # Log to Vercel logs
-    return jsonify({'error': 'An error occurred', 'message': str(e)}), 500
+    
+    # Check if this is an API request
+    if request.path.startswith('/api/'):
+        # Don't expose internal error details in API responses
+        error_message = 'An error occurred processing your request.'
+        if 'database' in str(e).lower() or 'supabase' in str(e).lower():
+            error_message = 'Database connection error. Please check your configuration.'
+        return jsonify({
+            'error': 'An error occurred',
+            'message': error_message
+        }), 500
+    
+    # For browser requests, return a user-friendly error page
+    try:
+        return render_template('error.html', error_code=500, error_message='An unexpected error occurred'), 500
+    except:
+        # If error template doesn't exist, return simple HTML
+        return """
+        <!DOCTYPE html>
+        <html>
+        <head><title>Error</title></head>
+        <body>
+            <h1>An Error Occurred</h1>
+            <p>An unexpected error occurred. Please try again later.</p>
+        </body>
+        </html>
+        """, 500
 
 # ============================================================================
 # PAGES
@@ -209,8 +258,30 @@ def handle_exception(e):
 
 @app.route('/health')
 def health():
-    """Health check endpoint"""
-    return jsonify({'status': 'ok', 'message': 'Flask app is running'}), 200
+    """Health check endpoint - works without database"""
+    try:
+        # Check database connectivity (optional)
+        db_connected, db_error = db.test_db_connection()
+        status = {
+            'status': 'ok',
+            'message': 'Flask app is running',
+            'database': {
+                'connected': db_connected,
+                'error': db_error if not db_connected else None
+            }
+        }
+        # Return 200 even if database is not connected (app can run without it for health checks)
+        return jsonify(status), 200
+    except Exception as e:
+        # Health endpoint should never fail - return basic status
+        return jsonify({
+            'status': 'ok',
+            'message': 'Flask app is running',
+            'database': {
+                'connected': False,
+                'error': str(e)
+            }
+        }), 200
 
 @app.route('/init-theo', methods=['GET', 'POST'])
 def init_theo_page():
@@ -294,7 +365,10 @@ def index():
         return render_template('index.html')
     except Exception as e:
         print(f"Index route error: {str(e)}")
-        return f"Error loading page: {str(e)}", 500
+        import traceback
+        traceback.print_exc()
+        # Return a simple error message instead of crashing
+        return "<h1>Error</h1><p>Unable to load page. Please try again later.</p>", 500
 
 @app.route('/about')
 def about():
@@ -1911,9 +1985,8 @@ def api_run_workflow(workflow_id):
         # Update execution log
         finished_at = datetime.utcnow()
         try:
-            from dateutil import parser
-            started_at = parser.parse(execution_log['started_at'])
-        except:
+            started_at = date_parser.parse(execution_log['started_at'])
+        except Exception:
             started_at = datetime.utcnow()
         duration_ms = int((finished_at - started_at.replace(tzinfo=None) if hasattr(started_at, 'replace') else finished_at).total_seconds() * 1000)
         
@@ -1925,25 +1998,41 @@ def api_run_workflow(workflow_id):
         if execution_id:
             try:
                 db_client = db.get_db()
-                db_client.table('workflow_executions').update({
-                    'n8n_execution_id': result.get('executionId') if result else None,
-                    'status': status,
-                    'output_data': result,
-                    'error_message': error_message,
-                    'finished_at': finished_at.isoformat(),
-                    'duration_ms': duration_ms
-                }).eq('id', execution_id).execute()
+                if db_client is not None:
+                    db_client.table('workflow_executions').update({
+                        'n8n_execution_id': result.get('executionId') if result else None,
+                        'status': status,
+                        'output_data': result,
+                        'error_message': error_message,
+                        'finished_at': finished_at.isoformat(),
+                        'duration_ms': duration_ms
+                    }).eq('id', execution_id).execute()
+                else:
+                    # Database not available, try to log as new entry
+                    print("Database not available for execution log update, attempting to create new log entry")
+                    db.log_workflow_execution(activation['id'], {
+                        'n8n_execution_id': result.get('executionId') if result else None,
+                        'status': status,
+                        'output_data': result,
+                        'error_message': error_message,
+                        'finished_at': finished_at.isoformat(),
+                        'duration_ms': duration_ms
+                    })
             except Exception as update_error:
                 print(f"Error updating execution log: {update_error}")
                 # If update fails, create a new log entry
-                db.log_workflow_execution(activation['id'], {
-                    'n8n_execution_id': result.get('executionId') if result else None,
-                    'status': status,
-                    'output_data': result,
-                    'error_message': error_message,
-                    'finished_at': finished_at.isoformat(),
-                    'duration_ms': duration_ms
-                })
+                try:
+                    db.log_workflow_execution(activation['id'], {
+                        'n8n_execution_id': result.get('executionId') if result else None,
+                        'status': status,
+                        'output_data': result,
+                        'error_message': error_message,
+                        'finished_at': finished_at.isoformat(),
+                        'duration_ms': duration_ms
+                    })
+                except Exception as log_error:
+                    print(f"Error logging workflow execution: {log_error}")
+                    # Continue even if logging fails
         
         if status == 'error':
             return jsonify({'error': error_message or 'Workflow execution failed'}), 400

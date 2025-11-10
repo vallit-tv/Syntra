@@ -3,18 +3,75 @@ import os
 import hashlib
 import secrets
 from datetime import datetime
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Tuple
 from supabase import create_client, Client
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# Supabase connection
-def get_db() -> Client:
+# Cached database client instance
+_db_client: Optional[Client] = None
+_db_error: Optional[str] = None
+
+def is_db_configured() -> bool:
+    """Check if database environment variables are set"""
     url = os.getenv('SUPABASE_URL')
     key = os.getenv('SUPABASE_SERVICE_KEY') or os.getenv('SUPABASE_KEY')
+    return bool(url and key)
+
+def test_db_connection() -> Tuple[bool, Optional[str]]:
+    """
+    Test database connection.
+    Returns (connected: bool, error_message: Optional[str])
+    """
+    if not is_db_configured():
+        return False, "Database not configured: SUPABASE_URL and SUPABASE_SERVICE_KEY must be set"
+    
+    try:
+        client = get_db()
+        if client is None:
+            return False, "Failed to create database client. Check your SUPABASE_URL and SUPABASE_SERVICE_KEY."
+        # Try a simple query to test connection (wrap in try-except to handle any query errors)
+        try:
+            client.table('users').select('id').limit(1).execute()
+            return True, None
+        except Exception as query_error:
+            # Connection might be established but query failed (e.g., table doesn't exist)
+            # This is still considered a connection success for health checks
+            error_msg = str(query_error)
+            if 'relation' in error_msg.lower() and 'does not exist' in error_msg.lower():
+                # Table doesn't exist - connection works but schema not set up
+                return True, "Database connected but tables may not be initialized"
+            return False, f"Connection test query failed: {error_msg}"
+    except Exception as e:
+        error_msg = str(e)
+        print(f"Database connection test failed: {error_msg}")
+        return False, f"Connection failed: {error_msg}"
+
+# Supabase connection
+def get_db() -> Optional[Client]:
+    """
+    Get Supabase database client.
+    Returns None if database is not configured or connection fails.
+    """
+    global _db_client, _db_error
+    
+    # Return cached client if available
+    if _db_client is not None:
+        return _db_client
+    
+    # Check if we've already failed
+    if _db_error:
+        print(f"Database client not available: {_db_error}")
+        return None
+    
+    url = os.getenv('SUPABASE_URL')
+    key = os.getenv('SUPABASE_SERVICE_KEY') or os.getenv('SUPABASE_KEY')
+    
     if not url or not key:
-        raise RuntimeError('Set SUPABASE_URL and SUPABASE_SERVICE_KEY in .env')
+        _db_error = "Database not configured: SUPABASE_URL and SUPABASE_SERVICE_KEY must be set"
+        print(f"Warning: {_db_error}")
+        return None
     
     # Create client - handle proxy-related issues
     # The proxy error might come from Vercel environment or httpx library
@@ -30,6 +87,8 @@ def get_db() -> Client:
     try:
         # Try simple positional arguments
         client = create_client(url, key)
+        _db_client = client
+        print("Database client created successfully")
         return client
     except Exception as e:
         error_msg = str(e).lower()
@@ -40,17 +99,18 @@ def get_db() -> Client:
             try:
                 print("Retrying with keyword arguments...")
                 client = create_client(supabase_url=url, supabase_key=key)
+                _db_client = client
+                print("Database client created successfully with keyword arguments")
                 return client
             except Exception as e2:
+                _db_error = f"Supabase client initialization failed: {e2}"
                 print(f"Error with keyword args: {e2}")
-                raise RuntimeError(
-                    f'Supabase client initialization failed. '
-                    f'Error: {e2}. '
-                    f'This might be a version compatibility issue. '
-                    f'Please check your Supabase credentials and ensure '
-                    f'SUPABASE_URL and SUPABASE_SERVICE_KEY are set correctly.'
-                )
-        raise RuntimeError(f'Failed to create Supabase client: {e}')
+        else:
+            _db_error = f"Failed to create Supabase client: {e}"
+        
+        # Don't raise - return None so the app can continue
+        print(f"Warning: {_db_error}")
+        return None
     finally:
         # Restore proxy env vars
         for var, value in saved_proxies.items():
@@ -64,7 +124,11 @@ def get_db() -> Client:
 def get_user_by_name(name: str) -> Optional[Dict]:
     """Get user by name"""
     try:
-        result = get_db().table('users').select('*').eq('name', name).execute()
+        db_client = get_db()
+        if db_client is None:
+            print(f"Database not available, cannot get user by name '{name}'")
+            return None
+        result = db_client.table('users').select('*').eq('name', name).execute()
         return result.data[0] if result.data else None
     except Exception as e:
         print(f"Error getting user by name '{name}': {e}")
@@ -76,7 +140,10 @@ def get_user_by_name(name: str) -> Optional[Dict]:
 def get_user_by_id(user_id: str) -> Optional[Dict]:
     """Get user by ID"""
     try:
-        result = get_db().table('users').select('*').eq('id', user_id).execute()
+        db_client = get_db()
+        if db_client is None:
+            return None
+        result = db_client.table('users').select('*').eq('id', user_id).execute()
         return result.data[0] if result.data else None
     except:
         return None
@@ -84,7 +151,10 @@ def get_user_by_id(user_id: str) -> Optional[Dict]:
 def get_all_users() -> List[Dict]:
     """Get all users (admin only)"""
     try:
-        result = get_db().table('users').select('*').order('created_at', desc=True).execute()
+        db_client = get_db()
+        if db_client is None:
+            return []
+        result = db_client.table('users').select('*').order('created_at', desc=True).execute()
         return result.data or []
     except:
         return []
@@ -111,7 +181,10 @@ def create_user(
         data['company_id'] = company_id
     
     try:
-        result = get_db().table('users').insert(data).execute()
+        db_client = get_db()
+        if db_client is None:
+            raise RuntimeError("Database not available. Please check SUPABASE_URL and SUPABASE_SERVICE_KEY environment variables.")
+        result = db_client.table('users').insert(data).execute()
         created_user = result.data[0]
         print(f"Successfully created user: {name} with role: {role}")
         if company_id and not created_user.get('company_id'):
@@ -130,7 +203,10 @@ def create_user(
             data.pop('role', None)
             company_value = data.pop('company_id', None) if 'company_id' in data else None
             try:
-                result = get_db().table('users').insert(data).execute()
+                db_client = get_db()
+                if db_client is None:
+                    raise RuntimeError("Database not available. Please check SUPABASE_URL and SUPABASE_SERVICE_KEY environment variables.")
+                result = db_client.table('users').insert(data).execute()
                 print(f"Successfully created user: {name} without role")
                 created_user = result.data[0]
                 if company_value:
@@ -155,7 +231,10 @@ def create_user(
 def update_user_role(user_id: str, role: str) -> bool:
     """Update user role"""
     try:
-        get_db().table('users').update({
+        db_client = get_db()
+        if db_client is None:
+            return False
+        db_client.table('users').update({
             'role': role
         }).eq('id', user_id).execute()
         return True
@@ -168,7 +247,10 @@ def update_user_role(user_id: str, role: str) -> bool:
 def update_user_password(user_id: str, password_hash: str) -> bool:
     """Update user password"""
     try:
-        get_db().table('users').update({
+        db_client = get_db()
+        if db_client is None:
+            return False
+        db_client.table('users').update({
             'password_hash': password_hash,
             'is_password_set': True
         }).eq('id', user_id).execute()
