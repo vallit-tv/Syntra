@@ -7,6 +7,16 @@ Before testing, ensure you have:
 2. ✅ n8n instance running (optional for workflow testing)
 3. ✅ Environment variables set (`N8N_URL` and `N8N_API_KEY`)
 
+## Quick Smoke Checklist
+
+- Verify Admin → Workflows displays summary stats (total, active, public) and highlights service usage.
+- Verify Admin → System summarizes workflows, companies, activations, and n8n status.
+- Verify Admin → Analytics shows aggregate execution metrics, top workflows, and recent failures.
+- Verify CEO dashboard cards (active workflows, team size, credential gaps) and recent activity table.
+- Verify CEO → Workflows lists activation readiness, required services pills, and last run column.
+- Verify CEO → Team shows totals and password setup status.
+- Run activation/deactivation and API key saves to ensure new loading states and messages function.
+
 ## Step 1: Run Database Migration
 
 ```sql

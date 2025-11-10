@@ -35,18 +35,22 @@
             <strong>Category:</strong> {{ workflow.category|default('N/A') }}
         </div>
         <div class="detail-item">
-            <strong>Required Services:</strong> 
-            {% set services = workflow.required_services if workflow.required_services is iterable and workflow.required_services is not string else [] %}
-            {% if services %}
-                {% for service in services %}
-                <span class="status-badge" style="margin-right: 0.25rem; font-size: var(--text-xs);">{{ service }}</span>
+            <strong>Required Services:</strong>
+            {% if workflow.required_services_list %}
+                {% for service in workflow.required_services_list %}
+                <span class="pill small">{{ service }}</span>
                 {% endfor %}
             {% else %}
-                <span style="color: var(--color-text-light); font-size: var(--text-sm);">None</span>
+                <span class="text-secondary">None</span>
             {% endif %}
         </div>
         <div class="detail-item">
-            <strong>Last Updated:</strong> {{ workflow.updated_at|format_datetime }}
+            <strong>Last Updated:</strong>
+            {% if workflow.updated_at %}
+                {{ workflow.updated_at|format_datetime('short') }}
+            {% else %}
+                —
+            {% endif %}
         </div>
     </div>
 </div>
@@ -79,6 +83,11 @@
                 </p>
             </div>
             {% endfor %}
+        {% if missing_services %}
+        <p class="text-danger" style="margin-top: 1rem;">
+            <strong>Missing credentials:</strong> {{ missing_services|join(', ')|capitalize }} must be configured before this workflow can run.
+        </p>
+        {% endif %}
         {% else %}
             <p class="text-secondary">This workflow does not require any external API keys.</p>
         {% endif %}
@@ -129,7 +138,7 @@
 
 <div id="executionDetailModal" class="modal">
     <div class="modal-content">
-        <span class="close-button" onclick="closeModal('executionDetailModal')">&times;</span>
+        <span class="close-button" onclick="syntra.closeModal('executionDetailModal')">&times;</span>
         <h2>Execution Details</h2>
         <div class="modal-body">
             <h3>Input Data</h3>
@@ -146,34 +155,35 @@
 {% block company_scripts %}
 <script>
 function activateWorkflow(workflowId) {
-    if (confirm('Activate this workflow for your company?')) {
-        fetch(`/api/company/workflows/${workflowId}/activate`, { method: 'POST' })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    alert('Error: ' + data.error);
-                } else {
-                    alert('Workflow activated!');
-                    location.reload();
-                }
-            })
-            .catch(err => alert('Error: ' + err));
+    if (!window.confirm('Activate this workflow for your company?')) {
+        return;
     }
+    fetch(`/api/company/workflows/${workflowId}/activate`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                window.alert('Error: ' + data.error);
+            } else {
+                window.location.reload();
+            }
+        })
+        .catch(err => window.alert('Error: ' + err));
 }
 
 function deactivateWorkflow(workflowId) {
-    if (confirm('Are you sure you want to deactivate this workflow?')) {
-        fetch(`/api/company/workflows/${workflowId}/deactivate`, { method: 'DELETE' })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    alert('Error: ' + data.error);
-                } else {
-                    location.reload();
-                }
-            })
-            .catch(err => alert('Error: ' + err));
+    if (!window.confirm('Are you sure you want to deactivate this workflow?')) {
+        return;
     }
+    fetch(`/api/company/workflows/${workflowId}/deactivate`, { method: 'DELETE' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                window.alert('Error: ' + data.error);
+            } else {
+                window.location.reload();
+            }
+        })
+        .catch(err => window.alert('Error: ' + err));
 }
 
 function saveApiKey(workflowId, serviceType) {
@@ -181,8 +191,15 @@ function saveApiKey(workflowId, serviceType) {
     const apiKey = apiKeyInput.value;
 
     if (!apiKey) {
-        alert('API Key cannot be empty.');
+        window.alert('API Key cannot be empty.');
         return;
+    }
+
+    const button = apiKeyInput.parentElement.querySelector('button');
+    const original = button ? button.textContent : '';
+    if (button) {
+        button.disabled = true;
+        button.textContent = 'Saving...';
     }
 
     fetch(`/api/company/workflows/${workflowId}/api-keys`, {
@@ -195,12 +212,18 @@ function saveApiKey(workflowId, serviceType) {
     .then(response => response.json())
     .then(data => {
         if (data.error) {
-            alert('Error saving API key: ' + data.error);
+            window.alert('Error saving API key: ' + data.error);
         } else {
-            alert(`${serviceType} API Key saved successfully!`);
+            window.alert(`${serviceType} API key saved successfully.`);
         }
     })
-    .catch(err => alert('Error: ' + err));
+    .catch(err => window.alert('Error: ' + err))
+    .finally(() => {
+        if (button) {
+            button.disabled = false;
+            button.textContent = original || 'Save';
+        }
+    });
 }
 
 function showExecutionDetails(executionId, inputData, outputData, errorMessage) {
@@ -218,24 +241,12 @@ function showExecutionDetails(executionId, inputData, outputData, errorMessage) 
         errorMsg.style.display = 'none';
         errorMsg.textContent = '';
     }
-    openModal('executionDetailModal');
+    syntra.openModal('executionDetailModal');
 }
 
-function openModal(modalId) {
-    document.getElementById(modalId).style.display = 'block';
+if (typeof lucide !== 'undefined') {
+    lucide.createIcons();
 }
-
-function closeModal(modalId) {
-    document.getElementById(modalId).style.display = 'none';
-}
-
-window.onclick = function(event) {
-    if (event.target.classList.contains('modal')) {
-        event.target.style.display = 'none';
-    }
-}
-
-lucide.createIcons();
 </script>
 {% endblock %}
 

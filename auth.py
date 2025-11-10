@@ -91,26 +91,39 @@ def verify_password(password: str, password_hash: str) -> bool:
 
 
 def create_user_admin(name: str, role: str = 'worker', company_id: str = None) -> dict:
-    """Create user by admin (user exists but password not set yet)"""
+    """Create or update a user via admin flows (password not set yet)."""
     try:
         existing = db.get_user_by_name(name)
         if existing:
-            # Update role if needed
+            changed = False
             if role and existing.get('role') != role:
                 print(f"Updating user '{name}' role to '{role}'")
                 db.update_user_role(existing['id'], role)
-                existing = db.get_user_by_id(existing['id'])
+                changed = True
+            if company_id and existing.get('company_id') != company_id:
+                print(f"Assigning user '{name}' to company '{company_id}'")
+                db.assign_user_to_company(existing['id'], company_id)
+                changed = True
+            if changed:
+                existing = db.get_user_by_id(existing['id']) or existing
             return existing
-        
+
         print(f"Creating new user '{name}' with role '{role}'")
-        user = db.create_user(name, is_password_set=False, role=role)
+        user = db.create_user(
+            name,
+            is_password_set=False,
+            role=role,
+            company_id=company_id
+        )
+        if company_id and not user.get('company_id'):
+            db.assign_user_to_company(user['id'], company_id)
+            user = db.get_user_by_id(user['id']) or user
         print(f"User '{name}' created successfully with ID: {user.get('id')}")
         return user
     except Exception as e:
         print(f"Error in create_user_admin for '{name}': {e}")
         import traceback
         traceback.print_exc()
-        # Try to get existing user if creation failed
         existing = db.get_user_by_name(name)
         if existing:
             return existing
@@ -249,36 +262,51 @@ def current_user() -> Optional[dict]:
     if not user:
         return None
     
-    # Get role, default to 'user' if not set
     role = user.get('role')
     if not role:
-        # If role field doesn't exist in DB, default to 'user'
-        # For Theo, check if name is Theo and set as admin
         if user.get('name', '').lower() == 'theo':
             role = 'admin'
-            # Try to update role in DB
             try:
                 db.update_user_role(user['id'], 'admin')
-            except:
+            except Exception:
                 pass
         else:
-            role = 'user'
-    
+            role = 'worker'
+
     return {
-        'id': user['id'], 
+        'id': user['id'],
         'name': user['name'],
-        'role': role
+        'role': role,
+        'company_id': user.get('company_id')
     }
 
 
 def is_admin(user: Optional[dict] = None) -> bool:
-    """Check if user is admin (or ceo for backward compatibility)"""
+    """Check if user has admin role"""
     if not user:
         user = current_user()
     if not user:
         return False
     role = user.get('role', 'user')
-    return role in ('admin', 'ceo')  # Keep 'ceo' for backward compatibility
+    return role == 'admin'
+
+
+def is_ceo(user: Optional[dict] = None) -> bool:
+    """Check if user has CEO role"""
+    if not user:
+        user = current_user()
+    if not user:
+        return False
+    return user.get('role') == 'ceo'
+
+
+def is_worker(user: Optional[dict] = None) -> bool:
+    """Check if user is a worker-level account"""
+    if not user:
+        user = current_user()
+    if not user:
+        return False
+    return user.get('role') not in ('admin', 'ceo')
 
 
 def admin_required(f):
@@ -293,6 +321,40 @@ def admin_required(f):
         if not is_admin(user):
             if request.path.startswith('/api/'):
                 return jsonify({'error': 'Admin access required'}), 403
+            return redirect(url_for('dashboard'))
+        return f(*args, **kwargs)
+    return decorated
+
+
+def ceo_required(f):
+    """Decorator to require CEO (or admin) access"""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        user = current_user()
+        if not user:
+            if request.path.startswith('/api/'):
+                return jsonify({'error': 'Unauthorized'}), 401
+            return redirect(url_for('login'))
+        if not (is_ceo(user) or is_admin(user)):
+            if request.path.startswith('/api/'):
+                return jsonify({'error': 'CEO access required'}), 403
+            return redirect(url_for('dashboard'))
+        return f(*args, **kwargs)
+    return decorated
+
+
+def worker_required(f):
+    """Decorator to require worker access"""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        user = current_user()
+        if not user:
+            if request.path.startswith('/api/'):
+                return jsonify({'error': 'Unauthorized'}), 401
+            return redirect(url_for('login'))
+        if not is_worker(user):
+            if request.path.startswith('/api/'):
+                return jsonify({'error': 'Worker access required'}), 403
             return redirect(url_for('dashboard'))
         return f(*args, **kwargs)
     return decorated

@@ -90,7 +90,13 @@ def get_all_users() -> List[Dict]:
         return []
 
 
-def create_user(name: str, password_hash: str = None, is_password_set: bool = False, role: str = 'user') -> Dict:
+def create_user(
+    name: str,
+    password_hash: str = None,
+    is_password_set: bool = False,
+    role: str = 'user',
+    company_id: str = None
+) -> Dict:
     """Create new user (admin only)"""
     data = {
         'name': name,
@@ -101,11 +107,20 @@ def create_user(name: str, password_hash: str = None, is_password_set: bool = Fa
     # Add role if provided (may not exist in database yet)
     if role:
         data['role'] = role
+    if company_id:
+        data['company_id'] = company_id
     
     try:
         result = get_db().table('users').insert(data).execute()
+        created_user = result.data[0]
         print(f"Successfully created user: {name} with role: {role}")
-        return result.data[0]
+        if company_id and not created_user.get('company_id'):
+            try:
+                assign_user_to_company(created_user['id'], company_id)
+                created_user = get_user_by_id(created_user['id']) or created_user
+            except Exception as assign_error:
+                print(f"Warning: failed to assign company during user create: {assign_error}")
+        return created_user
     except Exception as e:
         error_str = str(e).lower()
         print(f"Error creating user '{name}': {e}")
@@ -113,10 +128,18 @@ def create_user(name: str, password_hash: str = None, is_password_set: bool = Fa
         if role and ('role' in error_str or 'column' in error_str):
             print(f"Retrying without role column...")
             data.pop('role', None)
+            company_value = data.pop('company_id', None) if 'company_id' in data else None
             try:
                 result = get_db().table('users').insert(data).execute()
                 print(f"Successfully created user: {name} without role")
-                return result.data[0]
+                created_user = result.data[0]
+                if company_value:
+                    try:
+                        assign_user_to_company(created_user['id'], company_value)
+                        created_user = get_user_by_id(created_user['id']) or created_user
+                    except Exception as assign_error:
+                        print(f"Warning: failed to assign company during user create: {assign_error}")
+                return created_user
             except Exception as e2:
                 print(f"Error creating user without role: {e2}")
                 raise
@@ -344,6 +367,18 @@ def get_user_workflow_activations(user_id: str) -> List[Dict]:
     except:
         return []
 
+
+def get_all_workflow_activations(limit: int = 0) -> List[Dict]:
+    """Get all workflow activations (optionally limit results)"""
+    try:
+        query = get_db().table('workflow_activations').select('*').order('created_at', desc=True)
+        if limit and limit > 0:
+            query = query.limit(limit)
+        result = query.execute()
+        return result.data or []
+    except:
+        return []
+
 def get_workflow_activation(user_id: str, workflow_id: str) -> Optional[Dict]:
     """Get specific workflow activation"""
     try:
@@ -501,7 +536,7 @@ def get_workflow_executions(activation_id: str, limit: int = 50) -> List[Dict]:
 def get_all_workflow_executions(workflow_id: str = None, limit: int = 100) -> List[Dict]:
     """Get all workflow executions (admin only)"""
     try:
-        query = get_db().table('workflow_executions').select('*, workflow_activations!inner(workflow_id, user_id, workflows(*))')
+        query = get_db().table('workflow_executions').select('*, workflow_activations!inner(company_id, workflow_id, user_id, workflows(*))')
         if workflow_id:
             query = query.eq('workflow_activations.workflow_id', workflow_id)
         result = query.order('started_at', desc=True).limit(limit).execute()

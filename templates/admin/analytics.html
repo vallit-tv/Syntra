@@ -9,39 +9,183 @@
 {% block admin_content %}
 <div class="page-header">
     <h1 class="page-title">System Analytics</h1>
-    <p class="page-description">System-wide workflow execution statistics</p>
+    <p class="page-description">Execution throughput, reliability, and recent activity across all tenants.</p>
 </div>
 
-<div class="dashboard-card">
-    <h2>Recent Executions</h2>
-    {% if executions %}
-    <div class="table-container">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Workflow</th>
-                    <th>User</th>
-                    <th>Status</th>
-                    <th>Started</th>
-                    <th>Duration</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for exec in executions[:50] %}
-                <tr>
-                    <td>{{ exec.workflow_activations.workflows.name if exec.workflow_activations and exec.workflow_activations.workflows else 'N/A' }}</td>
-                    <td>{{ exec.workflow_activations.user_id[:8] if exec.workflow_activations else 'N/A' }}</td>
-                    <td><span class="status-badge {{ exec.status }}">{{ exec.status }}</span></td>
-                    <td>{{ exec.started_at[:19] if exec.started_at else 'N/A' }}</td>
-                    <td>{{ exec.duration_ms }}ms</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-label">Total Executions</span>
+            <div class="stat-icon blue">
+                <i data-lucide="bar-chart-2" width="18" height="18"></i>
+            </div>
+        </div>
+        <div class="stat-value">{{ execution_stats.total }}</div>
+        <p class="stat-caption">{{ execution_stats.running }} currently running</p>
     </div>
-    {% else %}
-    <p>No executions yet.</p>
-    {% endif %}
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-label">Success Rate</span>
+            <div class="stat-icon green">
+                <i data-lucide="check-circle" width="18" height="18"></i>
+            </div>
+        </div>
+        <div class="stat-value">{{ execution_stats.success_rate|round(1) }}%</div>
+        <p class="stat-caption">{{ execution_stats.success }} successes</p>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-label">Failure Rate</span>
+            <div class="stat-icon amber">
+                <i data-lucide="alert-triangle" width="18" height="18"></i>
+            </div>
+        </div>
+        <div class="stat-value">{{ execution_stats.failure_rate|round(1) }}%</div>
+        <p class="stat-caption">{{ execution_stats.failed }} failures</p>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-label">Average Duration</span>
+            <div class="stat-icon purple">
+                <i data-lucide="timer" width="18" height="18"></i>
+            </div>
+        </div>
+        <div class="stat-value">
+            {% if execution_stats.avg_duration %}
+                {{ execution_stats.avg_duration|format_duration }}
+            {% else %}
+                —
+            {% endif %}
+        </div>
+        <p class="stat-caption">Across completed executions</p>
+    </div>
+</div>
+
+<div class="card-grid">
+    <div class="dashboard-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Recent Executions</h2>
+                <p class="card-subtitle">Latest workflow activity with status and run time.</p>
+            </div>
+        </div>
+        {% if executions %}
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Workflow</th>
+                        <th>User</th>
+                        <th>Status</th>
+                        <th>Started</th>
+                        <th>Duration</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for exec in executions[:50] %}
+                    {% set workflow = exec.workflow_activations.workflows if exec.workflow_activations and exec.workflow_activations.workflows else None %}
+                    <tr>
+                        <td>
+                            {% if workflow %}
+                            <a href="{{ url_for('admin_workflow_detail', workflow_id=workflow.id) }}" class="table-link">
+                                {{ workflow.name }}
+                            </a>
+                            {% else %}
+                            <span class="text-secondary">Unknown Workflow</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% set user_id = exec.workflow_activations.user_id if exec.workflow_activations else None %}
+                            {% if user_id and user_lookup[user_id] is defined %}
+                                {{ user_lookup[user_id] }}
+                            {% elif user_id %}
+                                {{ user_id[:8] }}…
+                            {% else %}
+                                <span class="text-secondary">System</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="status-badge {{ exec.status|lower }}">
+                                <span class="status-badge-dot"></span>
+                                {{ exec.status|capitalize }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if exec.started_at %}
+                                {{ exec.started_at|format_datetime('relative') }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if exec.duration_ms %}
+                                {{ exec.duration_ms|format_duration }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state-small">
+            <p class="text-secondary">No executions recorded yet.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="dashboard-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Top Workflows</h2>
+                <p class="card-subtitle">Most frequently executed automations this period.</p>
+            </div>
+        </div>
+        {% if top_workflows %}
+        <ul class="list-plain">
+            {% for workflow in top_workflows %}
+            <li class="list-item">
+                <div>
+                    <strong>{{ workflow.name }}</strong>
+                    <p class="text-secondary">{{ workflow.runs }} runs</p>
+                </div>
+                <a href="{{ url_for('admin_workflow_detail', workflow_id=workflow.workflow_id) }}" class="btn btn-sm btn-secondary">Inspect</a>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-secondary">Not enough executions to determine top workflows.</p>
+        {% endif %}
+    </div>
+
+    <div class="dashboard-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Recent Failures</h2>
+                <p class="card-subtitle">Last five errors to watch closely.</p>
+            </div>
+        </div>
+        {% if recent_failures %}
+        <ul class="list-plain">
+            {% for failure in recent_failures %}
+            {% set workflow = failure.workflow_activations.workflows if failure.workflow_activations and failure.workflow_activations.workflows else None %}
+            <li class="list-item">
+                <div>
+                    <strong>{{ workflow.name if workflow else 'Unknown Workflow' }}</strong>
+                    <p class="text-secondary">
+                        {{ failure.started_at|format_datetime('relative') }} · {{ failure.error_message|default('No error message provided') }}
+                    </p>
+                </div>
+                <a href="{{ url_for('admin_workflow_detail', workflow_id=workflow.id) if workflow else '#' }}" class="btn btn-sm btn-secondary" {% if not workflow %}style="pointer-events:none; opacity:0.5;"{% endif %}>Investigate</a>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-secondary">No failures detected recently. 🎉</p>
+        {% endif %}
+    </div>
 </div>
 {% endblock %}
 

@@ -311,6 +311,20 @@
     line-height: 1.5;
 }
 
+.page-header-left {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.page-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
 /* ============================================================================
    STATS CARDS
    ============================================================================ */
@@ -375,11 +389,27 @@
     color: var(--color-warning);
 }
 
+.stat-icon.purple {
+    background: rgba(168, 85, 247, 0.12);
+    color: #a855f7;
+}
+
+.stat-icon.amber {
+    background: rgba(245, 158, 11, 0.12);
+    color: var(--color-warning);
+}
+
 .stat-value {
     font-size: 1.875rem;
     font-weight: var(--font-semibold);
     color: var(--color-text);
     line-height: 1;
+}
+
+.stat-caption {
+    margin-top: 0.35rem;
+    font-size: var(--text-xs);
+    color: var(--color-text-light);
 }
 
 /* ============================================================================
@@ -407,6 +437,12 @@
     font-size: var(--text-lg);
     font-weight: var(--font-semibold);
     color: var(--color-text);
+}
+
+.card-subtitle {
+    font-size: var(--text-sm);
+    color: var(--color-text-light);
+    margin-top: 0.125rem;
 }
 
 .card-actions {
@@ -514,6 +550,73 @@
     align-items: center;
 }
 
+.table-link {
+    color: var(--color-text);
+    font-weight: var(--font-medium);
+    text-decoration: none;
+}
+
+.table-link:hover {
+    color: var(--color-primary);
+}
+
+.pill-row {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    background: var(--color-bg-subtle);
+    color: var(--color-text);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+}
+
+.pill.small {
+    font-size: var(--text-xs);
+    padding: 0.2rem 0.5rem;
+}
+
+.pill.muted {
+    background: var(--color-bg-muted);
+    color: var(--color-text-light);
+}
+
+.text-secondary {
+    color: var(--color-text-light);
+}
+
+.text-danger {
+    color: var(--color-danger);
+}
+
+.list-plain {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.list-item:last-child {
+    border-bottom: none;
+}
+
 /* ============================================================================
    STATUS BADGES
    ============================================================================ */
@@ -538,6 +641,11 @@
 .status-badge.inactive {
     background: var(--color-bg-muted);
     color: var(--color-text-light);
+}
+
+.status-badge.warning {
+    background: var(--color-warning-light);
+    color: var(--color-warning);
 }
 
 .status-badge.error {

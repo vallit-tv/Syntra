@@ -8,19 +8,62 @@
 
 {% block admin_content %}
 <div class="page-header">
-    <div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+    <div class="page-header-left">
         <div>
             <h1 class="page-title">Companies</h1>
-            <p class="page-description">Manage companies and assign CEOs.</p>
+            <p class="page-description">Control tenant access, assign leadership, and monitor adoption.</p>
         </div>
-        <button onclick="openModal('createCompanyModal')" class="btn btn-primary" style="display: flex; align-items: center; gap: 0.5rem;">
+    </div>
+    <div class="page-header-actions">
+        <button onclick="syntra.openModal('createCompanyModal')" class="btn btn-primary">
             <i data-lucide="plus" width="16" height="16"></i>
-            Add Company
+            <span>Create Company</span>
         </button>
     </div>
 </div>
 
+{% if company_stats %}
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-label">Total Companies</span>
+            <div class="stat-icon blue">
+                <i data-lucide="building-2" width="18" height="18"></i>
+            </div>
+        </div>
+        <div class="stat-value">{{ company_stats.total }}</div>
+        <p class="stat-caption">{{ company_stats.with_ceo }} with an assigned CEO</p>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-label">Active Workflows Enabled</span>
+            <div class="stat-icon green">
+                <i data-lucide="zap" width="18" height="18"></i>
+            </div>
+        </div>
+        <div class="stat-value">{{ company_stats.with_active_workflows }}</div>
+        <p class="stat-caption">{{ company_stats.without_active_workflows }} pending activation</p>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-label">Leadership Coverage</span>
+            <div class="stat-icon purple">
+                <i data-lucide="shield-check" width="18" height="18"></i>
+            </div>
+        </div>
+        <div class="stat-value">{{ company_stats.with_ceo }}</div>
+        <p class="stat-caption">{{ company_stats.without_ceo }} without a CEO</p>
+    </div>
+</div>
+{% endif %}
+
 <div class="dashboard-card">
+    <div class="card-header">
+        <div>
+            <h2 class="card-title">All Companies</h2>
+            <p class="card-subtitle">Track team size and deployed automations per tenant.</p>
+        </div>
+    </div>
     {% if companies %}
     <div class="table-container">
         <table class="table">
@@ -29,7 +72,9 @@
                     <th>Name</th>
                     <th>Slug</th>
                     <th>Users</th>
-                    <th>Created At</th>
+                    <th>Active Workflows</th>
+                    <th>Created</th>
+                    <th>Last Activity</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -37,20 +82,49 @@
                 {% for company in companies %}
                 <tr>
                     <td>
-                        <a href="{{ url_for('admin_company_detail', company_id=company.id) }}" style="font-weight: 600; color: var(--color-primary); text-decoration: none;">
-                            {{ company.name }}
-                        </a>
+                        <a href="{{ url_for('admin_company_detail', company_id=company.id) }}" class="table-link">{{ company.name }}</a>
                     </td>
                     <td><code>{{ company.slug }}</code></td>
-                    <td>-</td>
-                    <td>{{ company.created_at|format_datetime }}</td>
+                    <td>
+                        <div class="pill-row">
+                            <span class="pill small">Total · {{ company.user_stats.total }}</span>
+                            {% if company.user_stats.ceos %}
+                            <span class="pill small">CEO · {{ company.user_stats.ceos }}</span>
+                            {% endif %}
+                            {% if company.user_stats.workers %}
+                            <span class="pill small muted">Workers · {{ company.user_stats.workers }}</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="pill-row">
+                            <span class="pill small">Active · {{ company.activation_stats.active }}</span>
+                            <span class="pill small muted">Total · {{ company.activation_stats.total }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        {% if company.created_at %}
+                            {{ company.created_at|format_datetime('short') }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if company.activation_stats.last_updated %}
+                            {{ company.activation_stats.last_updated|format_datetime('relative') }}
+                        {% else %}
+                            <span class="text-secondary">No activity</span>
+                        {% endif %}
+                    </td>
                     <td>
                         <div class="table-actions">
                             <a href="{{ url_for('admin_company_detail', company_id=company.id) }}" class="btn btn-secondary btn-sm">
-                                <i data-lucide="eye" width="14" height="14"></i> View
+                                <i data-lucide="eye" width="14" height="14"></i>
+                                <span>View</span>
                             </a>
                             <button onclick="assignCEO('{{ company.id }}')" class="btn btn-primary btn-sm">
-                                <i data-lucide="user-plus" width="14" height="14"></i> Assign CEO
+                                <i data-lucide="user-plus" width="14" height="14"></i>
+                                <span>Assign CEO</span>
                             </button>
                         </div>
                     </td>
@@ -65,15 +139,15 @@
             <i data-lucide="building-2" width="32" height="32"></i>
         </div>
         <h3 class="empty-state-title">No companies yet</h3>
-        <p class="empty-state-description">Add your first company to get started.</p>
-        <button onclick="openModal('createCompanyModal')" class="btn btn-primary">Add Company</button>
+        <p class="empty-state-description">Create a company to start onboarding teams.</p>
+        <button onclick="syntra.openModal('createCompanyModal')" class="btn btn-primary">Create Company</button>
     </div>
     {% endif %}
 </div>
 
 <div id="createCompanyModal" class="modal">
     <div class="modal-content">
-        <span class="close-button" onclick="closeModal('createCompanyModal')">&times;</span>
+        <span class="close-button" onclick="syntra.closeModal('createCompanyModal')">&times;</span>
         <h2>Create Company</h2>
         <form id="createCompanyForm">
             <div class="form-group">
@@ -92,7 +166,7 @@
 
 <div id="assignCEOModal" class="modal">
     <div class="modal-content">
-        <span class="close-button" onclick="closeModal('assignCEOModal')">&times;</span>
+        <span class="close-button" onclick="syntra.closeModal('assignCEOModal')">&times;</span>
         <h2>Assign CEO</h2>
         <form id="assignCEOForm">
             <input type="hidden" id="assignCEOCompanyId">
@@ -108,72 +182,119 @@
 
 {% block dashboard_scripts %}
 <script>
-function openModal(modalId) {
-    document.getElementById(modalId).style.display = 'block';
-}
+const companyNameInput = document.getElementById('companyName');
+const companySlugInput = document.getElementById('companySlug');
 
-function closeModal(modalId) {
-    document.getElementById(modalId).style.display = 'none';
-}
-
-window.onclick = function(event) {
-    if (event.target.classList.contains('modal')) {
-        event.target.style.display = 'none';
-    }
-}
-
-document.getElementById('createCompanyForm').addEventListener('submit', function(event) {
-    event.preventDefault();
-    const name = document.getElementById('companyName').value;
-    const slug = document.getElementById('companySlug').value;
-
-    fetch('/api/admin/companies', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, slug })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            alert('Error creating company: ' + data.error);
-        } else {
-            alert('Company created successfully!');
-            closeModal('createCompanyModal');
-            location.reload();
+if (companyNameInput && companySlugInput) {
+    companyNameInput.addEventListener('input', function() {
+        if (!companySlugInput.dataset.touched || !companySlugInput.dataset.touched.length) {
+            companySlugInput.value = companyNameInput.value
+                .trim()
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '');
         }
-    })
-    .catch(err => alert('Error: ' + err));
-});
+    });
+
+    companySlugInput.addEventListener('input', function() {
+        companySlugInput.dataset.touched = 'true';
+    });
+}
+
+const createCompanyForm = document.getElementById('createCompanyForm');
+if (createCompanyForm) {
+    createCompanyForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        const submitBtn = createCompanyForm.querySelector('button[type="submit"]');
+        const name = companyNameInput.value.trim();
+        const slug = companySlugInput.value.trim();
+
+        if (!name || !slug) {
+            window.alert('Name and slug are required.');
+            return;
+        }
+
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating...';
+        }
+
+        fetch('/api/admin/companies', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, slug })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                window.alert('Error creating company: ' + data.error);
+            } else {
+                window.alert('Company created successfully.');
+                syntra.closeModal('createCompanyModal');
+                window.location.reload();
+            }
+        })
+        .catch(err => window.alert('Error: ' + err))
+        .finally(() => {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Create Company';
+            }
+        });
+    });
+}
 
 function assignCEO(companyId) {
     document.getElementById('assignCEOCompanyId').value = companyId;
-    openModal('assignCEOModal');
+    syntra.openModal('assignCEOModal');
 }
 
-document.getElementById('assignCEOForm').addEventListener('submit', function(event) {
-    event.preventDefault();
-    const companyId = document.getElementById('assignCEOCompanyId').value;
-    const user_name = document.getElementById('ceoName').value;
+const assignCEOForm = document.getElementById('assignCEOForm');
+if (assignCEOForm) {
+    assignCEOForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        const submitBtn = assignCEOForm.querySelector('button[type="submit"]');
+        const companyId = document.getElementById('assignCEOCompanyId').value;
+        const user_name = document.getElementById('ceoName').value.trim();
 
-    fetch(`/api/admin/companies/${companyId}/assign-ceo`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_name })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            alert('Error assigning CEO: ' + data.error);
-        } else {
-            alert('CEO assigned successfully!');
-            closeModal('assignCEOModal');
-            location.reload();
+        if (!user_name) {
+            window.alert('Please provide a name for the CEO.');
+            return;
         }
-    })
-    .catch(err => alert('Error: ' + err));
-});
 
-lucide.createIcons();
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Assigning...';
+        }
+
+        fetch(`/api/admin/companies/${companyId}/assign-ceo`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_name })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                window.alert('Error assigning CEO: ' + data.error);
+            } else {
+                window.alert('CEO assigned successfully.');
+                syntra.closeModal('assignCEOModal');
+                window.location.reload();
+            }
+        })
+        .catch(err => window.alert('Error: ' + err))
+        .finally(() => {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Assign CEO';
+            }
+        });
+    });
+}
+
+if (typeof lucide !== 'undefined') {
+    lucide.createIcons();
+}
 </script>
 {% endblock %}
 

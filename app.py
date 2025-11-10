@@ -1,6 +1,9 @@
 """Main Flask application"""
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, timezone
+from collections import Counter, defaultdict
+import json
 import os
+import statistics
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, abort, send_file
 from dotenv import load_dotenv
 import auth
@@ -15,6 +18,126 @@ app.permanent_session_lifetime = timedelta(minutes=30)
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['SESSION_COOKIE_SECURE'] = os.getenv('FLASK_ENV') == 'production'  # Secure cookies in production
+
+
+def parse_iso_ts(value):
+    """Parse ISO timestamp strings into datetime objects."""
+    if not value:
+        return None
+    if isinstance(value, datetime):
+        return value
+    try:
+        value_str = value.strip()
+        if value_str.endswith('Z'):
+            value_str = value_str.replace('Z', '+00:00')
+        return datetime.fromisoformat(value_str)
+    except Exception:
+        return None
+
+
+def parse_required_services(raw_value):
+    """Ensure required services metadata is consistently a list."""
+    if not raw_value:
+        return []
+    if isinstance(raw_value, list):
+        return raw_value
+    if isinstance(raw_value, str):
+        stripped = raw_value.strip()
+        if not stripped:
+            return []
+        try:
+            parsed = json.loads(stripped)
+            if isinstance(parsed, list):
+                return parsed
+        except json.JSONDecodeError:
+            pass
+        return [item.strip() for item in stripped.replace('[', '').replace(']', '').split(',') if item.strip()]
+    return []
+
+
+@app.template_filter('format_datetime')
+def format_datetime_filter(value, mode='medium'):
+    """Format datetime values for templates."""
+    dt = value
+    if not isinstance(dt, datetime):
+        dt = parse_iso_ts(value)
+    if not dt:
+        return ''
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+
+    if mode == 'relative':
+        now = datetime.now(timezone.utc)
+        delta = now - dt
+        seconds = int(delta.total_seconds())
+        future = seconds < 0
+        seconds = abs(seconds)
+
+        if seconds < 60:
+            phrase = 'just now'
+        elif seconds < 3600:
+            minutes = seconds // 60
+            phrase = f"{minutes} minute{'s' if minutes != 1 else ''}"
+        elif seconds < 86400:
+            hours = seconds // 3600
+            phrase = f"{hours} hour{'s' if hours != 1 else ''}"
+        elif seconds < 604800:
+            days = seconds // 86400
+            phrase = f"{days} day{'s' if days != 1 else ''}"
+        else:
+            weeks = seconds // 604800
+            phrase = f"{weeks} week{'s' if weeks != 1 else ''}"
+        if phrase == 'just now':
+            return phrase
+        return f"in {phrase}" if future else f"{phrase} ago"
+
+    if mode == 'short':
+        return dt.astimezone(timezone.utc).strftime('%b %d, %Y %H:%M UTC')
+
+    # default medium format
+    return dt.astimezone(timezone.utc).strftime('%B %d, %Y %H:%M UTC')
+
+
+@app.template_filter('format_duration')
+def format_duration_filter(value):
+    """Format millisecond durations into a readable string."""
+    if value is None:
+        return ''
+    try:
+        total_ms = float(value)
+    except (TypeError, ValueError):
+        return str(value)
+
+    total_seconds = int(total_ms // 1000)
+    ms = int(total_ms % 1000)
+    minutes, seconds = divmod(total_seconds, 60)
+    hours, minutes = divmod(minutes, 60)
+
+    parts = []
+    if hours:
+        parts.append(f"{hours}h")
+    if minutes:
+        parts.append(f"{minutes}m")
+    if seconds or not parts:
+        parts.append(f"{seconds}s")
+    if not hours and not minutes and ms:
+        parts.append(f"{ms}ms")
+    return ' '.join(parts)
+
+
+@app.template_filter('ensure_list')
+def ensure_list_filter(value):
+    """Convert comma-separated strings or single values into lists for iteration."""
+    if isinstance(value, list):
+        return value
+    if isinstance(value, tuple):
+        return list(value)
+    if not value:
+        return []
+    if isinstance(value, str):
+        return [item.strip() for item in value.split(',') if item.strip()]
+    return [value]
+
 
 # Explicitly ensure static files are accessible
 # Flask serves static files automatically, but this ensures proper handling on Vercel
@@ -222,15 +345,51 @@ def company_dashboard():
         # Get company activations
         activations = db.get_company_activations(company['id'])
         active_count = len([a for a in activations if a.get('is_active')])
-        
+        activation_stats = {
+            'total': len(activations),
+            'active': active_count,
+            'inactive': len(activations) - active_count
+        }
+
+        missing_credentials = 0
+        recent_executions = []
+        for activation in activations:
+            workflow_meta = activation.get('workflows') or {}
+            required_services = parse_required_services(workflow_meta.get('required_services'))
+            activation['required_services_list'] = required_services
+
+            api_keys = db.get_workflow_api_keys(activation['id'])
+            key_types = { (key.get('service_type') or '').lower() for key in api_keys }
+            missing = [service for service in required_services if service.lower() not in key_types]
+            activation['missing_services'] = missing
+            if missing:
+                missing_credentials += 1
+
+            latest_exec = db.get_workflow_executions(activation['id'], limit=1)
+            if latest_exec:
+                execution = latest_exec[0]
+                execution['workflow'] = workflow_meta
+                recent_executions.append(execution)
+
+        recent_executions.sort(key=lambda item: item.get('started_at', ''), reverse=True)
+        recent_executions = recent_executions[:5]
+
         # Get company users
         company_users = db.get_company_users(company['id'])
+        dashboard_summary = {
+            'team_members': len(company_users),
+            'active_workflows': activation_stats['active'],
+            'pending_workflows': activation_stats['inactive'],
+            'missing_credentials': missing_credentials
+        }
         
         return render_template('company/dashboard.html',
                              user=user,
                              company=company,
-                             active_workflows_count=active_count,
-                             workers_count=len(company_users))
+                             activation_stats=activation_stats,
+                             dashboard_summary=dashboard_summary,
+                             recent_executions=recent_executions,
+                             company_users=company_users)
     except Exception as e:
         print(f"CEO dashboard error: {str(e)}")
         return redirect(url_for('login'))
@@ -251,12 +410,26 @@ def company_workflows():
         # Get company activations
         activations = db.get_company_activations(company['id'])
         activation_map = {act.get('workflow_id'): act for act in activations}
+        activation_keys = {}
+        for activation in activations:
+            activation_keys[activation['id']] = db.get_workflow_api_keys(activation['id'])
         
         # Mark activated workflows
         for workflow in workflows:
+            required_services = parse_required_services(workflow.get('required_services'))
+            workflow['required_services_list'] = required_services
             workflow['is_activated'] = workflow['id'] in activation_map
+            workflow['activation'] = None
+            workflow['is_ready'] = False
             if workflow['is_activated']:
-                workflow['activation'] = activation_map[workflow['id']]
+                activation = activation_map[workflow['id']]
+                keys = activation_keys.get(activation['id'], [])
+                key_types = { (key.get('service_type') or '').lower() for key in keys }
+                missing = [service for service in required_services if service.lower() not in key_types]
+                activation['missing_services'] = missing
+                activation['api_keys'] = keys
+                workflow['activation'] = activation
+                workflow['is_ready'] = activation.get('is_active') and not missing
         
         return render_template('company/workflows.html',
                              user=user,
@@ -292,10 +465,13 @@ def company_workflow_detail(workflow_id):
                 executions = db.get_workflow_executions(act['id'], limit=20)
                 break
         
-        required_services = workflow.get('required_services', [])
-        if isinstance(required_services, str):
-            import json
-            required_services = json.loads(required_services) if required_services else []
+        required_services = parse_required_services(workflow.get('required_services'))
+        workflow['required_services_list'] = required_services
+        missing_services = []
+        if activation:
+            key_types = { (key.get('service_type') or '').lower() for key in api_keys }
+            missing_services = [service for service in required_services if service.lower() not in key_types]
+            activation['missing_services'] = missing_services
         
         return render_template('company/workflow-detail.html',
                              user=user,
@@ -304,7 +480,8 @@ def company_workflow_detail(workflow_id):
                              activation=activation,
                              api_keys=api_keys,
                              executions=executions,
-                             required_services=required_services)
+                             required_services=required_services,
+                             missing_services=missing_services)
     except Exception as e:
         print(f"CEO workflow detail error: {str(e)}")
         return redirect(url_for('company_workflows'))
@@ -320,11 +497,21 @@ def company_workers():
             return "No company assigned", 403
         
         workers = db.get_company_users(company['id'])
+        role_counter = Counter((worker.get('role') or 'worker').lower() for worker in workers)
+        password_pending = sum(1 for worker in workers if not worker.get('is_password_set'))
+        worker_stats = {
+            'total': len(workers),
+            'ceos': role_counter.get('ceo', 0),
+            'admins': role_counter.get('admin', 0),
+            'workers': role_counter.get('worker', 0) + role_counter.get('user', 0),
+            'password_pending': password_pending
+        }
         
         return render_template('company/workers.html',
                              user=user,
                              company=company,
-                             workers=workers)
+                             workers=workers,
+                             worker_stats=worker_stats)
     except Exception as e:
         print(f"CEO workers error: {str(e)}")
         return redirect(url_for('company_dashboard'))
@@ -396,7 +583,8 @@ def dashboard_workflows():
         user = auth.current_user()
         # Get public workflows only (non-admins see only public)
         is_admin_user = auth.is_admin(user)
-        workflows = db.get_workflows(public_only=not is_admin_user)
+        can_view_private = is_admin_user or auth.is_ceo(user)
+        workflows = db.get_workflows(public_only=not can_view_private)
         
         # Get user's activations
         activations = db.get_user_workflow_activations(user['id'])
@@ -411,7 +599,8 @@ def dashboard_workflows():
         return render_template('dashboard/workflows.html', 
                              user=user, 
                              workflows=workflows,
-                             is_admin=is_admin_user)
+                             is_admin=is_admin_user,
+                             can_view_private=can_view_private)
     except Exception as e:
         print(f"Dashboard workflows error: {str(e)}")
         return redirect(url_for('login'))
@@ -430,7 +619,8 @@ def dashboard_workflow_detail(workflow_id):
         
         # Check if user can access this workflow (must be public or admin)
         is_admin_user = auth.is_admin(user)
-        if not workflow.get('is_public') and not is_admin_user:
+        can_view_private = is_admin_user or auth.is_ceo(user)
+        if not workflow.get('is_public') and not can_view_private:
             return redirect(url_for('dashboard_workflows'))
         
         # Get user's activation
@@ -453,7 +643,9 @@ def dashboard_workflow_detail(workflow_id):
                              activation=activation,
                              api_keys=api_keys,
                              executions=executions,
-                             required_services=required_services)
+                             required_services=required_services,
+                             can_view_private=can_view_private,
+                             is_admin=is_admin_user)
     except Exception as e:
         print(f"Dashboard workflow detail error: {str(e)}")
         return redirect(url_for('login'))
@@ -531,11 +723,48 @@ def admin_workflows():
             n8n_status = {'connected': connected, 'message': message}
         
         workflows = db.get_workflows(public_only=False)
+        total_workflows = len(workflows)
+        active_workflows = sum(1 for w in workflows if w.get('is_active'))
+        public_workflows = sum(1 for w in workflows if w.get('is_public'))
+        inactive_workflows = total_workflows - active_workflows
+        private_workflows = total_workflows - public_workflows
+        synced_workflows = sum(1 for w in workflows if w.get('n8n_workflow_id'))
+
+        category_counter = Counter()
+        service_counter = Counter()
+        last_updated_at = None
+
+        for workflow in workflows:
+            category = workflow.get('category') or 'Uncategorized'
+            category_counter[category] += 1
+
+            services = parse_required_services(workflow.get('required_services'))
+            workflow['required_services_list'] = services
+            for service in services:
+                service_counter[service] += 1
+
+            candidate_ts = parse_iso_ts(workflow.get('updated_at') or workflow.get('created_at'))
+            if candidate_ts and (last_updated_at is None or candidate_ts > last_updated_at):
+                last_updated_at = candidate_ts
+
+        workflow_stats = {
+            'total': total_workflows,
+            'active': active_workflows,
+            'inactive': inactive_workflows,
+            'public': public_workflows,
+            'private': private_workflows,
+            'categories': category_counter.most_common(),
+            'services': service_counter.most_common(),
+            'last_updated': last_updated_at,
+            'synced_workflows': synced_workflows
+        }
+
         return render_template('admin/workflows.html',
                              user=user,
                              workflows=workflows,
                              n8n_configured=n8n_configured,
-                             n8n_status=n8n_status)
+                             n8n_status=n8n_status,
+                             workflow_stats=workflow_stats)
     except Exception as e:
         print(f"Admin workflows error: {str(e)}")
         return redirect(url_for('dashboard'))
@@ -569,9 +798,45 @@ def admin_users():
         user = auth.current_user()
         # Get all users
         all_users = db.get_all_users()
+        companies = db.get_companies()
+
+        company_lookup = {company['id']: company for company in companies}
+        role_counter = Counter()
+        assigned_count = 0
+        password_set_count = 0
+        last_created_at = None
+
+        enriched_users = []
+        for entry in all_users:
+            role = entry.get('role') or 'user'
+            role_counter[role] += 1
+            if entry.get('company_id'):
+                assigned_count += 1
+                company = company_lookup.get(entry['company_id'])
+                if company:
+                    entry['company_name'] = company.get('name')
+            password_set_count += 1 if entry.get('is_password_set') else 0
+            created_ts = parse_iso_ts(entry.get('created_at'))
+            if created_ts and (last_created_at is None or created_ts > last_created_at):
+                last_created_at = created_ts
+            enriched_users.append(entry)
+
+        total_users = len(enriched_users)
+        user_stats = {
+            'total': total_users,
+            'with_password': password_set_count,
+            'without_password': total_users - password_set_count,
+            'assigned_companies': assigned_count,
+            'unassigned': total_users - assigned_count,
+            'role_counts': role_counter.most_common(),
+            'last_created': last_created_at
+        }
+
         return render_template('admin/users.html',
                              user=user,
-                             users=all_users)
+                             users=enriched_users,
+                             user_stats=user_stats,
+                             companies=companies)
     except Exception as e:
         print(f"Admin users error: {str(e)}")
         return redirect(url_for('admin_dashboard'))
@@ -611,15 +876,42 @@ def admin_system():
             n8n_status = {'connected': connected, 'message': message, 'url': n8n_service.base_url}
         
         # Get system stats
-        total_workflows = len(db.get_workflows(public_only=False))
-        public_workflows = len([w for w in db.get_workflows(public_only=False) if w.get('is_public')])
+        workflows = db.get_workflows(public_only=False)
+        total_workflows = len(workflows)
+        public_workflows = sum(1 for w in workflows if w.get('is_public'))
+        active_workflows = sum(1 for w in workflows if w.get('is_active'))
+
+        companies = db.get_companies()
+        all_users = db.get_all_users()
+        activations = db.get_all_workflow_activations()
+        executions = db.get_all_workflow_executions(limit=200)
+
+        role_counts = Counter((u.get('role') or 'user') for u in all_users)
+        last_execution = executions[0] if executions else None
+        last_execution_started_at = parse_iso_ts(last_execution.get('started_at')) if last_execution else None
+
+        system_stats = {
+            'total_workflows': total_workflows,
+            'active_workflows': active_workflows,
+            'inactive_workflows': total_workflows - active_workflows,
+            'public_workflows': public_workflows,
+            'private_workflows': total_workflows - public_workflows,
+            'companies': len(companies),
+            'users': len(all_users),
+            'admins': role_counts.get('admin', 0),
+            'ceos': role_counts.get('ceo', 0),
+            'workers': role_counts.get('worker', 0) + role_counts.get('user', 0),
+            'activations': len(activations),
+            'active_activations': sum(1 for act in activations if act.get('is_active')),
+            'executions': len(executions),
+            'last_execution_at': last_execution_started_at
+        }
         
         return render_template('admin/system.html',
                              user=user,
                              n8n_configured=n8n_configured,
                              n8n_status=n8n_status,
-                             total_workflows=total_workflows,
-                             public_workflows=public_workflows)
+                             system_stats=system_stats)
     except Exception as e:
         print(f"Admin system error: {str(e)}")
         return redirect(url_for('admin_dashboard'))
@@ -632,10 +924,68 @@ def admin_analytics():
         user = auth.current_user()
         # Get system-wide stats
         all_executions = db.get_all_workflow_executions(limit=1000)
+        users = db.get_all_users()
+        user_lookup = {u['id']: u['name'] for u in users}
+
+        total_executions = len(all_executions)
+        success_count = 0
+        error_count = 0
+        running_count = 0
+        duration_values = []
+        workflow_counter = Counter()
+
+        for execution in all_executions:
+            status = (execution.get('status') or '').lower()
+            if status == 'success':
+                success_count += 1
+            elif status == 'error':
+                error_count += 1
+            elif status == 'running':
+                running_count += 1
+
+            duration = execution.get('duration_ms')
+            if isinstance(duration, (int, float)) and duration >= 0:
+                duration_values.append(duration)
+
+            workflow_meta = execution.get('workflow_activations', {}).get('workflows', {})
+            workflow_id = workflow_meta.get('id') or execution.get('workflow_activation_id')
+            workflow_name = workflow_meta.get('name') or 'Unknown Workflow'
+            workflow_counter[(workflow_id, workflow_name)] += 1
+
+        avg_duration = None
+        if duration_values:
+            try:
+                avg_duration = statistics.mean(duration_values)
+            except statistics.StatisticsError:
+                avg_duration = None
+
+        success_rate = (success_count / total_executions * 100) if total_executions else 0
+        failure_rate = (error_count / total_executions * 100) if total_executions else 0
+
+        top_workflows = [
+            {'workflow_id': wf_id, 'name': name, 'runs': count}
+            for (wf_id, name), count in workflow_counter.most_common(10)
+        ]
+
+        recent_failures = [exec_item for exec_item in all_executions if (exec_item.get('status') or '').lower() == 'error'][:5]
+
+        execution_stats = {
+            'total': total_executions,
+            'success': success_count,
+            'failed': error_count,
+            'running': running_count,
+            'avg_duration': avg_duration,
+            'success_rate': success_rate,
+            'failure_rate': failure_rate
+        }
         
         return render_template('admin/analytics.html',
                              user=user,
-                             executions=all_executions)
+                             executions=all_executions,
+                             execution_stats=execution_stats,
+                             top_workflows=top_workflows,
+                             recent_failures=recent_failures,
+                             user_lookup=user_lookup)
     except Exception as e:
         print(f"Admin analytics error: {str(e)}")
         return redirect(url_for('admin_dashboard'))
@@ -647,9 +997,62 @@ def admin_companies():
     try:
         user = auth.current_user()
         companies = db.get_companies()
+        all_users = db.get_all_users()
+        activations = db.get_all_workflow_activations()
+
+        user_summary = defaultdict(lambda: {'total': 0, 'admins': 0, 'ceos': 0, 'workers': 0})
+        for entry in all_users:
+            company_id = entry.get('company_id')
+            if not company_id:
+                continue
+            summary = user_summary[company_id]
+            summary['total'] += 1
+            role = (entry.get('role') or 'worker').lower()
+            if role == 'admin':
+                summary['admins'] += 1
+            elif role == 'ceo':
+                summary['ceos'] += 1
+            else:
+                summary['workers'] += 1
+
+        activation_summary = defaultdict(lambda: {'total': 0, 'active': 0, 'last_updated': None})
+        for activation in activations:
+            company_id = activation.get('company_id')
+            if not company_id:
+                continue
+            summary = activation_summary[company_id]
+            summary['total'] += 1
+            if activation.get('is_active'):
+                summary['active'] += 1
+            ts = parse_iso_ts(activation.get('updated_at') or activation.get('created_at'))
+            if ts and (summary['last_updated'] is None or ts > summary['last_updated']):
+                summary['last_updated'] = ts
+
+        enriched_companies = []
+        for company in companies:
+            cid = company.get('id')
+            company_stats = user_summary.get(cid, {'total': 0, 'admins': 0, 'ceos': 0, 'workers': 0})
+            activation_stats = activation_summary.get(cid, {'total': 0, 'active': 0, 'last_updated': None})
+            company['user_stats'] = company_stats
+            company['activation_stats'] = activation_stats
+            enriched_companies.append(company)
+
+        total_companies = len(enriched_companies)
+        companies_with_active = sum(1 for company in enriched_companies if company['activation_stats']['active'] > 0)
+        companies_with_ceo = sum(1 for company in enriched_companies if company['user_stats']['ceos'] > 0)
+
+        company_stats = {
+            'total': total_companies,
+            'with_active_workflows': companies_with_active,
+            'without_active_workflows': total_companies - companies_with_active,
+            'with_ceo': companies_with_ceo,
+            'without_ceo': total_companies - companies_with_ceo
+        }
+
         return render_template('admin/companies.html',
                              user=user,
-                             companies=companies)
+                             companies=enriched_companies,
+                             company_stats=company_stats)
     except Exception as e:
         print(f"Admin companies error: {str(e)}")
         return redirect(url_for('admin_dashboard'))
@@ -666,12 +1069,46 @@ def admin_company_detail(company_id):
         
         company_users = db.get_company_users(company_id)
         company_activations = db.get_company_activations(company_id)
+
+        role_counter = Counter((u.get('role') or 'worker') for u in company_users)
+        total_users = len(company_users)
+        user_stats = {
+            'total': total_users,
+            'admins': role_counter.get('admin', 0),
+            'ceos': role_counter.get('ceo', 0),
+            'workers': role_counter.get('worker', 0) + role_counter.get('user', 0)
+        }
+
+        activation_count = len(company_activations)
+        active_activation_count = sum(1 for act in company_activations if act.get('is_active'))
+        total_execution_count = sum(act.get('execution_count') or 0 for act in company_activations)
+        last_activation_update = None
+        last_execution_at = None
+
+        for activation in company_activations:
+            updated_ts = parse_iso_ts(activation.get('updated_at') or activation.get('created_at'))
+            if updated_ts and (last_activation_update is None or updated_ts > last_activation_update):
+                last_activation_update = updated_ts
+            last_exec = parse_iso_ts(activation.get('last_executed_at'))
+            if last_exec and (last_execution_at is None or last_exec > last_execution_at):
+                last_execution_at = last_exec
+
+        activation_stats = {
+            'total': activation_count,
+            'active': active_activation_count,
+            'inactive': activation_count - active_activation_count,
+            'execution_count': total_execution_count,
+            'last_updated': last_activation_update,
+            'last_execution': last_execution_at
+        }
         
         return render_template('admin/company-detail.html',
                              user=user,
                              company=company,
                              company_users=company_users,
-                             activations=company_activations)
+                             activations=company_activations,
+                             user_stats=user_stats,
+                             activation_stats=activation_stats)
     except Exception as e:
         print(f"Admin company detail error: {str(e)}")
         return redirect(url_for('admin_companies'))
@@ -686,6 +1123,20 @@ def admin_n8n():
         n8n_configured = n8n_service.is_configured()
         n8n_url = n8n_service.base_url if n8n_configured else None
         n8n_status = None
+        workflows = db.get_workflows(public_only=False)
+        total_workflows = len(workflows)
+        n8n_synced = sum(1 for w in workflows if w.get('n8n_workflow_id'))
+        last_sync = None
+        for workflow in workflows:
+            updated_ts = parse_iso_ts(workflow.get('updated_at') or workflow.get('created_at'))
+            if updated_ts and (last_sync is None or updated_ts > last_sync):
+                last_sync = updated_ts
+        n8n_overview = {
+            'total_workflows': total_workflows,
+            'synced_workflows': n8n_synced,
+            'unsynced_workflows': total_workflows - n8n_synced,
+            'last_synced_at': last_sync
+        }
         
         if n8n_configured:
             connected, message = n8n_service.test_connection()
@@ -695,7 +1146,8 @@ def admin_n8n():
                              user=user,
                              n8n_configured=n8n_configured,
                              n8n_url=n8n_url,
-                             n8n_status=n8n_status)
+                             n8n_status=n8n_status,
+                             n8n_overview=n8n_overview)
     except Exception as e:
         print(f"Admin n8n error: {str(e)}")
         return redirect(url_for('admin_dashboard'))
@@ -711,44 +1163,6 @@ def dashboard_analytics():
         print(f"Dashboard analytics error: {str(e)}")
         return redirect(url_for('login'))
 
-@app.route('/dashboard/team')
-@auth.login_required
-def dashboard_team():
-    """Team management page"""
-    try:
-        user = auth.current_user()
-        # Placeholder - to be replaced with actual team data from database
-        team_members = []
-        pending_invitations = []
-        current_user_can_manage = auth.is_admin(user)
-        return render_template('dashboard/team.html', 
-                             user=user,
-                             team_members=team_members,
-                             pending_invitations=pending_invitations,
-                             current_user_can_manage=current_user_can_manage)
-    except Exception as e:
-        print(f"Dashboard team error: {str(e)}")
-        return redirect(url_for('login'))
-
-@app.route('/dashboard/organization')
-@auth.login_required
-def dashboard_organization():
-    """Organization settings page"""
-    try:
-        user = auth.current_user()
-        # Placeholder - to be replaced with actual organization data from database
-        organization = {
-            'name': 'My Organization',
-            'slug': 'my-organization',
-            'description': '',
-            'logo_url': None
-        }
-        return render_template('dashboard/organization.html', 
-                             user=user,
-                             organization=organization)
-    except Exception as e:
-        print(f"Dashboard organization error: {str(e)}")
-        return redirect(url_for('login'))
 
 @app.route('/dashboard/billing')
 @auth.login_required
@@ -807,13 +1221,20 @@ def api_create_user():
     data = request.get_json() or {}
     name = (data.get('name') or '').strip()
     role = (data.get('role') or 'user').strip()
+    company_id = (data.get('company_id') or '').strip() or None
     if len(name) < 2:
         return jsonify({'error': 'Name must be at least 2 characters'}), 400
-    if role not in ('user', 'admin', 'ceo'):  # Keep 'ceo' for backward compatibility
+    if role not in ('user', 'admin', 'ceo', 'worker'):
         role = 'user'
     try:
-        user = auth.create_user_admin(name, role=role)
-        return jsonify({'message': 'User created. They can now set their password on first login.', 'user': {'id': user['id'], 'name': user['name'], 'role': user.get('role', 'user')}})
+        user = auth.create_user_admin(name, role=role, company_id=company_id)
+        response_user = {
+            'id': user['id'],
+            'name': user['name'],
+            'role': user.get('role', 'user'),
+            'company_id': user.get('company_id')
+        }
+        return jsonify({'message': 'User created. They can now set their password on first login.', 'user': response_user})
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
@@ -1085,15 +1506,16 @@ def api_admin_create_user():
     data = request.get_json() or {}
     name = (data.get('name') or '').strip()
     role = (data.get('role') or 'user').strip()
+    company_id = (data.get('company_id') or '').strip() or None
     
     if len(name) < 2:
         return jsonify({'error': 'Name must be at least 2 characters'}), 400
-    if role not in ('user', 'admin'):
+    if role not in ('user', 'admin', 'ceo', 'worker'):
         role = 'user'
     
     try:
-        user = auth.create_user_admin(name, role=role)
-        return jsonify({'message': 'User created', 'user': {'id': user['id'], 'name': user['name'], 'role': user.get('role', 'user')}})
+        user = auth.create_user_admin(name, role=role, company_id=company_id)
+        return jsonify({'message': 'User created', 'user': {'id': user['id'], 'name': user['name'], 'role': user.get('role', 'user'), 'company_id': user.get('company_id')}})
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
@@ -1102,17 +1524,24 @@ def api_admin_create_user():
 def api_admin_update_user(user_id):
     """Update user (admin only)"""
     data = request.get_json() or {}
-    updates = {}
+    role_update = None
+    updated = False
     
     if 'role' in data:
-        role = data['role'].strip()
-        if role in ('user', 'admin'):
-            updates['role'] = role
+        role = (data['role'] or '').strip()
+        if role in ('user', 'admin', 'ceo', 'worker'):
+            role_update = role
+            if db.update_user_role(user_id, role_update):
+                updated = True
     
-    if updates:
-        success = db.update_user_role(user_id, updates.get('role'))
-        if success:
-            return jsonify({'message': 'User updated'})
+    if 'company_id' in data:
+        company_id = (data.get('company_id') or '').strip()
+        company_id = company_id or None
+        if db.assign_user_to_company(user_id, company_id):
+            updated = True
+    
+    if updated:
+        return jsonify({'message': 'User updated'})
     
     return jsonify({'error': 'No valid updates'}), 400
 
@@ -1241,7 +1670,7 @@ def api_company_deactivate_workflow(workflow_id):
         return jsonify({'error': 'No company assigned'}), 403
     
     try:
-        success = db.deactivate_workflow(company_id, workflow_id)
+        success = db.deactivate_workflow(company_id, workflow_id, is_company_level=True)
         if success:
             return jsonify({'message': 'Workflow deactivated for company'})
         return jsonify({'error': 'Failed to deactivate'}), 500
@@ -1334,8 +1763,8 @@ def api_company_update_settings():
 def api_list_workflows():
     """List available workflows (public only for non-admins)"""
     user = auth.current_user()
-    is_admin_user = auth.is_admin(user)
-    workflows = db.get_workflows(public_only=not is_admin_user)
+    can_view_private = auth.is_admin(user) or auth.is_ceo(user)
+    workflows = db.get_workflows(public_only=not can_view_private)
     return jsonify(workflows)
 
 @app.route('/api/workflows/<workflow_id>', methods=['GET'])
@@ -1348,8 +1777,8 @@ def api_get_workflow(workflow_id):
         return jsonify({'error': 'Workflow not found'}), 404
     
     # Check access
-    is_admin_user = auth.is_admin(user)
-    if not workflow.get('is_public') and not is_admin_user:
+    can_view_private = auth.is_admin(user) or auth.is_ceo(user)
+    if not workflow.get('is_public') and not can_view_private:
         return jsonify({'error': 'Access denied'}), 403
     
     return jsonify(workflow)
@@ -1364,8 +1793,8 @@ def api_activate_workflow(workflow_id):
         return jsonify({'error': 'Workflow not found'}), 404
     
     # Check if workflow is available
-    is_admin_user = auth.is_admin(user)
-    if not workflow.get('is_public') and not is_admin_user:
+    can_view_private = auth.is_admin(user) or auth.is_ceo(user)
+    if not workflow.get('is_public') and not can_view_private:
         return jsonify({'error': 'Workflow not available'}), 403
     
     if not workflow.get('is_active'):
@@ -1562,98 +1991,6 @@ def api_save_workflow_defaults():
     # Placeholder - to be replaced with actual defaults save logic
     return jsonify({'message': 'Workflow defaults saved'})
 
-# ============================================================================
-# Team Management API Routes
-# ============================================================================
-
-@app.route('/api/team/invitations', methods=['POST'])
-@auth.login_required
-def api_create_invitation():
-    """Send team member invitation"""
-    user = auth.current_user()
-    data = request.get_json() or {}
-    # Placeholder - to be replaced with actual invitation creation
-    return jsonify({'message': 'Invitation sent successfully'})
-
-@app.route('/api/team/invitations/<invitation_id>', methods=['DELETE'])
-@auth.login_required
-def api_cancel_invitation(invitation_id):
-    """Cancel a pending invitation"""
-    user = auth.current_user()
-    # Placeholder - to be replaced with actual invitation cancellation
-    return jsonify({'message': 'Invitation cancelled'})
-
-@app.route('/api/team/invitations/<invitation_id>/resend', methods=['POST'])
-@auth.login_required
-def api_resend_invitation(invitation_id):
-    """Resend an invitation email"""
-    user = auth.current_user()
-    # Placeholder - to be replaced with actual resend logic
-    return jsonify({'message': 'Invitation resent'})
-
-@app.route('/api/team/members/<member_id>/role', methods=['PATCH'])
-@auth.login_required
-def api_update_member_role(member_id):
-    """Update team member role"""
-    user = auth.current_user()
-    data = request.get_json() or {}
-    # Placeholder - to be replaced with actual role update
-    return jsonify({'message': 'Role updated successfully'})
-
-@app.route('/api/team/members/<member_id>', methods=['DELETE'])
-@auth.login_required
-def api_remove_member(member_id):
-    """Remove team member"""
-    user = auth.current_user()
-    # Placeholder - to be replaced with actual member removal
-    return jsonify({'message': 'Member removed successfully'})
-
-# ============================================================================
-# Organization API Routes
-# ============================================================================
-
-@app.route('/api/organization', methods=['PATCH'])
-@auth.login_required
-def api_update_organization():
-    """Update organization profile"""
-    user = auth.current_user()
-    data = request.get_json() or {}
-    # Placeholder - to be replaced with actual organization update
-    return jsonify({'message': 'Organization updated successfully'})
-
-@app.route('/api/organization', methods=['DELETE'])
-@auth.login_required
-def api_delete_organization():
-    """Delete organization (admin only)"""
-    user = auth.current_user()
-    # Placeholder - to be replaced with actual organization deletion
-    return jsonify({'message': 'Organization deleted'})
-
-@app.route('/api/organization/logo', methods=['POST'])
-@auth.login_required
-def api_upload_organization_logo():
-    """Upload organization logo"""
-    user = auth.current_user()
-    # Placeholder - to be replaced with actual logo upload logic
-    return jsonify({'message': 'Logo uploaded successfully'})
-
-@app.route('/api/organization/preferences', methods=['PATCH'])
-@auth.login_required
-def api_update_organization_preferences():
-    """Update organization preferences"""
-    user = auth.current_user()
-    data = request.get_json() or {}
-    # Placeholder - to be replaced with actual preferences update
-    return jsonify({'message': 'Preferences updated successfully'})
-
-@app.route('/api/organization/security/2fa', methods=['PATCH'])
-@auth.login_required
-def api_update_2fa_requirement():
-    """Update 2FA requirement"""
-    user = auth.current_user()
-    data = request.get_json() or {}
-    # Placeholder - to be replaced with actual 2FA requirement update
-    return jsonify({'message': '2FA requirement updated'})
 
 # ============================================================================
 # Billing API Routes
