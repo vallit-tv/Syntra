@@ -1,6 +1,7 @@
 """Main Flask application"""
 from datetime import timedelta, datetime, timezone
 from collections import Counter, defaultdict
+import analytics_helper
 import json
 import os
 import statistics
@@ -398,18 +399,6 @@ def index():
         # Return a simple error message instead of crashing
         return "<h1>Error</h1><p>Unable to load page. Please try again later.</p>", 500
 
-@app.route('/about')
-def about():
-    return render_template('about.html')
-
-@app.route('/contact')
-def contact():
-    return render_template('contact.html')
-
-@app.route('/features')
-def features():
-    return render_template('features.html')
-
 @app.route('/login')
 def login():
     return render_template('login.html')
@@ -422,14 +411,6 @@ def register():
 def setup_password():
     return render_template('setup-password.html')
 
-@app.route('/impressum')
-def impressum():
-    return render_template('impressum.html')
-
-@app.route('/datenschutz')
-def datenschutz():
-    return render_template('datenschutz.html')
-
 # ============================================================================
 # CEO DASHBOARD ROUTES
 # ============================================================================
@@ -440,7 +421,18 @@ def company_dashboard():
     """CEO dashboard overview"""
     try:
         user = auth.current_user()
-        company = db.get_company_by_id(user.get('company_id'))
+        
+        # Check if admin is viewing as company
+        admin_viewing_mode = session.get('admin_viewing_mode', False)
+        admin_viewing_company_id = session.get('admin_viewing_company_id')
+        
+        if admin_viewing_mode and admin_viewing_company_id:
+            # Admin viewing a company
+            company = db.get_company_by_id(admin_viewing_company_id)
+        else:
+            # Regular user accessing their company
+            company = db.get_company_by_id(user.get('company_id'))
+        
         if not company:
             return "No company assigned", 403
         
@@ -491,6 +483,7 @@ def company_dashboard():
                              activation_stats=activation_stats,
                              dashboard_summary=dashboard_summary,
                              recent_executions=recent_executions,
+                             admin_viewing_mode=admin_viewing_mode,
                              company_users=company_users)
     except Exception as e:
         print(f"CEO dashboard error: {str(e)}")
@@ -1207,13 +1200,45 @@ def admin_company_detail(company_id):
         return render_template('admin/company-detail.html',
                              user=user,
                              company=company,
-                             company_users=company_users,
+                             members=company_users,
                              activations=company_activations,
                              user_stats=user_stats,
                              activation_stats=activation_stats)
     except Exception as e:
         print(f"Admin company detail error: {str(e)}")
         return redirect(url_for('admin_companies'))
+
+@app.route('/admin/companies/<company_id>/access')
+@auth.admin_required
+def admin_access_company(company_id):
+    """Admin access company dashboard (View as Company feature)"""
+    try:
+        user = auth.current_user()
+        company = db.get_company_by_id(company_id)
+        
+        if not company:
+            return redirect(url_for('admin_companies'))
+        
+        # Set admin viewing mode in session
+        session['admin_viewing_company_id'] = company_id
+        session['admin_viewing_mode'] = True
+        session['admin_return_url'] = request.referrer or url_for('admin_companies')
+        
+        # Redirect to company dashboard
+        return redirect(url_for('company_dashboard'))
+    except Exception as e:
+        print(f"Admin access company error: {str(e)}")
+        return redirect(url_for('admin_companies'))
+
+@app.route('/admin/exit-company-view')
+@auth.admin_required
+def admin_exit_company_view():
+    """Exit admin company viewing mode"""
+    return_url = session.get('admin_return_url', url_for('admin_companies'))
+    session.pop('admin_viewing_company_id', None)
+    session.pop('admin_viewing_mode', None)
+    session.pop('admin_return_url', None)
+    return redirect(return_url)
 
 @app.route('/admin/n8n')
 @auth.admin_required
@@ -1427,13 +1452,22 @@ def api_login():
     
     try:
         user = auth.login(name, password, ip_address)
-        # Determine redirect based on role
+        
+        # Determine redirect based on role and company assignment
         role = user.get('role', 'worker')
-        redirect_url = '/dashboard'
-        if role == 'admin':
+        company_id = user.get('company_id')
+        
+        # Admin users (no company) go to admin panel
+        if role == 'admin' and not company_id:
             redirect_url = '/admin'
-        elif role == 'ceo':
+        # CEO/workers with company go to company dashboard
+        elif role == 'ceo' and company_id:
             redirect_url = '/company/dashboard'
+        elif role == 'worker' and company_id:
+            redirect_url = '/company/dashboard'  # Workers also use company dashboard
+        # Fallback to personal dashboard
+        else:
+            redirect_url = '/dashboard'
         
         return jsonify({
             'message': 'Logged in', 
@@ -1751,6 +1785,42 @@ def api_admin_get_company_users(company_id):
     """Get company users (admin only)"""
     users = db.get_company_users(company_id)
     return jsonify(users)
+
+@app.route('/api/admin/companies/<company_id>/members', methods=['POST'])
+@auth.admin_required
+def api_admin_add_company_member(company_id):
+    """Add a member to a company (admin only)"""
+    data = request.get_json() or {}
+    name = data.get('name', '').strip()
+    role = data.get('role', 'worker').strip()
+    
+    if not name:
+        return jsonify({'error': 'Name is required'}), 400
+    
+    if role not in ['ceo', 'worker']:
+        return jsonify({'error': 'Invalid role. Must be ceo or worker'}), 400
+    
+    try:
+        # Check if user exists
+        existing_user = db.get_user_by_name(name)
+        
+        if existing_user:
+            # Assign existing user to company
+            success = db.assign_user_to_company(existing_user['id'], company_id, role)
+            if success:
+                return jsonify({'success': True, 'user_id': existing_user['id'], 'message': 'User assigned to company'}), 200
+            else:
+                return jsonify({'error': 'Failed to assign user to company'}), 500
+        else:
+            # Create new user and assign to company
+            new_user = auth.create_user_admin(name, role=role, company_id=company_id)
+            if new_user:
+                return jsonify({'success': True, 'user_id': new_user['id'], 'message': 'User created and assigned to company'}), 201
+            else:
+                return jsonify({'error': 'Failed to create user'}), 500
+    except Exception as e:
+        app.logger.error(f"Error adding company member: {e}")
+        return jsonify({'error': str(e)}), 500
 
 # ============================================================================
 # CEO API ROUTES

@@ -67,10 +67,19 @@
                     <i data-lucide="external-link" width="16" height="16"></i>
                     Open n8n Editor
                 </a>
-                <a href="{{ url_for('admin_workflows') }}" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                <button id="syncNowBtn" onclick="syncNow()" class="btn btn-success" style="display: inline-flex; align-items: center; gap: 0.5rem;">
                     <i data-lucide="refresh-cw" width="16" height="16"></i>
-                    Sync Workflows
+                    Sync Now
+                </button>
+                <a href="{{ url_for('admin_workflows') }}" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                    <i data-lucide="workflow" width="16" height="16"></i>
+                    View Workflows
                 </a>
+            </div>
+            
+            <!-- Sync Status -->
+            <div id="syncStatus" style="margin-top: 1.5rem; padding: 1rem; border-radius: var(--db-radius-md); background-color: var(--db-bg-secondary); display: none;">
+                <div id="syncMessage" style="color: var(--db-text-primary);"></div>
             </div>
             {% else %}
             <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
@@ -127,6 +136,68 @@
 
 {% block dashboard_scripts %}
 <script>
+async function syncNow() {
+    const btn = document.getElementById('syncNowBtn');
+    const statusDiv = document.getElementById('syncStatus');
+    const messageDiv = document.getElementById('syncMessage');
+    
+    // Set button to loading state
+    const resetBtn = syntra.setButtonLoading(btn, '<i data-lucide="loader-2" width="16" height="16" class="animate-spin"></i> Syncing...');
+    
+    // Show status div
+    statusDiv.style.display = 'block';
+    messageDiv.innerHTML = '<i data-lucide="loader-2" width="16" height="16" class="animate-spin"></i> Syncing workflows from n8n...';
+    lucide.createIcons();
+    
+    try {
+        const response = await fetch('/api/admin/workflows/sync', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok && result.success) {
+            messageDiv.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--db-success);">
+                    <i data-lucide="check-circle" width="16" height="16"></i>
+                    <strong>Sync completed successfully!</strong>
+                </div>
+                <div style="margin-top: 0.5rem; font-size: 13px; color: var(--db-text-secondary);">
+                    ${result.added} added, ${result.updated} updated, ${result.removed} removed (${result.total} total)
+                </div>
+            `;
+            
+            // Reload page after 2 seconds
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        } else {
+            messageDiv.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--db-danger);">
+                    <i data-lucide="alert-circle" width="16" height="16"></i>
+                    <strong>Sync failed</strong>
+                </div>
+                <div style="margin-top: 0.5rem; font-size: 13px; color: var(--db-text-secondary);">
+                    ${result.error || 'Unknown error occurred'}
+                </div>
+            `;
+            resetBtn();
+        }
+        
+        lucide.createIcons();
+    } catch (error) {
+        messageDiv.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--db-danger);">
+                <i data-lucide="alert-circle" width="16" height="16"></i>
+                <strong>Error: ${error.message}</strong>
+            </div>
+        `;
+        lucide.createIcons();
+        resetBtn();
+    }
+}
+
 lucide.createIcons();
 </script>
 {% endblock %}

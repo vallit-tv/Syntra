@@ -22,6 +22,29 @@
     </div>
 </div>
 
+<!-- Sync Status Card -->
+<div class="dashboard-card" style="background: linear-gradient(135deg, var(--db-primary-light), var(--db-info-light));">
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+        <div>
+            <h3 style="margin: 0 0 0.5rem 0; color: var(--db-primary); font-size: 14px; font-weight: 600;">
+                <i data-lucide="refresh-cw" width="16" height="16" style="vertical-align: middle;"></i>
+                N8N Sync Status
+            </h3>
+            <p id="syncStatusText" style="margin: 0; color: var(--db-text-secondary); font-size: 13px;">
+                {% if workflow_stats and workflow_stats.last_updated %}
+                    Last synced {{ workflow_stats.last_updated|format_datetime('relative') }}
+                {% else %}
+                    Never synced. Click "Sync from n8n" to begin.
+                {% endif %}
+            </p>
+        </div>
+        <button onclick="syncWorkflows(event)" class="btn btn-sm btn-primary">
+            <i data-lucide="refresh-cw" width="14" height="14"></i>
+            Quick Sync
+        </button>
+    </div>
+</div>
+
 {% if workflow_stats %}
 <div class="stats-grid">
     <div class="stat-card">
@@ -238,10 +261,15 @@ function syncWorkflows(event) {
     fetch('/api/admin/workflows/sync', { method: 'POST' })
         .then(response => response.json())
         .then(data => {
-            if (data.error) {
-                window.alert('Sync failed: ' + data.error);
+            if (data.error || !data.success) {
+                window.alert('Sync failed: ' + (data.error || 'Unknown error'));
             } else {
-                window.alert('Synced ' + (data.synced_count || 0) + ' workflows successfully.');
+                // Update sync status text
+                const statusText = document.getElementById('syncStatusText');
+                if (statusText) {
+                    statusText.textContent = `Just synced: ${data.added} added, ${data.updated} updated, ${data.removed} removed`;
+                }
+                window.alert(`Sync complete!\n${data.added} added, ${data.updated} updated, ${data.removed} removed\nTotal: ${data.total} workflows`);
                 window.location.reload();
             }
         })

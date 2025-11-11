@@ -46,9 +46,6 @@
                 <nav>
                     <ul class="nav-links">
                         <li><a href="{{ url_for('index') }}">Home</a></li>
-                        <li><a href="{{ url_for('features') }}">Features</a></li>
-                        <li><a href="{{ url_for('about') }}">About</a></li>
-                        <li><a href="{{ url_for('contact') }}">Contact</a></li>
                     </ul>
                 </nav>
                 
@@ -96,7 +93,6 @@
                 <div class="footer-links">
                     <h4>Product</h4>
                     <ul>
-                        <li><a href="{{ url_for('features') }}">Features</a></li>
                         <li><a href="#">Pricing</a></li>
                         <li><a href="#">Documentation</a></li>
                         <li><a href="#">API</a></li>
@@ -105,8 +101,6 @@
                 <div class="footer-links">
                     <h4>Company</h4>
                     <ul>
-                        <li><a href="{{ url_for('about') }}">About</a></li>
-                        <li><a href="{{ url_for('contact') }}">Contact</a></li>
                         <li><a href="#">Careers</a></li>
                         <li><a href="#">Blog</a></li>
                     </ul>
@@ -115,8 +109,6 @@
             <div class="footer-bottom">
                 <p>&copy; 2024 Syntra. All rights reserved.</p>
                 <nav>
-                    <a href="{{ url_for('impressum') }}">Impressum</a>
-                    <a href="{{ url_for('datenschutz') }}">Datenschutz</a>
                     <a href="#">Terms</a>
                 </nav>
             </div>

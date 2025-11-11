@@ -1,160 +1,73 @@
-{% extends "base.html" %}
+{% extends "dashboard_base.html" %}
 
 {% block title %}Dashboard – Syntra{% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=1">
+{% block logo_icon %}S{% endblock %}
+{% block logo_text %}Syntra{% endblock %}
+
+{% block sidebar_home_url %}{{ url_for('dashboard_overview') }}{% endblock %}
+
+{% block sidebar_nav %}
+<a href="{{ url_for('dashboard_overview') }}" class="nav-item {% if request.endpoint == 'dashboard_overview' %}active{% endif %}">
+    <span class="nav-item-icon">
+        <i data-lucide="layout-dashboard" width="20" height="20"></i>
+    </span>
+    <span class="nav-item-text">Overview</span>
+</a>
+<a href="{{ url_for('dashboard_workflows') }}" class="nav-item {% if request.endpoint == 'dashboard_workflows' or request.endpoint == 'dashboard_workflow_detail' %}active{% endif %}">
+    <span class="nav-item-icon">
+        <i data-lucide="workflow" width="20" height="20"></i>
+    </span>
+    <span class="nav-item-text">Workflows</span>
+</a>
+<a href="{{ url_for('dashboard_api_keys') }}" class="nav-item {% if request.endpoint == 'dashboard_api_keys' %}active{% endif %}">
+    <span class="nav-item-icon">
+        <i data-lucide="key" width="20" height="20"></i>
+    </span>
+    <span class="nav-item-text">API Keys</span>
+</a>
+<a href="{{ url_for('dashboard_integrations') }}" class="nav-item {% if request.endpoint == 'dashboard_integrations' %}active{% endif %}">
+    <span class="nav-item-icon">
+        <i data-lucide="plug" width="20" height="20"></i>
+    </span>
+    <span class="nav-item-text">Integrations</span>
+</a>
+<a href="{{ url_for('dashboard_analytics') }}" class="nav-item {% if request.endpoint == 'dashboard_analytics' %}active{% endif %}">
+    <span class="nav-item-icon">
+        <i data-lucide="bar-chart-3" width="20" height="20"></i>
+    </span>
+    <span class="nav-item-text">Analytics</span>
+</a>
+<a href="{{ url_for('dashboard_settings') }}" class="nav-item {% if request.endpoint == 'dashboard_settings' %}active{% endif %}">
+    <span class="nav-item-icon">
+        <i data-lucide="settings" width="20" height="20"></i>
+    </span>
+    <span class="nav-item-text">Settings</span>
+</a>
+{% if user.get('role') == 'admin' %}
+<div class="nav-divider"></div>
+<a href="{{ url_for('admin_dashboard') }}" class="nav-item" style="color: var(--db-danger);">
+    <span class="nav-item-icon">
+        <i data-lucide="shield" width="20" height="20"></i>
+    </span>
+    <span class="nav-item-text">Admin Panel</span>
+</a>
+{% endif %}
 {% endblock %}
 
-{% block content %}
-<!-- Sidebar Overlay (Mobile) -->
-<div id="sidebarOverlay" class="sidebar-overlay"></div>
-
-<div class="dashboard-container">
-    <!-- Sidebar Navigation -->
-    <aside id="dashboardSidebar" class="dashboard-sidebar">
-        <div class="sidebar-header">
-            <a href="{{ url_for('dashboard_overview') }}" class="sidebar-logo">
-                <div class="logo-icon">S</div>
-                <span class="logo-text">Syntra</span>
-            </a>
-        </div>
-        <nav class="sidebar-nav">
-            <a href="{{ url_for('dashboard_workflows') }}" class="nav-item {% if request.endpoint == 'dashboard_workflows' or request.endpoint == 'dashboard_workflow_detail' %}active{% endif %}">
-                <span class="nav-item-icon">
-                    <i data-lucide="workflow" width="20" height="20"></i>
-                </span>
-                <span class="nav-item-text">Workflows</span>
-            </a>
-            <a href="{{ url_for('dashboard_api_keys') }}" class="nav-item {% if request.endpoint == 'dashboard_api_keys' %}active{% endif %}">
-                <span class="nav-item-icon">
-                    <i data-lucide="key" width="20" height="20"></i>
-                </span>
-                <span class="nav-item-text">API Keys</span>
-            </a>
-            <a href="{{ url_for('dashboard_integrations') }}" class="nav-item {% if request.endpoint == 'dashboard_integrations' %}active{% endif %}">
-                <span class="nav-item-icon">
-                    <i data-lucide="plug" width="20" height="20"></i>
-                </span>
-                <span class="nav-item-text">Integrations</span>
-            </a>
-            <a href="{{ url_for('dashboard_settings') }}" class="nav-item {% if request.endpoint == 'dashboard_settings' %}active{% endif %}">
-                <span class="nav-item-icon">
-                    <i data-lucide="settings" width="20" height="20"></i>
-                </span>
-                <span class="nav-item-text">Settings</span>
-            </a>
-            <a href="{{ url_for('dashboard_analytics') }}" class="nav-item {% if request.endpoint == 'dashboard_analytics' %}active{% endif %}">
-                <span class="nav-item-icon">
-                    <i data-lucide="bar-chart-3" width="20" height="20"></i>
-                </span>
-                <span class="nav-item-text">Analytics</span>
-            </a>
-            {% if user.get('role') == 'admin' %}
-            <div style="margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--color-border);">
-                <a href="{{ url_for('admin_dashboard') }}" class="nav-item" style="color: var(--color-danger);">
-                    <span class="nav-item-icon">
-                        <i data-lucide="shield" width="20" height="20"></i>
-                    </span>
-                    <span class="nav-item-text">Admin Panel</span>
-                </a>
-            </div>
-            {% endif %}
-        </nav>
-    </aside>
-
-    <!-- Main Content Area -->
-    <div class="dashboard-content">
-        <!-- Top Bar -->
-        <div class="dashboard-topbar">
-            <div class="topbar-left">
-                <button id="sidebarToggle" class="sidebar-toggle" aria-label="Toggle sidebar">
-                    <i data-lucide="menu" width="20" height="20"></i>
-                </button>
-                <nav class="breadcrumbs">
-                    <a href="{{ url_for('index') }}">Home</a>
-                    <span class="breadcrumbs-separator">/</span>
-                    {% block breadcrumbs %}<span>Dashboard</span>{% endblock %}
-                </nav>
-            </div>
-            <div class="topbar-right">
-                <div class="user-menu">
-                    <button id="userMenuButton" class="user-menu-button">
-                        <div class="user-avatar">{{ user.name[0].upper() }}</div>
-                        <div class="user-info">
-                            <span class="user-name">{{ user.name }}</span>
-                            <span class="user-role">{{ user.get('role', 'user') }}</span>
-                        </div>
-                        <i data-lucide="chevron-down" width="16" height="16"></i>
-                    </button>
-                    <div id="userMenuDropdown" class="user-menu-dropdown">
-                        <a href="{{ url_for('dashboard_settings') }}" class="dropdown-item">
-                            <i data-lucide="settings" width="16" height="16"></i>
-                            <span>Settings</span>
-                        </a>
-                        <a href="{{ url_for('logout') }}" class="dropdown-item danger">
-                            <i data-lucide="log-out" width="16" height="16"></i>
-                            <span>Logout</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Main Content -->
-        <main class="dashboard-main">
-            {% block dashboard_content %}{% endblock %}
-        </main>
-    </div>
-</div>
+{% block user_menu_items %}
+<a href="{{ url_for('dashboard_settings') }}" class="dropdown-item">
+    <i data-lucide="settings" width="16" height="16"></i>
+    <span>Settings</span>
+</a>
+<a href="{{ url_for('logout') }}" class="dropdown-item danger">
+    <i data-lucide="log-out" width="16" height="16"></i>
+    <span>Logout</span>
+</a>
 {% endblock %}
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/dashboard.js') }}?v=1"></script>
-<script>
-// Initialize Lucide icons and handle sidebar
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize icons
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
-    }
-    
-    const sidebarOverlay = document.getElementById('sidebarOverlay');
-    const sidebarToggle = document.getElementById('sidebarToggle');
-    const sidebar = document.getElementById('dashboardSidebar');
-    
-    if (sidebarToggle && sidebarOverlay && sidebar) {
-        // Initial state for mobile
-        if (window.innerWidth <= 768) {
-            sidebarOverlay.style.display = 'none';
-        }
-        
-        sidebarToggle.addEventListener('click', function() {
-            sidebar.classList.toggle('show');
-            if (sidebar.classList.contains('show')) {
-                sidebarOverlay.style.display = 'block';
-                setTimeout(() => sidebarOverlay.classList.add('show'), 10);
-            } else {
-                sidebarOverlay.classList.remove('show');
-                setTimeout(() => {
-                    if (!sidebar.classList.contains('show')) {
-                        sidebarOverlay.style.display = 'none';
-                    }
-                }, 300);
-            }
-        });
-        
-        // Handle window resize
-        window.addEventListener('resize', function() {
-            if (window.innerWidth > 768) {
-                sidebar.classList.remove('show');
-                sidebarOverlay.classList.remove('show');
-                sidebarOverlay.style.display = 'none';
-            }
-        });
-    }
-});
-</script>
 {% block dashboard_scripts %}{% endblock %}
 {% endblock %}
 

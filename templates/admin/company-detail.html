@@ -1,276 +1,229 @@
 {% extends "admin/base.html" %}
 
 {% block breadcrumbs %}
-<a href="{{ url_for('admin_dashboard') }}">Admin</a>
-<span class="breadcrumbs-separator">/</span>
 <a href="{{ url_for('admin_companies') }}">Companies</a>
 <span class="breadcrumbs-separator">/</span>
-<span>{{ company.name|default('Company Detail') }}</span>
+<span>{{ company.name }}</span>
 {% endblock %}
 
 {% block admin_content %}
 <div class="page-header">
-    <div>
-        <h1 class="page-title">{{ company.name|default('Company Detail') }}</h1>
-        <p class="page-description">Manage tenant membership, leadership, and workflow adoption.</p>
+    <div class="d-flex align-items-center justify-content-between">
+        <div>
+            <h1 class="page-title">{{ company.name }}</h1>
+            <p class="page-description">Company details and management</p>
+        </div>
+        <a href="{{ url_for('admin_access_company', company_id=company.id) }}" class="btn btn-primary">
+            <i data-lucide="arrow-right" width="16" height="16"></i>
+            Access Dashboard
+        </a>
     </div>
 </div>
 
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-header">
-            <span class="stat-label">Team Members</span>
-            <div class="stat-icon blue">
-                <i data-lucide="users" width="18" height="18"></i>
-            </div>
-        </div>
-        <div class="stat-value">{{ user_stats.total }}</div>
-        <p class="stat-caption">{{ user_stats.ceos }} CEO · {{ user_stats.workers }} workers</p>
-    </div>
-    <div class="stat-card">
-        <div class="stat-header">
-            <span class="stat-label">Active Automations</span>
-            <div class="stat-icon green">
-                <i data-lucide="zap" width="18" height="18"></i>
-            </div>
-        </div>
-        <div class="stat-value">{{ activation_stats.active }}</div>
-        <p class="stat-caption">{{ activation_stats.total }} total workflows</p>
-    </div>
-    <div class="stat-card">
-        <div class="stat-header">
-            <span class="stat-label">Total Executions</span>
-            <div class="stat-icon purple">
-                <i data-lucide="bar-chart-2" width="18" height="18"></i>
-            </div>
-        </div>
-        <div class="stat-value">{{ activation_stats.execution_count }}</div>
-        <p class="stat-caption">
-            {% if activation_stats.last_execution %}
-                Last run {{ activation_stats.last_execution|format_datetime('relative') }}
-            {% else %}
-                No executions yet
-            {% endif %}
-        </p>
-    </div>
-    <div class="stat-card">
-        <div class="stat-header">
-            <span class="stat-label">Last Update</span>
-            <div class="stat-icon amber">
-                <i data-lucide="clock" width="18" height="18"></i>
-            </div>
-        </div>
-        <div class="stat-value">
-            {% if activation_stats.last_updated %}
-                {{ activation_stats.last_updated|format_datetime('short') }}
-            {% else %}
-                —
-            {% endif %}
-        </div>
-        <p class="stat-caption">Workflow metadata refresh</p>
-    </div>
-</div>
-
+<!-- Company Info -->
 <div class="dashboard-card">
     <div class="card-header">
         <h2 class="card-title">Company Information</h2>
     </div>
     <div class="card-body">
-        <div class="detail-item">
-            <strong>ID:</strong> {{ company.id }}
+        <div class="d-flex align-items-center gap-3 mb-3">
+            <div class="logo-icon" style="width: 64px; height: 64px; font-size: 28px;">
+                {{ company.name[0].upper() }}
+            </div>
+            <div>
+                <h3 style="margin: 0 0 0.25rem 0; font-size: 20px;">{{ company.name }}</h3>
+                <p style="margin: 0; color: var(--db-text-secondary);"><code>{{ company.slug }}</code></p>
+            </div>
         </div>
-        <div class="detail-item">
-            <strong>Name:</strong> {{ company.name }}
-        </div>
-        <div class="detail-item">
-            <strong>Slug:</strong> <code>{{ company.slug }}</code>
-        </div>
-        <div class="detail-item">
-            <strong>Created:</strong> {{ company.created_at|format_datetime('short') }}
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1.5rem;">
+            <div>
+                <p style="font-size: 13px; color: var(--db-text-secondary); margin: 0 0 0.25rem 0;">Created</p>
+                <p style="margin: 0; font-weight: 500;">{{ company.created_at|format_datetime('short') }}</p>
+            </div>
+            <div>
+                <p style="font-size: 13px; color: var(--db-text-secondary); margin: 0 0 0.25rem 0;">Last Updated</p>
+                <p style="margin: 0; font-weight: 500;">{{ company.updated_at|format_datetime('short') if company.updated_at else 'Never' }}</p>
+            </div>
+            <div>
+                <p style="font-size: 13px; color: var(--db-text-secondary); margin: 0 0 0.25rem 0;">Company ID</p>
+                <p style="margin: 0; font-weight: 500;"><code>{{ company.id }}</code></p>
+            </div>
         </div>
     </div>
 </div>
 
+<!-- Members -->
 <div class="dashboard-card">
     <div class="card-header">
-        <h2 class="card-title">Company Users</h2>
-        <button onclick="assignCEO('{{ company.id }}')" class="btn btn-primary btn-sm">
-            <i data-lucide="user-plus" width="14" height="14"></i> Assign CEO
+        <h2 class="card-title">Team Members</h2>
+        <button class="btn btn-primary btn-sm" onclick="syntra.openModal('addMemberModal')">
+            <i data-lucide="user-plus" width="14" height="14"></i>
+            Add Member
         </button>
     </div>
-    <div class="table-container">
-        {% if company_users %}
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Role</th>
-                    <th>Created At</th>
-                    <th>Last Login</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for u in company_users %}
-                <tr>
-                    <td>
-                        <a href="{{ url_for('admin_user_detail', user_id=u.id) }}" style="font-weight: 600; color: var(--color-primary); text-decoration: none;">
-                            {{ u.name }}
-                        </a>
-                    </td>
-                    <td>
-                        <span class="status-badge {{ 'active' if u.role == 'ceo' else 'inactive' }}">
-                            <span class="status-badge-dot"></span>
-                            {{ u.role|capitalize }}
-                        </span>
-                    </td>
-                    <td>
-                        {% if u.created_at %}
-                            {{ u.created_at|format_datetime('short') }}
-                        {% else %}
-                            —
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if u.last_login_at %}
-                            {{ u.last_login_at|format_datetime('relative') }}
-                        {% else %}
-                            <span class="text-secondary">Never</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="card-body">
+        {% if members %}
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Role</th>
+                        <th>Joined</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for member in members %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="user-avatar" style="width: 32px; height: 32px; font-size: 14px;">
+                                    {{ member.name[0].upper() }}
+                                </div>
+                                {{ member.name }}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status-badge {{ 'active' if member.role == 'ceo' else '' }}">
+                                {{ member.role|title }}
+                            </span>
+                        </td>
+                        <td>{{ member.created_at|format_datetime('short') if member.created_at else 'N/A' }}</td>
+                        <td>
+                            <a href="{{ url_for('admin_user_detail', user_id=member.id) }}" class="btn btn-sm btn-secondary">
+                                View
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
         {% else %}
-        <div class="empty-state-small">
-            <p class="text-secondary">No users assigned to this company yet.</p>
+        <div class="empty-state">
+            <p class="empty-state-description">No members yet. Add the first member to get started.</p>
+            <button class="btn btn-primary btn-sm mt-2" onclick="syntra.openModal('addMemberModal')">
+                <i data-lucide="user-plus" width="14" height="14"></i>
+                Add Member
+            </button>
         </div>
         {% endif %}
     </div>
 </div>
 
+<!-- Workflow Activations -->
 <div class="dashboard-card">
     <div class="card-header">
-        <h2 class="card-title">Active Workflows</h2>
+        <h2 class="card-title">Workflow Activations</h2>
     </div>
-    <div class="table-container">
+    <div class="card-body">
         {% if activations %}
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Workflow</th>
-                    <th>Status</th>
-                    <th>Activated At</th>
-                    <th>Executions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for activation in activations %}
-                <tr>
-                    <td>
-                        {% if activation.workflows %}
-                        <a href="{{ url_for('admin_workflow_detail', workflow_id=activation.workflows.id) }}" style="font-weight: 600; color: var(--color-primary); text-decoration: none;">
-                            {{ activation.workflows.name }}
-                        </a>
-                        {% else %}
-                        N/A
-                        {% endif %}
-                    </td>
-                    <td>
-                        <span class="status-badge {{ 'active' if activation.is_active else 'inactive' }}">
-                            <span class="status-badge-dot"></span>
-                            {{ 'Active' if activation.is_active else 'Inactive' }}
-                        </span>
-                    </td>
-                    <td>
-                        {% if activation.created_at %}
-                            {{ activation.created_at|format_datetime('short') }}
-                        {% else %}
-                            —
-                        {% endif %}
-                    </td>
-                    <td>{{ activation.execution_count|default(0) }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Workflow</th>
+                        <th>Status</th>
+                        <th>Executions</th>
+                        <th>Last Run</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for act in activations %}
+                    <tr>
+                        <td>{{ act.workflows.name if act.workflows else 'N/A' }}</td>
+                        <td>
+                            <span class="status-badge {{ 'active' if act.is_active else 'inactive' }}">
+                                {{ 'Active' if act.is_active else 'Inactive' }}
+                            </span>
+                        </td>
+                        <td>{{ act.execution_count or 0 }}</td>
+                        <td>{{ act.last_executed_at|format_datetime('relative') if act.last_executed_at else 'Never' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
         {% else %}
-        <div class="empty-state-small">
-            <p class="text-secondary">No workflows activated for this company yet.</p>
+        <div class="empty-state">
+            <p class="empty-state-description">No workflow activations yet.</p>
         </div>
         {% endif %}
     </div>
 </div>
 
-<div id="assignCEOModal" class="modal">
+<!-- Add Member Modal -->
+<div id="addMemberModal" class="modal">
     <div class="modal-content">
-        <span class="close-button" onclick="syntra.closeModal('assignCEOModal')">&times;</span>
-        <h2>Assign CEO</h2>
-        <form id="assignCEOForm">
-            <input type="hidden" id="assignCEOCompanyId" value="{{ company.id }}">
-            <div class="form-group">
-                <label for="ceoName" class="form-label">CEO Name</label>
-                <input type="text" id="ceoName" name="user_name" class="form-input" required>
+        <div class="modal-header">
+            <h2 class="modal-title">Add Team Member</h2>
+            <button class="modal-close" onclick="syntra.closeModal('addMemberModal')">
+                <i data-lucide="x" width="20" height="20"></i>
+            </button>
+        </div>
+        <form id="addMemberForm">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="memberName" class="form-label">Name *</label>
+                    <input type="text" id="memberName" name="name" class="form-input" placeholder="Enter user name" required>
+                    <p class="form-help-text">If user doesn't exist, a new account will be created</p>
+                </div>
+                <div class="form-group">
+                    <label for="memberRole" class="form-label">Role *</label>
+                    <select id="memberRole" name="role" class="form-select" required>
+                        <option value="ceo">CEO</option>
+                        <option value="worker" selected>Worker</option>
+                    </select>
+                </div>
             </div>
-            <button type="submit" class="btn btn-primary">Assign CEO</button>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="syntra.closeModal('addMemberModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="addMemberBtn">Add Member</button>
+            </div>
         </form>
     </div>
 </div>
-{% endblock %}
 
-{% block dashboard_scripts %}
 <script>
-function assignCEO(companyId) {
-    document.getElementById('assignCEOCompanyId').value = companyId;
-    syntra.openModal('assignCEOModal');
-}
-
-const assignCEOForm = document.getElementById('assignCEOForm');
-if (assignCEOForm) {
-    assignCEOForm.addEventListener('submit', function(event) {
-        event.preventDefault();
-        const submitBtn = assignCEOForm.querySelector('button[type="submit"]');
-        const companyId = document.getElementById('assignCEOCompanyId').value;
-        const user_name = document.getElementById('ceoName').value.trim();
-
-        if (!user_name) {
-            window.alert('Please provide a name for the CEO.');
-            return;
-        }
-
-        if (submitBtn) {
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Assigning...';
-        }
-
-        fetch(`/api/admin/companies/${companyId}/assign-ceo`, {
+// Add member form submission
+document.getElementById('addMemberForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const btn = document.getElementById('addMemberBtn');
+    const resetBtn = syntra.setButtonLoading(btn, 'Adding...');
+    
+    const formData = new FormData(e.target);
+    const data = {
+        name: formData.get('name'),
+        role: formData.get('role')
+    };
+    
+    try {
+        const response = await fetch('/api/admin/companies/{{ company.id }}/members', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_name })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                window.alert('Error assigning CEO: ' + data.error);
-            } else {
-                window.alert('CEO assigned successfully!');
-                syntra.closeModal('assignCEOModal');
-                window.location.reload();
-            }
-        })
-        .catch(err => window.alert('Error: ' + err))
-        .finally(() => {
-            if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Assign CEO';
-            }
+            body: JSON.stringify(data)
         });
-    });
-}
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            alert('Member added successfully!');
+            window.location.reload();
+        } else {
+            alert('Error: ' + (result.error || 'Failed to add member'));
+            resetBtn();
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+        resetBtn();
+    }
+});
 
+// Initialize Lucide icons
 if (typeof lucide !== 'undefined') {
     lucide.createIcons();
 }
 </script>
 {% endblock %}
-

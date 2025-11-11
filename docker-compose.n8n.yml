@@ -1,8 +1,8 @@
-version: "3.8"
-
 services:
   n8n:
-    image: n8nio/n8n:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.n8n
     container_name: syntra-n8n
     restart: unless-stopped
     ports:

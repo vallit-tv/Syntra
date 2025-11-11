@@ -1,128 +1,93 @@
-{% extends "base.html" %}
+{% extends "dashboard_base.html" %}
 
-{% block title %}CEO Dashboard – Syntra{% endblock %}
+{% block title %}{{ company.name if company else 'Company' }} Dashboard – Syntra{% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=2">
+{% block logo_icon %}{{ company.name[0].upper() if company else 'C' }}{% endblock %}
+{% block logo_text %}{{ company.name if company else 'Company' }}{% endblock %}
+
+{% block sidebar_home_url %}{{ url_for('company_dashboard') }}{% endblock %}
+
+{% block sidebar_nav %}
+<a href="{{ url_for('company_dashboard') }}" class="nav-item {% if request.endpoint == 'company_dashboard' %}active{% endif %}">
+    <span class="nav-item-icon">
+        <i data-lucide="layout-dashboard" width="20" height="20"></i>
+    </span>
+    <span class="nav-item-text">Dashboard</span>
+</a>
+<a href="{{ url_for('company_workflows') }}" class="nav-item {% if request.endpoint.startswith('company_workflows') or request.endpoint == 'company_workflow_detail' %}active{% endif %}">
+    <span class="nav-item-icon">
+        <i data-lucide="workflow" width="20" height="20"></i>
+    </span>
+    <span class="nav-item-text">Workflows</span>
+</a>
+<a href="{{ url_for('company_workers') }}" class="nav-item {% if request.endpoint == 'company_workers' %}active{% endif %}">
+    <span class="nav-item-icon">
+        <i data-lucide="users" width="20" height="20"></i>
+    </span>
+    <span class="nav-item-text">Team</span>
+</a>
+<a href="{{ url_for('company_settings') }}" class="nav-item {% if request.endpoint == 'company_settings' %}active{% endif %}">
+    <span class="nav-item-icon">
+        <i data-lucide="settings" width="20" height="20"></i>
+    </span>
+    <span class="nav-item-text">Settings</span>
+</a>
 {% endblock %}
 
-{% block content %}
-<div id="sidebarOverlay" class="sidebar-overlay"></div>
+{% block breadcrumbs %}
+<span class="breadcrumbs-company">{{ company.name if company else 'Company' }}</span>
+<span class="breadcrumbs-separator">•</span>
+<span class="breadcrumbs-user">{{ user.name }} ({{ user.get('role', 'user')|title }})</span>
+{% if request.endpoint != 'company_dashboard' %}
+<span class="breadcrumbs-separator">/</span>
+{% block company_breadcrumbs %}<span>Dashboard</span>{% endblock %}
+{% endif %}
+{% endblock %}
 
-<div class="dashboard-container">
-    <aside id="dashboardSidebar" class="dashboard-sidebar">
-        <div class="sidebar-header">
-            <a href="{{ url_for('company_dashboard') }}" class="sidebar-logo">
-                <div class="logo-icon">{{ company.name[0].upper() if company else 'C' }}</div>
-                <span class="logo-text">{{ company.name if company else 'Company' }}</span>
-            </a>
+{% block topbar_right %}
+{% if admin_viewing_mode %}
+<div style="margin-right: var(--db-space-md); padding: 0.5rem var(--db-space-md); background-color: var(--db-danger-light); border: 1px solid var(--db-danger); border-radius: var(--db-radius-md); display: flex; align-items: center; gap: var(--db-space-sm);">
+    <i data-lucide="shield-alert" width="16" height="16" style="color: var(--db-danger);"></i>
+    <span style="font-size: 13px; font-weight: 600; color: var(--db-danger);">Admin Mode: Viewing as {{ company.name if company else 'Company' }}</span>
+    <a href="{{ url_for('admin_exit_company_view') }}" class="btn btn-sm" style="background-color: var(--db-danger); color: white; margin-left: var(--db-space-sm);">
+        <i data-lucide="x" width="14" height="14"></i>
+        Exit
+    </a>
+</div>
+{% endif %}
+<div class="company-context">
+    <div class="company-badge">
+        <i data-lucide="building-2" width="16" height="16"></i>
+        <span>{{ company.name if company else 'Company' }}</span>
+    </div>
+</div>
+<div class="user-menu">
+    <button id="userMenuButton" class="user-menu-button">
+        <div class="user-avatar">{{ user.name[0].upper() }}</div>
+        <div class="user-info">
+            <span class="user-name">{{ user.name }}</span>
+            <span class="user-role">{{ user.get('role', 'user')|title }}</span>
         </div>
-        <nav class="sidebar-nav">
-            <a href="{{ url_for('company_dashboard') }}" class="nav-item {% if request.endpoint == 'company_dashboard' %}active{% endif %}">
-                <span class="nav-item-icon">
-                    <i data-lucide="layout-dashboard" width="20" height="20"></i>
-                </span>
-                <span class="nav-item-text">Dashboard</span>
-            </a>
-            <a href="{{ url_for('company_workflows') }}" class="nav-item {% if request.endpoint.startswith('company_workflows') %}active{% endif %}">
-                <span class="nav-item-icon">
-                    <i data-lucide="workflow" width="20" height="20"></i>
-                </span>
-                <span class="nav-item-text">Workflows</span>
-            </a>
-            <a href="{{ url_for('company_workers') }}" class="nav-item {% if request.endpoint == 'company_workers' %}active{% endif %}">
-                <span class="nav-item-icon">
-                    <i data-lucide="users" width="20" height="20"></i>
-                </span>
-                <span class="nav-item-text">Team</span>
-            </a>
-            <a href="{{ url_for('company_settings') }}" class="nav-item {% if request.endpoint == 'company_settings' %}active{% endif %}">
-                <span class="nav-item-icon">
-                    <i data-lucide="settings" width="20" height="20"></i>
-                </span>
-                <span class="nav-item-text">Settings</span>
-            </a>
-        </nav>
-    </aside>
-
-    <div class="dashboard-content">
-        <div class="dashboard-topbar">
-            <div class="topbar-left">
-                <button id="sidebarToggle" class="sidebar-toggle" aria-label="Toggle sidebar">
-                    <i data-lucide="menu" width="20" height="20"></i>
-                </button>
-                <nav class="breadcrumbs">
-                    <a href="{{ url_for('index') }}">Home</a>
-                    <span class="breadcrumbs-separator">/</span>
-                    <a href="{{ url_for('company_dashboard') }}">{{ company.name if company else 'Company' }}</a>
-                    <span class="breadcrumbs-separator">/</span>
-                    {% block breadcrumbs %}<span>Dashboard</span>{% endblock %}
-                </nav>
-            </div>
-            <div class="topbar-right">
-                <div class="user-menu">
-                    <button id="userMenuButton" class="user-menu-button">
-                        <div class="user-avatar">{{ user.name[0].upper() }}</div>
-                        <div class="user-info">
-                            <span class="user-name">{{ user.name }}</span>
-                            <span class="user-role">CEO</span>
-                        </div>
-                        <i data-lucide="chevron-down" width="16" height="16"></i>
-                    </button>
-                    <div id="userMenuDropdown" class="user-menu-dropdown">
-                        <a href="{{ url_for('company_settings') }}" class="dropdown-item">
-                            <i data-lucide="settings" width="16" height="16"></i>
-                            <span>Settings</span>
-                        </a>
-                        <a href="{{ url_for('logout') }}" class="dropdown-item danger">
-                            <i data-lucide="log-out" width="16" height="16"></i>
-                            <span>Logout</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <main class="main-content">
-            {% block company_content %}{% endblock %}
-        </main>
+        <i data-lucide="chevron-down" width="16" height="16"></i>
+    </button>
+    <div id="userMenuDropdown" class="user-menu-dropdown">
+        <a href="{{ url_for('company_settings') }}" class="dropdown-item">
+            <i data-lucide="settings" width="16" height="16"></i>
+            <span>Settings</span>
+        </a>
+        <a href="{{ url_for('logout') }}" class="dropdown-item danger">
+            <i data-lucide="log-out" width="16" height="16"></i>
+            <span>Logout</span>
+        </a>
     </div>
 </div>
 {% endblock %}
 
-{% block extra_scripts %}
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        lucide.createIcons();
+{% block dashboard_content %}
+{% block company_content %}{% endblock %}
+{% endblock %}
 
-        const sidebarToggle = document.getElementById('sidebarToggle');
-        const sidebar = document.getElementById('dashboardSidebar');
-        const sidebarOverlay = document.getElementById('sidebarOverlay');
-
-        sidebarToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('active');
-            sidebarOverlay.classList.toggle('active');
-        });
-
-        sidebarOverlay.addEventListener('click', () => {
-            sidebar.classList.remove('active');
-            sidebarOverlay.classList.remove('active');
-        });
-
-        const userMenuButton = document.getElementById('userMenuButton');
-        const userMenuDropdown = document.getElementById('userMenuDropdown');
-
-        userMenuButton.addEventListener('click', (event) => {
-            userMenuDropdown.classList.toggle('active');
-            event.stopPropagation();
-        });
-
-        document.addEventListener('click', (event) => {
-            if (!userMenuButton.contains(event.target) && !userMenuDropdown.contains(event.target)) {
-                userMenuDropdown.classList.remove('active');
-            }
-        });
-    });
-</script>
+{% block scripts %}
 {% block company_scripts %}{% endblock %}
 {% endblock %}
 
