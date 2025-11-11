@@ -18,7 +18,8 @@ app.secret_key = os.getenv('FLASK_SECRET_KEY', os.urandom(32))
 app.permanent_session_lifetime = timedelta(minutes=30)
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-app.config['SESSION_COOKIE_SECURE'] = os.getenv('FLASK_ENV') == 'production'  # Secure cookies in production
+# On Vercel, always use secure cookies (HTTPS is always used)
+app.config['SESSION_COOKIE_SECURE'] = os.getenv('VERCEL') == '1' or os.getenv('FLASK_ENV') == 'production'
 
 
 def parse_iso_ts(value):
@@ -153,6 +154,9 @@ def serve_static(filename):
         
         # Check if file exists
         if not os.path.exists(file_path):
+            # For favicon and other missing images, return 404 gracefully
+            if 'favicon' in filename.lower() or filename.endswith(('.ico', '.png', '.jpg', '.jpeg', '.svg', '.gif')):
+                abort(404)
             print(f"Static file not found: {file_path}")
             abort(404)
         
@@ -188,6 +192,30 @@ def serve_static(filename):
         abort(404)
 
 # Error handlers
+@app.errorhandler(404)
+def not_found(error):
+    """Handle 404 errors"""
+    # Check if this is an API request
+    if request.path.startswith('/api/'):
+        return jsonify({'error': 'Not Found', 'message': 'The requested resource was not found'}), 404
+    
+    # For browser requests, return a simple 404 page
+    try:
+        return render_template('error.html', error_code=404, error_message='Page Not Found'), 404
+    except:
+        # If error template doesn't exist, return simple HTML
+        return """
+        <!DOCTYPE html>
+        <html>
+        <head><title>404 Not Found</title></head>
+        <body>
+            <h1>404 Not Found</h1>
+            <p>The page you're looking for doesn't exist.</p>
+            <a href="/">Go to Home</a>
+        </body>
+        </html>
+        """, 404
+
 @app.errorhandler(500)
 def internal_error(error):
     """Handle 500 errors"""
@@ -1346,7 +1374,19 @@ def api_setup_password():
     
     try:
         user = auth.setup_password(name, password, ip_address)
-        return jsonify({'message': 'Password set successfully', 'user': {'id': user['id'], 'name': user['name']}})
+        # Determine redirect based on role
+        role = user.get('role', 'worker')
+        redirect_url = '/dashboard'
+        if role == 'admin':
+            redirect_url = '/admin'
+        elif role == 'ceo':
+            redirect_url = '/company/dashboard'
+        
+        return jsonify({
+            'message': 'Password set successfully',
+            'user': {'id': user['id'], 'name': user['name']},
+            'redirect': redirect_url
+        })
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 

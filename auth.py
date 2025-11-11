@@ -266,10 +266,16 @@ def current_user() -> Optional[dict]:
     if not role:
         if user.get('name', '').lower() == 'theo':
             role = 'admin'
+            # Try to update role in database, but don't fail if it doesn't work
             try:
-                db.update_user_role(user['id'], 'admin')
-            except Exception:
-                pass
+                if db.update_user_role(user['id'], 'admin'):
+                    # Refresh user data if update succeeded
+                    updated_user = db.get_user_by_id(user_id)
+                    if updated_user:
+                        user = updated_user
+            except Exception as e:
+                # Silently fail - role will be set to 'admin' for this session anyway
+                print(f"Note: Could not update user role in database: {e}")
         else:
             role = 'worker'
 

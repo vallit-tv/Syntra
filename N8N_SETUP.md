@@ -1,6 +1,19 @@
-# n8n Local Setup Guide
+# n8n Setup Guide
 
-This guide explains how to run n8n locally on your Mac and connect it to your Syntra dashboard hosted on Vercel.
+**Choose your setup:**
+
+1. **🏠 Local Setup (this guide)** - Run n8n on your PC via Docker
+   - ✅ Free
+   - ❌ Requires your PC to be on 24/7
+   - ❌ Tunnel URL changes on restart
+
+2. **☁️ External Hosting (recommended)** - Run n8n on a cloud server
+   - ✅ Always online
+   - ✅ No need to keep PC on
+   - ✅ Stable URL
+   - See `N8N_EXTERNAL_HOSTING.md` for details
+
+This guide explains the local setup. For production, we recommend external hosting.
 
 ## Quick Start
 

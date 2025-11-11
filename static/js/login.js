@@ -244,10 +244,11 @@
             const data = await response.json();
 
             if (response.ok) {
-                // Success - redirect to dashboard
+                // Success - redirect based on user role
+                const redirectUrl = data.redirect || '/dashboard';
                 showSuccess('Password created successfully! Redirecting...');
                 setTimeout(() => {
-                    window.location.href = '/dashboard';
+                    window.location.href = redirectUrl;
                 }, 1000);
             } else {
                 showError(elements.passwordError, data.error || 'Failed to create password');
@@ -280,10 +281,11 @@
             const data = await response.json();
 
             if (response.ok) {
-                // Success - redirect to dashboard
+                // Success - redirect based on user role
+                const redirectUrl = data.redirect || '/dashboard';
                 showSuccess('Login successful! Redirecting...');
                 setTimeout(() => {
-                    window.location.href = '/dashboard';
+                    window.location.href = redirectUrl;
                 }, 1000);
             } else {
                 showError(elements.passwordError, data.error || 'Invalid credentials');

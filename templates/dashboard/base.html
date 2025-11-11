@@ -38,13 +38,7 @@
                 </span>
                 <span class="nav-item-text">Integrations</span>
             </a>
-            <a href="{{ url_for('dashboard_team') }}" class="nav-item {% if request.endpoint == 'dashboard_team' %}active{% endif %}">
-                <span class="nav-item-icon">
-                    <i data-lucide="users" width="20" height="20"></i>
-                </span>
-                <span class="nav-item-text">Team</span>
-            </a>
-            <a href="{{ url_for('dashboard_settings') }}" class="nav-item {% if request.endpoint == 'dashboard_settings' or request.endpoint == 'dashboard_organization' %}active{% endif %}">
+            <a href="{{ url_for('dashboard_settings') }}" class="nav-item {% if request.endpoint == 'dashboard_settings' %}active{% endif %}">
                 <span class="nav-item-icon">
                     <i data-lucide="settings" width="20" height="20"></i>
                 </span>
