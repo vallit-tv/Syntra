@@ -6,6 +6,7 @@ from typing import Optional, Tuple, Dict
 from flask import session, redirect, url_for, request, jsonify
 from functools import wraps
 import db
+import traceback
 
 # Rate limiting storage (in production, use Redis or database)
 _rate_limit_store: Dict[str, Dict] = {}
@@ -188,14 +189,18 @@ def setup_password(name: str, password: str, ip_address: str = None) -> dict:
     session.permanent = True
     session['user_id'] = user['id']
     
-    # Return user with role ensured
-    return {
+    # Cache user info in session to avoid DB calls
+    user_dict = {
         'id': user['id'],
         'name': user['name'],
         'role': role,
         'company_id': user.get('company_id'),
         'is_password_set': user.get('is_password_set', False)
     }
+    session['user_info'] = user_dict
+    session['user_info_time'] = time.time()
+    
+    return user_dict
 
 
 def login(name: str, password: str, ip_address: str = None) -> dict:
@@ -245,14 +250,18 @@ def login(name: str, password: str, ip_address: str = None) -> dict:
     session.permanent = True
     session['user_id'] = user['id']
     
-    # Return user with role ensured
-    return {
+    # Cache user info in session to avoid DB calls
+    user_dict = {
         'id': user['id'],
         'name': user['name'],
         'role': role,
         'company_id': user.get('company_id'),
         'is_password_set': user.get('is_password_set', False)
     }
+    session['user_info'] = user_dict
+    session['user_info_time'] = time.time()
+    
+    return user_dict
 
 
 def check_user_status(name: str, ip_address: str = None) -> dict:
@@ -297,41 +306,76 @@ def check_user_status(name: str, ip_address: str = None) -> dict:
 def logout():
     """Logout user"""
     session.clear()
+    # Also clear any cached user info
+    if 'user_info' in session:
+        del session['user_info']
+    if 'user_info_time' in session:
+        del session['user_info_time']
 
 
 def current_user() -> Optional[dict]:
-    """Get current logged-in user"""
+    """Get current logged-in user with caching in session"""
     user_id = session.get('user_id')
     if not user_id:
         return None
     
-    user = db.get_user_by_id(user_id)
-    if not user:
-        return None
+    # Check if we have cached user info in session (to avoid DB calls on every request)
+    cached_user = session.get('user_info')
+    if cached_user and cached_user.get('id') == user_id:
+        # Verify the cached user is still valid by checking session timestamp
+        cache_time = session.get('user_info_time', 0)
+        # Refresh cache every 5 minutes or if role is missing
+        if time.time() - cache_time < 300 and cached_user.get('role'):
+            return cached_user
     
-    role = user.get('role')
-    if not role:
-        if user.get('name', '').lower() == 'theo':
-            role = 'admin'
-            # Try to update role in database, but don't fail if it doesn't work
-            try:
-                if db.update_user_role(user['id'], 'admin'):
-                    # Refresh user data if update succeeded
-                    updated_user = db.get_user_by_id(user_id)
-                    if updated_user:
-                        user = updated_user
-            except Exception as e:
-                # Silently fail - role will be set to 'admin' for this session anyway
-                print(f"Note: Could not update user role in database: {e}")
-        else:
-            role = 'worker'
-
-    return {
-        'id': user['id'],
-        'name': user['name'],
-        'role': role,
-        'company_id': user.get('company_id')
-    }
+    # Try to get user from database
+    try:
+        user = db.get_user_by_id(user_id)
+        if not user:
+            # If database query fails but we have cached info, use that
+            if cached_user:
+                print(f"Warning: Database query failed for user {user_id}, using cached user info")
+                return cached_user
+            return None
+        
+        # Ensure role is set correctly (especially for Theo)
+        role = user.get('role')
+        if not role:
+            if user.get('name', '').lower() == 'theo':
+                role = 'admin'
+                # Try to update role in database, but don't fail if it doesn't work
+                try:
+                    if db.update_user_role(user['id'], 'admin'):
+                        # Refresh user data if update succeeded
+                        updated_user = db.get_user_by_id(user_id)
+                        if updated_user:
+                            user = updated_user
+                            role = 'admin'
+                except Exception as e:
+                    # Silently fail - role will be set to 'admin' for this session anyway
+                    print(f"Note: Could not update user role in database: {e}")
+            else:
+                role = 'worker'
+        
+        user_dict = {
+            'id': user['id'],
+            'name': user['name'],
+            'role': role,
+            'company_id': user.get('company_id')
+        }
+        
+        # Cache user info in session
+        session['user_info'] = user_dict
+        session['user_info_time'] = time.time()
+        
+        return user_dict
+    except Exception as e:
+        # If database query fails, try to use cached user info
+        print(f"Error getting user from database: {e}")
+        if cached_user:
+            print(f"Using cached user info for user {user_id}")
+            return cached_user
+        return None
 
 
 def is_admin(user: Optional[dict] = None) -> bool:
@@ -366,16 +410,30 @@ def admin_required(f):
     """Decorator to require admin access"""
     @wraps(f)
     def decorated(*args, **kwargs):
-        user = current_user()
-        if not user:
+        try:
+            user = current_user()
+            if not user:
+                print(f"admin_required: No user found for session {session.get('user_id')}")
+                if request.path.startswith('/api/'):
+                    return jsonify({'error': 'Unauthorized'}), 401
+                return redirect(url_for('register'))
+            if not is_admin(user):
+                print(f"admin_required: User {user.get('name')} (role: {user.get('role')}) is not admin")
+                if request.path.startswith('/api/'):
+                    return jsonify({'error': 'Admin access required'}), 403
+                return redirect(url_for('dashboard'))
+            return f(*args, **kwargs)
+        except Exception as e:
+            print(f"admin_required error: {e}")
+            traceback.print_exc()
+            # On error, try to use cached user info
+            cached_user = session.get('user_info')
+            if cached_user and is_admin(cached_user):
+                print(f"Using cached user info after error")
+                return f(*args, **kwargs)
             if request.path.startswith('/api/'):
                 return jsonify({'error': 'Unauthorized'}), 401
             return redirect(url_for('register'))
-        if not is_admin(user):
-            if request.path.startswith('/api/'):
-                return jsonify({'error': 'Admin access required'}), 403
-            return redirect(url_for('dashboard'))
-        return f(*args, **kwargs)
     return decorated
 
 
