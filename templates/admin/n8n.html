@@ -100,10 +100,33 @@
                 <p style="margin: 0 0 0.75rem 0; color: var(--db-text-secondary);">
                     Your N8N_URL is still set to the placeholder value. Follow these steps:
                 </p>
+                
+                {% if saved_ngrok_url %}
+                <div style="margin: 1rem 0; padding: 0.75rem; background-color: var(--db-bg-primary); border: 1px solid var(--db-border); border-radius: var(--db-radius-sm);">
+                    <p style="margin: 0 0 0.5rem 0; font-size: 0.875rem; color: var(--db-text-secondary);">
+                        <strong>Found ngrok URL from start script:</strong>
+                    </p>
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                        <code id="ngrokUrlToCopy" style="flex: 1; padding: 0.5rem; background-color: var(--db-bg-light); border: 1px solid var(--db-border); border-radius: var(--db-radius-sm); font-size: 0.875rem; word-break: break-all;">{{ saved_ngrok_url }}</code>
+                        <button onclick="copyNgrokUrl(event)" class="btn btn-secondary btn-sm" style="white-space: nowrap;">
+                            <i data-lucide="copy" width="14" height="14"></i>
+                            Copy
+                        </button>
+                    </div>
+                    <p style="margin: 0; font-size: 0.8125rem; color: var(--db-text-secondary);">
+                        Use this command to update your .env file:
+                    </p>
+                    <code style="display: block; margin-top: 0.5rem; padding: 0.5rem; background-color: var(--db-bg-light); border: 1px solid var(--db-border); border-radius: var(--db-radius-sm); font-size: 0.8125rem;">
+                        sed -i '' 's|N8N_URL=.*|N8N_URL={{ saved_ngrok_url }}|' .env
+                    </code>
+                </div>
+                {% endif %}
+                
                 <ol style="margin: 0; padding-left: 1.5rem; color: var(--db-text-secondary);">
+                    {% if not saved_ngrok_url %}
                     <li style="margin-bottom: 0.5rem;">Run <code>./start-n8n-ngrok.sh</code> to start n8n and get your ngrok URL</li>
-                    <li style="margin-bottom: 0.5rem;">Copy the public URL from the script output (e.g., <code>https://xxxx-xx-xx-xx-xx.ngrok-free.dev</code>)</li>
-                    <li style="margin-bottom: 0.5rem;">Update your <code>.env</code> file: set <code>N8N_URL</code> to the ngrok URL</li>
+                    {% endif %}
+                    <li style="margin-bottom: 0.5rem;">{% if saved_ngrok_url %}Copy the URL above or {% endif %}Update your <code>.env</code> file: set <code>N8N_URL</code> to the ngrok URL</li>
                     <li style="margin-bottom: 0.5rem;">Restart your Flask application</li>
                 </ol>
             </div>
@@ -151,6 +174,33 @@
 
 {% block dashboard_scripts %}
 <script>
+function copyNgrokUrl(event) {
+    const urlElement = document.getElementById('ngrokUrlToCopy');
+    if (!urlElement) return;
+    
+    const url = urlElement.textContent.trim();
+    navigator.clipboard.writeText(url).then(() => {
+        // Show feedback
+        const btn = event ? event.target.closest('button') : document.querySelector('button[onclick*="copyNgrokUrl"]');
+        if (btn) {
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i data-lucide="check" width="14" height="14"></i> Copied!';
+            btn.classList.add('btn-success');
+            btn.classList.remove('btn-secondary');
+            lucide.createIcons();
+            
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.classList.remove('btn-success');
+                btn.classList.add('btn-secondary');
+                lucide.createIcons();
+            }, 2000);
+        }
+    }).catch(err => {
+        alert('Failed to copy: ' + err);
+    });
+}
+
 async function syncNow() {
     const btn = document.getElementById('syncNowBtn');
     const statusDiv = document.getElementById('syncStatus');

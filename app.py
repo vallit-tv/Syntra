@@ -1250,6 +1250,17 @@ def admin_n8n():
         n8n_configured = n8n_service.is_configured()
         n8n_url = n8n_service.base_url if n8n_configured else None
         n8n_status = None
+        
+        # Try to read saved ngrok URL from file (if start script was run)
+        saved_ngrok_url = None
+        try:
+            ngrok_url_file = '/tmp/ngrok-n8n.url'
+            if os.path.exists(ngrok_url_file):
+                with open(ngrok_url_file, 'r') as f:
+                    saved_ngrok_url = f.read().strip()
+        except Exception:
+            pass  # Ignore errors reading the file
+        
         workflows = db.get_workflows(public_only=False)
         total_workflows = len(workflows)
         n8n_synced = sum(1 for w in workflows if w.get('n8n_workflow_id'))
@@ -1274,7 +1285,8 @@ def admin_n8n():
                              n8n_configured=n8n_configured,
                              n8n_url=n8n_url,
                              n8n_status=n8n_status,
-                             n8n_overview=n8n_overview)
+                             n8n_overview=n8n_overview,
+                             saved_ngrok_url=saved_ngrok_url)
     except Exception as e:
         print(f"Admin n8n error: {str(e)}")
         return redirect(url_for('admin_dashboard'))
