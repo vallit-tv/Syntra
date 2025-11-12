@@ -17,6 +17,24 @@ def is_db_configured() -> bool:
     """Check if database environment variables are set"""
     url = os.getenv('SUPABASE_URL')
     key = os.getenv('SUPABASE_SERVICE_KEY') or os.getenv('SUPABASE_KEY')
+    
+    # Debug logging in Vercel to help diagnose issues
+    if not url or not key:
+        missing = []
+        if not url:
+            missing.append('SUPABASE_URL')
+        if not key:
+            if not os.getenv('SUPABASE_SERVICE_KEY'):
+                missing.append('SUPABASE_SERVICE_KEY')
+            if not os.getenv('SUPABASE_KEY'):
+                missing.append('SUPABASE_KEY (or SUPABASE_SERVICE_KEY)')
+        print(f"Database configuration check: Missing variables: {', '.join(missing) if missing else 'None'}")
+        print(f"  SUPABASE_URL set: {bool(url)}")
+        print(f"  SUPABASE_KEY set: {bool(os.getenv('SUPABASE_KEY'))}")
+        print(f"  SUPABASE_SERVICE_KEY set: {bool(os.getenv('SUPABASE_SERVICE_KEY'))}")
+        print(f"  VERCEL env: {os.getenv('VERCEL')}")
+        print(f"  All env vars (SUPABASE*): {[k for k in os.environ.keys() if 'SUPABASE' in k]}")
+    
     return bool(url and key)
 
 def test_db_connection() -> Tuple[bool, Optional[str]]:
