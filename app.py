@@ -1480,8 +1480,8 @@ def api_setup_password():
         role = user.get('role', 'worker')
         company_id = user.get('company_id')
         
-        # Admin users (no company) go to admin panel
-        if role == 'admin' and not company_id:
+        # Admin users always go to admin panel
+        if role == 'admin':
             redirect_url = '/admin'
         # CEO/workers with company go to company dashboard
         elif role == 'ceo' and company_id:
@@ -1542,8 +1542,8 @@ def api_login():
         role = user.get('role', 'worker')
         company_id = user.get('company_id')
         
-        # Admin users (no company) go to admin panel
-        if role == 'admin' and not company_id:
+        # Admin users always go to admin panel
+        if role == 'admin':
             redirect_url = '/admin'
         # CEO/workers with company go to company dashboard
         elif role == 'ceo' and company_id:
