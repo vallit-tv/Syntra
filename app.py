@@ -312,6 +312,54 @@ def health():
             }
         }), 200
 
+@app.route('/debug/env')
+def debug_env():
+    """Debug endpoint to check environment variables (admin only)"""
+    # Check which critical env vars are set (without exposing full values)
+    env_status = {
+        'SUPABASE_URL': {
+            'set': bool(os.getenv('SUPABASE_URL')),
+            'value_preview': os.getenv('SUPABASE_URL', '')[:30] + '...' if os.getenv('SUPABASE_URL') else None,
+            'length': len(os.getenv('SUPABASE_URL', ''))
+        },
+        'SUPABASE_KEY': {
+            'set': bool(os.getenv('SUPABASE_KEY')),
+            'value_preview': os.getenv('SUPABASE_KEY', '')[:30] + '...' if os.getenv('SUPABASE_KEY') else None,
+            'length': len(os.getenv('SUPABASE_KEY', ''))
+        },
+        'SUPABASE_SERVICE_KEY': {
+            'set': bool(os.getenv('SUPABASE_SERVICE_KEY')),
+            'value_preview': os.getenv('SUPABASE_SERVICE_KEY', '')[:30] + '...' if os.getenv('SUPABASE_SERVICE_KEY') else None,
+            'length': len(os.getenv('SUPABASE_SERVICE_KEY', ''))
+        },
+        'N8N_URL': {
+            'set': bool(os.getenv('N8N_URL')),
+            'value_preview': os.getenv('N8N_URL', '')[:50] + '...' if os.getenv('N8N_URL') else None,
+            'length': len(os.getenv('N8N_URL', ''))
+        },
+        'N8N_API_KEY': {
+            'set': bool(os.getenv('N8N_API_KEY')),
+            'value_preview': os.getenv('N8N_API_KEY', '')[:30] + '...' if os.getenv('N8N_API_KEY') else None,
+            'length': len(os.getenv('N8N_API_KEY', ''))
+        },
+        'VERCEL': os.getenv('VERCEL'),
+        'FLASK_ENV': os.getenv('FLASK_ENV'),
+    }
+    
+    # Check database configuration
+    db_configured = db.is_db_configured()
+    db_connected, db_error = db.test_db_connection()
+    
+    return jsonify({
+        'environment_variables': env_status,
+        'database': {
+            'configured': db_configured,
+            'connected': db_connected,
+            'error': db_error if not db_connected else None
+        },
+        'note': 'This endpoint shows which environment variables are set. Full values are hidden for security.'
+    }), 200
+
 @app.route('/init-theo', methods=['GET', 'POST'])
 def init_theo_page():
     """Simple page to initialize Theo - can be accessed via browser"""
