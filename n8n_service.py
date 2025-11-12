@@ -29,22 +29,48 @@ class N8nService:
         if not self.is_configured():
             return False, "n8n not configured. Set N8N_URL and N8N_API_KEY environment variables."
         
+        # Check if URL is still the placeholder
+        if 'your-ngrok-url' in self.base_url or 'your-n8n-url' in self.base_url.lower():
+            return False, "N8N_URL is still set to placeholder. Update your .env file with the actual ngrok URL from ./start-n8n-ngrok.sh"
+        
         try:
+            # First try the health endpoint (simpler, doesn't require auth)
+            try:
+                health_response = requests.get(
+                    f"{self.base_url}/healthz",
+                    timeout=5,
+                    allow_redirects=False
+                )
+                # If health check works, n8n is reachable
+            except:
+                pass  # Continue to API check
+            
+            # Now test the actual API endpoint
             response = requests.get(
                 f"{self.base_url}/api/v1/workflows",
                 headers=self._get_headers(),
-                timeout=10
+                timeout=10,
+                allow_redirects=False
             )
+            
             if response.status_code == 200:
                 return True, None
             elif response.status_code == 401:
-                return False, "Invalid API key"
+                return False, "Invalid API key. Check N8N_API_KEY in your .env file."
+            elif response.status_code == 404:
+                # Check if it's ngrok warning page
+                if 'ngrok' in response.text.lower() or 'trycloudflare' in response.text.lower():
+                    return False, "ngrok/Cloudflare warning page detected. Visit the URL in a browser first to bypass the warning, then try again."
+                return False, f"Connection failed: HTTP 404. Check that n8n is running and the URL is correct. Current URL: {self.base_url}"
             else:
                 return False, f"Connection failed: HTTP {response.status_code}"
         except requests.exceptions.Timeout:
             return False, "Connection timeout. Check if n8n is running and accessible."
-        except requests.exceptions.ConnectionError:
-            return False, "Cannot connect to n8n. Check the URL and ensure n8n is running."
+        except requests.exceptions.ConnectionError as e:
+            error_msg = str(e)
+            if 'Name or service not known' in error_msg or 'nodename nor servname provided' in error_msg:
+                return False, f"Cannot resolve hostname. Check that N8N_URL is correct: {self.base_url}"
+            return False, f"Cannot connect to n8n: {error_msg}. Check the URL and ensure n8n is running."
         except Exception as e:
             return False, f"Connection error: {str(e)}"
     

@@ -94,9 +94,24 @@
                 <strong>n8n URL:</strong> <code>{{ n8n_url }}</code>
             </div>
             
+            {% if 'your-ngrok-url' in (n8n_url or '') %}
+            <div style="margin-top: 1.5rem; padding: 1rem; background-color: var(--db-bg-secondary); border-radius: var(--db-radius-md); border-left: 3px solid var(--db-warning);">
+                <h3 style="margin: 0 0 0.5rem 0; color: var(--db-text-primary);">⚠️ Configuration Required</h3>
+                <p style="margin: 0 0 0.75rem 0; color: var(--db-text-secondary);">
+                    Your N8N_URL is still set to the placeholder value. Follow these steps:
+                </p>
+                <ol style="margin: 0; padding-left: 1.5rem; color: var(--db-text-secondary);">
+                    <li style="margin-bottom: 0.5rem;">Run <code>./start-n8n-ngrok.sh</code> to start n8n and get your ngrok URL</li>
+                    <li style="margin-bottom: 0.5rem;">Copy the public URL from the script output (e.g., <code>https://xxxx-xx-xx-xx-xx.ngrok-free.dev</code>)</li>
+                    <li style="margin-bottom: 0.5rem;">Update your <code>.env</code> file: set <code>N8N_URL</code> to the ngrok URL</li>
+                    <li style="margin-bottom: 0.5rem;">Restart your Flask application</li>
+                </ol>
+            </div>
+            {% else %}
             <p style="margin-top: 1rem; color: var(--color-text-secondary);">
                 Please check that your n8n instance is running and accessible at the configured URL.
             </p>
+            {% endif %}
             {% endif %}
         {% else %}
         <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
