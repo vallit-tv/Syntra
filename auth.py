@@ -169,9 +169,33 @@ def setup_password(name: str, password: str, ip_address: str = None) -> dict:
     
     # Auto-login after password setup
     user = db.get_user_by_id(user['id'])  # Refresh user data
+    
+    # Ensure role is set correctly (especially for Theo)
+    role = user.get('role')
+    if not role:
+        if user.get('name', '').lower() == 'theo':
+            role = 'admin'
+            # Try to update role in database
+            try:
+                db.update_user_role(user['id'], 'admin')
+                # Refresh user data
+                user = db.get_user_by_id(user['id']) or user
+            except Exception as e:
+                print(f"Note: Could not update user role in database: {e}")
+        else:
+            role = 'worker'
+    
     session.permanent = True
     session['user_id'] = user['id']
-    return user
+    
+    # Return user with role ensured
+    return {
+        'id': user['id'],
+        'name': user['name'],
+        'role': role,
+        'company_id': user.get('company_id'),
+        'is_password_set': user.get('is_password_set', False)
+    }
 
 
 def login(name: str, password: str, ip_address: str = None) -> dict:
@@ -202,10 +226,33 @@ def login(name: str, password: str, ip_address: str = None) -> dict:
     # Clear rate limit on successful login
     record_rate_limit_attempt(identifier, 'login', failed=False)
     
+    # Ensure role is set correctly (especially for Theo)
+    role = user.get('role')
+    if not role:
+        if user.get('name', '').lower() == 'theo':
+            role = 'admin'
+            # Try to update role in database
+            try:
+                db.update_user_role(user['id'], 'admin')
+                # Refresh user data
+                user = db.get_user_by_id(user['id']) or user
+            except Exception as e:
+                print(f"Note: Could not update user role in database: {e}")
+        else:
+            role = 'worker'
+    
     # Create session
     session.permanent = True
     session['user_id'] = user['id']
-    return user
+    
+    # Return user with role ensured
+    return {
+        'id': user['id'],
+        'name': user['name'],
+        'role': role,
+        'company_id': user.get('company_id'),
+        'is_password_set': user.get('is_password_set', False)
+    }
 
 
 def check_user_status(name: str, ip_address: str = None) -> dict:
@@ -323,7 +370,7 @@ def admin_required(f):
         if not user:
             if request.path.startswith('/api/'):
                 return jsonify({'error': 'Unauthorized'}), 401
-            return redirect(url_for('login'))
+            return redirect(url_for('register'))
         if not is_admin(user):
             if request.path.startswith('/api/'):
                 return jsonify({'error': 'Admin access required'}), 403
@@ -340,7 +387,7 @@ def ceo_required(f):
         if not user:
             if request.path.startswith('/api/'):
                 return jsonify({'error': 'Unauthorized'}), 401
-            return redirect(url_for('login'))
+            return redirect(url_for('register'))
         if not (is_ceo(user) or is_admin(user)):
             if request.path.startswith('/api/'):
                 return jsonify({'error': 'CEO access required'}), 403
@@ -357,7 +404,7 @@ def worker_required(f):
         if not user:
             if request.path.startswith('/api/'):
                 return jsonify({'error': 'Unauthorized'}), 401
-            return redirect(url_for('login'))
+            return redirect(url_for('register'))
         if not is_worker(user):
             if request.path.startswith('/api/'):
                 return jsonify({'error': 'Worker access required'}), 403
@@ -373,7 +420,7 @@ def login_required(f):
         if not current_user():
             if request.path.startswith('/api/'):
                 return jsonify({'error': 'Unauthorized'}), 401
-            return redirect(url_for('login'))
+            return redirect(url_for('register'))
         return f(*args, **kwargs)
     return decorated
 

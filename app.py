@@ -700,7 +700,10 @@ def company_settings():
 @app.route('/dashboard')
 @auth.login_required
 def dashboard():
-    """Redirect to dashboard overview"""
+    """Redirect to dashboard overview or admin panel for admins"""
+    user = auth.current_user()
+    if user and auth.is_admin(user):
+        return redirect(url_for('admin_dashboard'))
     return redirect(url_for('dashboard_overview'))
 
 # Dashboard Routes
@@ -710,6 +713,9 @@ def dashboard_overview():
     """Dashboard overview page"""
     try:
         user = auth.current_user()
+        # Redirect admins to admin panel
+        if user and auth.is_admin(user):
+            return redirect(url_for('admin_dashboard'))
         api_keys = db.get_api_keys(user['id'])
         
         # Get user's activated workflows
