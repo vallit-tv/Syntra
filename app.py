@@ -14,6 +14,23 @@ from n8n_service import get_n8n_service
 
 load_dotenv()
 
+# Log environment variable status at startup (for Vercel debugging)
+print("=" * 60)
+print("ENVIRONMENT VARIABLES CHECK (Startup)")
+print("=" * 60)
+print(f"VERCEL env: {os.getenv('VERCEL')}")
+print(f"VERCEL_URL: {os.getenv('VERCEL_URL')}")
+print(f"SUPABASE_URL set: {bool(os.getenv('SUPABASE_URL'))}")
+print(f"SUPABASE_KEY set: {bool(os.getenv('SUPABASE_KEY'))}")
+print(f"SUPABASE_SERVICE_KEY set: {bool(os.getenv('SUPABASE_SERVICE_KEY'))}")
+print(f"N8N_URL set: {bool(os.getenv('N8N_URL'))}")
+print(f"N8N_API_KEY set: {bool(os.getenv('N8N_API_KEY'))}")
+all_supabase_vars = [k for k in os.environ.keys() if 'SUPABASE' in k.upper()]
+print(f"All SUPABASE* env vars: {all_supabase_vars}")
+all_n8n_vars = [k for k in os.environ.keys() if 'N8N' in k.upper()]
+print(f"All N8N* env vars: {all_n8n_vars}")
+print("=" * 60)
+
 app = Flask(__name__, static_folder='static', static_url_path='/static', template_folder='templates')
 app.secret_key = os.getenv('FLASK_SECRET_KEY', os.urandom(32))
 app.permanent_session_lifetime = timedelta(minutes=30)
