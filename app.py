@@ -733,7 +733,7 @@ def dashboard_overview():
                              recent_workflows=active_workflows[:5])
     except Exception as e:
         print(f"Dashboard overview error: {str(e)}")
-        return redirect(url_for('login'))
+        return redirect(url_for('register'))
 
 @app.route('/dashboard/workflows')
 @auth.login_required
@@ -1476,13 +1476,21 @@ def api_setup_password():
     
     try:
         user = auth.setup_password(name, password, ip_address)
-        # Determine redirect based on role
+        # Determine redirect based on role and company assignment
         role = user.get('role', 'worker')
-        redirect_url = '/dashboard'
-        if role == 'admin':
+        company_id = user.get('company_id')
+        
+        # Admin users (no company) go to admin panel
+        if role == 'admin' and not company_id:
             redirect_url = '/admin'
-        elif role == 'ceo':
+        # CEO/workers with company go to company dashboard
+        elif role == 'ceo' and company_id:
             redirect_url = '/company/dashboard'
+        elif role == 'worker' and company_id:
+            redirect_url = '/company/dashboard'  # Workers also use company dashboard
+        # Fallback to personal dashboard
+        else:
+            redirect_url = '/dashboard'
         
         return jsonify({
             'message': 'Password set successfully',
