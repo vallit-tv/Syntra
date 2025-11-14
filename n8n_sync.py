@@ -18,7 +18,7 @@ except ImportError:
     logging.warning("APScheduler not installed. Auto-sync will not be available.")
 
 import db
-from n8n_service import N8NService
+from n8n_service import N8nService
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -64,14 +64,27 @@ def sync_workflows_from_n8n() -> Dict:
     logger.info("Starting workflow sync from n8n...")
     
     try:
-        # Initialize n8n service
-        n8n_service = N8NService(
-            url=os.getenv('N8N_URL'),
-            api_key=os.getenv('N8N_API_KEY')
-        )
+        # Initialize n8n service using the getter function
+        from n8n_service import get_n8n_service
+        n8n_service = get_n8n_service()
+        
+        if not n8n_service.is_configured():
+            error_msg = "n8n not configured. Set N8N_URL and N8N_API_KEY."
+            logger.error(error_msg)
+            _sync_stats['last_error'] = error_msg
+            _sync_stats['last_run'] = datetime.now().isoformat()
+            return {
+                'success': False,
+                'added': 0,
+                'updated': 0,
+                'removed': 0,
+                'total': 0,
+                'error': error_msg
+            }
         
         # Check n8n connection
-        if not n8n_service.test_connection():
+        connected, message = n8n_service.test_connection()
+        if not connected:
             error_msg = "Failed to connect to n8n. Check N8N_URL and N8N_API_KEY."
             logger.error(error_msg)
             _sync_stats['last_error'] = error_msg
@@ -192,7 +205,7 @@ def sync_workflows_from_n8n() -> Dict:
         }
 
 
-def start_auto_sync(interval_minutes: int = 30):
+def start_auto_sync(interval_minutes: int = 1):
     """
     Start automatic workflow synchronization
     
@@ -210,16 +223,17 @@ def start_auto_sync(interval_minutes: int = 30):
         return True
     
     try:
-        _scheduler = BackgroundScheduler()
+        _scheduler = BackgroundScheduler(daemon=True)
         _scheduler.add_job(
             func=sync_workflows_from_n8n,
             trigger=IntervalTrigger(minutes=interval_minutes),
             id='n8n_workflow_sync',
             name='N8N Workflow Sync',
-            replace_existing=True
+            replace_existing=True,
+            max_instances=1  # Prevent overlapping syncs
         )
         _scheduler.start()
-        logger.info(f"Auto-sync started (interval: {interval_minutes} minutes)")
+        logger.info(f"Auto-sync started (interval: {interval_minutes} minute{'s' if interval_minutes != 1 else ''})")
         return True
     except Exception as e:
         logger.error(f"Failed to start auto-sync: {e}")
