@@ -200,6 +200,9 @@ def setup_password(name: str, password: str, ip_address: str = None) -> dict:
     session['user_info'] = user_dict
     session['user_info_time'] = time.time()
     
+    # Explicitly mark session as modified to ensure it's saved
+    session.modified = True
+    
     return user_dict
 
 
@@ -260,6 +263,9 @@ def login(name: str, password: str, ip_address: str = None) -> dict:
     }
     session['user_info'] = user_dict
     session['user_info_time'] = time.time()
+    
+    # Explicitly mark session as modified to ensure it's saved
+    session.modified = True
     
     return user_dict
 
@@ -416,7 +422,7 @@ def admin_required(f):
                 print(f"admin_required: No user found for session {session.get('user_id')}")
                 if request.path.startswith('/api/'):
                     return jsonify({'error': 'Unauthorized'}), 401
-                return redirect(url_for('register'))
+                return redirect(url_for('login'))
             if not is_admin(user):
                 print(f"admin_required: User {user.get('name')} (role: {user.get('role')}) is not admin")
                 if request.path.startswith('/api/'):
@@ -433,7 +439,7 @@ def admin_required(f):
                 return f(*args, **kwargs)
             if request.path.startswith('/api/'):
                 return jsonify({'error': 'Unauthorized'}), 401
-            return redirect(url_for('register'))
+            return redirect(url_for('login'))
     return decorated
 
 
@@ -445,7 +451,7 @@ def ceo_required(f):
         if not user:
             if request.path.startswith('/api/'):
                 return jsonify({'error': 'Unauthorized'}), 401
-            return redirect(url_for('register'))
+            return redirect(url_for('login'))
         if not (is_ceo(user) or is_admin(user)):
             if request.path.startswith('/api/'):
                 return jsonify({'error': 'CEO access required'}), 403
@@ -462,7 +468,7 @@ def worker_required(f):
         if not user:
             if request.path.startswith('/api/'):
                 return jsonify({'error': 'Unauthorized'}), 401
-            return redirect(url_for('register'))
+            return redirect(url_for('login'))
         if not is_worker(user):
             if request.path.startswith('/api/'):
                 return jsonify({'error': 'Worker access required'}), 403
@@ -475,10 +481,12 @@ def login_required(f):
     """Decorator to protect routes"""
     @wraps(f)
     def decorated(*args, **kwargs):
-        if not current_user():
+        user = current_user()
+        if not user:
             if request.path.startswith('/api/'):
                 return jsonify({'error': 'Unauthorized'}), 401
-            return redirect(url_for('register'))
+            # Redirect to login page instead of register
+            return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated
 
