@@ -43,6 +43,8 @@ app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 # On Vercel, always use secure cookies (HTTPS is always used)
 # Only use secure cookies in production/vercel, not in local development
 app.config['SESSION_COOKIE_SECURE'] = os.getenv('VERCEL') == '1' or (os.getenv('FLASK_ENV') == 'production' and os.getenv('USE_SECURE_COOKIES', 'false').lower() == 'true')
+# Ensure session cookies work across the entire site
+app.config['SESSION_COOKIE_PATH'] = '/'
 
 
 def parse_iso_ts(value):
