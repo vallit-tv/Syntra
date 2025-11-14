@@ -6,15 +6,42 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Track last .env modification time for auto-reload
+_env_last_mtime = 0
+_env_file_path = os.path.join(os.path.dirname(__file__), '.env')
+
+def _reload_env_if_changed():
+    """Reload .env file if it has been modified"""
+    global _env_last_mtime
+    try:
+        if os.path.exists(_env_file_path):
+            current_mtime = os.path.getmtime(_env_file_path)
+            if current_mtime > _env_last_mtime:
+                load_dotenv(override=True)
+                _env_last_mtime = current_mtime
+                return True
+    except Exception:
+        pass
+    return False
+
+# Initialize last mtime
+if os.path.exists(_env_file_path):
+    _env_last_mtime = os.path.getmtime(_env_file_path)
+
 class N8nService:
     """Centralized service for interacting with n8n API"""
     
     def __init__(self):
+        _reload_env_if_changed()  # Check for .env changes on init
         self.base_url = os.getenv('N8N_URL', '').rstrip('/')
         self.api_key = os.getenv('N8N_API_KEY', '')
     
     def is_configured(self) -> bool:
         """Check if n8n is properly configured"""
+        _reload_env_if_changed()  # Check for .env changes
+        # Reload env vars in case they changed
+        self.base_url = os.getenv('N8N_URL', '').rstrip('/')
+        self.api_key = os.getenv('N8N_API_KEY', '')
         return bool(self.base_url and self.api_key)
     
     def _get_headers(self) -> Dict[str, str]:
@@ -190,6 +217,9 @@ _n8n_service = None
 def get_n8n_service() -> N8nService:
     """Get the global n8n service instance"""
     global _n8n_service
+    # Reload env and recreate service if .env changed
+    if _reload_env_if_changed():
+        _n8n_service = None  # Force recreation with new env vars
     if _n8n_service is None:
         _n8n_service = N8nService()
     return _n8n_service
