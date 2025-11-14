@@ -8,6 +8,9 @@
     <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
     <!-- Load CSS file, fallback to inline if it fails -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=5" id="main-css">
+    {% block extra_css %}{% endblock %}
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         // Fallback: If CSS fails to load, inject it inline
         window.addEventListener('load', function() {
@@ -43,9 +46,6 @@
                 <nav>
                     <ul class="nav-links">
                         <li><a href="{{ url_for('index') }}">Home</a></li>
-                        <li><a href="{{ url_for('features') }}">Features</a></li>
-                        <li><a href="{{ url_for('about') }}">About</a></li>
-                        <li><a href="{{ url_for('contact') }}">Contact</a></li>
                     </ul>
                 </nav>
                 
@@ -54,7 +54,7 @@
                         <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Dashboard</a>
                         <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
                     {% else %}
-                        <a href="{{ url_for('login') }}" class="btn btn-primary">Get Started</a>
+                        <a href="{{ url_for('register') }}" class="btn btn-primary">Get Started</a>
                     {% endif %}
                 </div>
             </div>
@@ -93,7 +93,6 @@
                 <div class="footer-links">
                     <h4>Product</h4>
                     <ul>
-                        <li><a href="{{ url_for('features') }}">Features</a></li>
                         <li><a href="#">Pricing</a></li>
                         <li><a href="#">Documentation</a></li>
                         <li><a href="#">API</a></li>
@@ -102,8 +101,6 @@
                 <div class="footer-links">
                     <h4>Company</h4>
                     <ul>
-                        <li><a href="{{ url_for('about') }}">About</a></li>
-                        <li><a href="{{ url_for('contact') }}">Contact</a></li>
                         <li><a href="#">Careers</a></li>
                         <li><a href="#">Blog</a></li>
                     </ul>
@@ -112,8 +109,6 @@
             <div class="footer-bottom">
                 <p>&copy; 2024 Syntra. All rights reserved.</p>
                 <nav>
-                    <a href="{{ url_for('impressum') }}">Impressum</a>
-                    <a href="{{ url_for('datenschutz') }}">Datenschutz</a>
                     <a href="#">Terms</a>
                 </nav>
             </div>
@@ -122,6 +117,14 @@
 
     <!-- JavaScript -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        // Initialize Lucide icons
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        });
+    </script>
     {% block scripts %}{% endblock %}
 </body>
 </html>
