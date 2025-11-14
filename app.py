@@ -1509,6 +1509,11 @@ def api_setup_password():
     
     try:
         user = auth.setup_password(name, password, ip_address)
+        
+        # Ensure session is saved after password setup - CRITICAL for session persistence
+        session.permanent = True
+        session.modified = True
+        
         # Determine redirect based on role and company assignment
         role = user.get('role', 'worker')
         company_id = user.get('company_id')
@@ -1525,11 +1530,18 @@ def api_setup_password():
         else:
             redirect_url = '/dashboard'
         
-        return jsonify({
+        # Create response and ensure session cookie is set
+        response = jsonify({
             'message': 'Password set successfully',
             'user': {'id': user['id'], 'name': user['name']},
             'redirect': redirect_url
         })
+        
+        # Explicitly ensure session is saved by accessing it
+        # This forces Flask to set the session cookie in the response
+        _ = session.get('user_id')
+        
+        return response
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
@@ -1571,7 +1583,8 @@ def api_login():
     try:
         user = auth.login(name, password, ip_address)
         
-        # Ensure session is saved after login
+        # Ensure session is saved after login - CRITICAL for session persistence
+        session.permanent = True
         session.modified = True
         
         # Determine redirect based on role and company assignment
@@ -1593,11 +1606,18 @@ def api_login():
         # Debug: verify session is set
         print(f"DEBUG: API login response - session['user_id'] = {session.get('user_id')}, redirect: {redirect_url}")
         
-        return jsonify({
+        # Create response and ensure session cookie is set
+        response = jsonify({
             'message': 'Logged in', 
             'user': user,
             'redirect': redirect_url
         })
+        
+        # Explicitly ensure session is saved by accessing it
+        # This forces Flask to set the session cookie in the response
+        _ = session.get('user_id')
+        
+        return response
     except Exception as e:
         return jsonify({'error': str(e)}), 401
 

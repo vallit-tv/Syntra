@@ -2,6 +2,7 @@
 import hashlib
 import secrets
 import time
+import os
 from typing import Optional, Tuple, Dict
 from flask import session, redirect, url_for, request, jsonify
 from functools import wraps
@@ -324,13 +325,19 @@ def logout():
 
 def current_user() -> Optional[dict]:
     """Get current logged-in user with caching in session"""
+    # Ensure session is accessible
+    if not hasattr(session, 'get'):
+        print("DEBUG: Session object is not accessible")
+        return None
+        
     user_id = session.get('user_id')
     if not user_id:
-        # Debug: log why user_id is missing
-        if not session:
-            print("DEBUG: Session object is None or empty")
-        else:
-            print(f"DEBUG: Session exists but user_id is missing. Session keys: {list(session.keys())}")
+        # Debug: log why user_id is missing (only in debug mode to reduce noise)
+        if os.getenv('FLASK_DEBUG') == '1' or os.getenv('DEBUG_SESSIONS') == '1':
+            if not session:
+                print("DEBUG: Session object is None or empty")
+            else:
+                print(f"DEBUG: Session exists but user_id is missing. Session keys: {list(session.keys())}")
         return None
     
     # Check if we have cached user info in session (to avoid DB calls on every request)
