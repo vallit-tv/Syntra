@@ -11,8 +11,12 @@ from dateutil import parser as date_parser
 import auth
 import db
 from n8n_service import get_n8n_service
+import n8n_sync
 
 load_dotenv()
+
+# Auto-sync state (stored in memory, can be persisted to DB later)
+_auto_sync_enabled = os.getenv('N8N_AUTO_SYNC_ENABLED', 'false').lower() == 'true'
 
 # Log environment variable status at startup (for Vercel debugging)
 print("=" * 60)
@@ -37,7 +41,8 @@ app.permanent_session_lifetime = timedelta(minutes=30)
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 # On Vercel, always use secure cookies (HTTPS is always used)
-app.config['SESSION_COOKIE_SECURE'] = os.getenv('VERCEL') == '1' or os.getenv('FLASK_ENV') == 'production'
+# Only use secure cookies in production/vercel, not in local development
+app.config['SESSION_COOKIE_SECURE'] = os.getenv('VERCEL') == '1' or (os.getenv('FLASK_ENV') == 'production' and os.getenv('USE_SECURE_COOKIES', 'false').lower() == 'true')
 
 
 def parse_iso_ts(value):
@@ -452,6 +457,17 @@ def init_theo_page():
     </body>
     </html>
     '''
+
+# Before request handler to ensure sessions are properly handled
+@app.before_request
+def before_request():
+    """Ensure session is properly configured before each request"""
+    # Make session permanent if user is logged in
+    if session.get('user_id'):
+        session.permanent = True
+    # Debug: log session state for protected routes
+    if request.path.startswith('/dashboard') or request.path.startswith('/admin') or request.path.startswith('/company'):
+        print(f"DEBUG: Before request to {request.path} - session['user_id'] = {session.get('user_id')}, session keys: {list(session.keys())}")
 
 @app.route('/')
 def index():
@@ -888,6 +904,16 @@ def admin_workflows():
             connected, message = n8n_service.test_connection()
             n8n_status = {'connected': connected, 'message': message}
         
+        # Get sync status
+        sync_stats = n8n_sync.get_sync_stats()
+        sync_status = {
+            'enabled': _auto_sync_enabled,
+            'scheduler_running': sync_stats.get('scheduler_running', False),
+            'last_run': sync_stats.get('last_run'),
+            'next_run': sync_stats.get('next_run'),
+            'last_error': sync_stats.get('last_error')
+        }
+        
         workflows = db.get_workflows(public_only=False)
         total_workflows = len(workflows)
         active_workflows = sum(1 for w in workflows if w.get('is_active'))
@@ -930,7 +956,8 @@ def admin_workflows():
                              workflows=workflows,
                              n8n_configured=n8n_configured,
                              n8n_status=n8n_status,
-                             workflow_stats=workflow_stats)
+                             workflow_stats=workflow_stats,
+                             sync_status=sync_status)
     except Exception as e:
         print(f"Admin workflows error: {str(e)}")
         return redirect(url_for('dashboard'))
@@ -1544,6 +1571,9 @@ def api_login():
     try:
         user = auth.login(name, password, ip_address)
         
+        # Ensure session is saved after login
+        session.modified = True
+        
         # Determine redirect based on role and company assignment
         role = user.get('role', 'worker')
         company_id = user.get('company_id')
@@ -1559,6 +1589,9 @@ def api_login():
         # Fallback to personal dashboard
         else:
             redirect_url = '/dashboard'
+        
+        # Debug: verify session is set
+        print(f"DEBUG: API login response - session['user_id'] = {session.get('user_id')}, redirect: {redirect_url}")
         
         return jsonify({
             'message': 'Logged in', 
@@ -1607,7 +1640,7 @@ def api_delete_key(key_id):
 @app.route('/api/admin/workflows/sync', methods=['POST'])
 @auth.admin_required
 def api_admin_sync_workflows():
-    """Sync workflows from n8n (admin only)"""
+    """Sync workflows from n8n (admin only) - manual sync"""
     user = auth.current_user()
     n8n_service = get_n8n_service()
     
@@ -1615,53 +1648,77 @@ def api_admin_sync_workflows():
         return jsonify({'error': 'n8n not configured. Set N8N_URL and N8N_API_KEY environment variables.'}), 400
     
     try:
-        # Test connection first
-        connected, message = n8n_service.test_connection()
-        if not connected:
-            return jsonify({'error': message}), 400
-        
-        # Fetch workflows from n8n
-        n8n_workflows = n8n_service.get_workflows()
-        synced_count = 0
-        
-        for n8n_wf in n8n_workflows:
-            # Extract required services from workflow nodes
-            required_services = []
-            nodes = n8n_wf.get('nodes', [])
-            for node in nodes:
-                node_type = node.get('type', '')
-                if 'notion' in node_type.lower():
-                    required_services.append('notion')
-                elif 'googledocs' in node_type.lower() or 'googlesheets' in node_type.lower():
-                    required_services.append('google-docs')
-                elif 'openai' in node_type.lower():
-                    required_services.append('openai')
-            
-            # Remove duplicates
-            required_services = list(set(required_services))
-            
-            workflow_data = {
-                'n8n_workflow_id': n8n_wf.get('id'),
-                'name': n8n_wf.get('name', 'Unnamed Workflow'),
-                'description': n8n_wf.get('settings', {}).get('executionOrder', ''),
-                'category': n8n_wf.get('tags', [{}])[0].get('name', 'automation') if n8n_wf.get('tags') else 'automation',
-                'required_services': required_services,
-                'metadata': n8n_wf,
-                'created_by': user['id'],
-                'is_active': True,
-                'is_public': False  # Default to private, admin can make public
-            }
-            
-            db.create_or_update_workflow(workflow_data)
-            synced_count += 1
-        
-        return jsonify({
-            'message': f'Synced {synced_count} workflows successfully',
-            'synced_count': synced_count
-        })
+        # Use the sync function from n8n_sync module
+        result = n8n_sync.force_sync_now()
+        if result.get('success'):
+            return jsonify({
+                'success': True,
+                'message': f'Synced {result["total"]} workflows successfully',
+                'added': result.get('added', 0),
+                'updated': result.get('updated', 0),
+                'removed': result.get('removed', 0),
+                'total': result.get('total', 0)
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': result.get('error', 'Sync failed'),
+                'added': 0,
+                'updated': 0,
+                'removed': 0,
+                'total': 0
+            }), 400
     except Exception as e:
         print(f"Error syncing workflows: {e}")
-        return jsonify({'error': f'Sync failed: {str(e)}'}), 400
+        return jsonify({'success': False, 'error': f'Sync failed: {str(e)}'}), 400
+
+@app.route('/api/admin/workflows/sync/status', methods=['GET'])
+@auth.admin_required
+def api_admin_sync_status():
+    """Get sync status and statistics"""
+    stats = n8n_sync.get_sync_stats()
+    return jsonify({
+        'enabled': _auto_sync_enabled,
+        'scheduler_running': stats.get('scheduler_running', False),
+        'last_run': stats.get('last_run'),
+        'next_run': stats.get('next_run'),
+        'last_error': stats.get('last_error'),
+        'workflows_added': stats.get('workflows_added', 0),
+        'workflows_updated': stats.get('workflows_updated', 0),
+        'workflows_removed': stats.get('workflows_removed', 0)
+    })
+
+@app.route('/api/admin/workflows/sync/toggle', methods=['POST'])
+@auth.admin_required
+def api_admin_toggle_auto_sync():
+    """Toggle auto-sync on/off"""
+    global _auto_sync_enabled
+    data = request.get_json() or {}
+    enable = data.get('enabled', not _auto_sync_enabled)
+    
+    n8n_service = get_n8n_service()
+    if enable and not n8n_service.is_configured():
+        return jsonify({'error': 'n8n not configured. Set N8N_URL and N8N_API_KEY environment variables.'}), 400
+    
+    try:
+        if enable:
+            # Start auto-sync (1 minute interval)
+            success = n8n_sync.start_auto_sync(interval_minutes=1)
+            if success:
+                _auto_sync_enabled = True
+                return jsonify({'message': 'Auto-sync enabled', 'enabled': True})
+            else:
+                return jsonify({'error': 'Failed to start auto-sync'}), 400
+        else:
+            # Stop auto-sync
+            success = n8n_sync.stop_auto_sync()
+            if success:
+                _auto_sync_enabled = False
+                return jsonify({'message': 'Auto-sync disabled', 'enabled': False})
+            else:
+                return jsonify({'error': 'Failed to stop auto-sync'}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
 
 @app.route('/api/admin/workflows/<workflow_id>/toggle', methods=['PUT'])
 @auth.admin_required
@@ -1816,14 +1873,18 @@ def api_admin_create_company():
     slug = data.get('slug', '').strip().lower()
     settings = data.get('settings', {})
     
-    if not name or not slug:
-        return jsonify({'error': 'Name and slug required'}), 400
+    if not name:
+        return jsonify({'error': 'Company name is required'}), 400
     
+    # If slug not provided, it will be auto-generated in create_company
     try:
-        company = db.create_company(name, slug, settings)
-        return jsonify({'message': 'Company created', 'company': company})
-    except Exception as e:
+        company = db.create_company(name, slug or '', settings)
+        return jsonify({'message': 'Company created successfully', 'company': company})
+    except ValueError as e:
         return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        print(f"Error creating company: {e}")
+        return jsonify({'error': f'Failed to create company: {str(e)}'}), 400
 
 @app.route('/api/admin/companies/<company_id>', methods=['PUT'])
 @auth.admin_required
@@ -1891,6 +1952,11 @@ def api_admin_add_company_member(company_id):
     if role not in ['ceo', 'worker']:
         return jsonify({'error': 'Invalid role. Must be ceo or worker'}), 400
     
+    # Verify company exists
+    company = db.get_company_by_id(company_id)
+    if not company:
+        return jsonify({'error': 'Company not found'}), 404
+    
     try:
         # Check if user exists
         existing_user = db.get_user_by_name(name)
@@ -1899,18 +1965,99 @@ def api_admin_add_company_member(company_id):
             # Assign existing user to company
             success = db.assign_user_to_company(existing_user['id'], company_id, role)
             if success:
-                return jsonify({'success': True, 'user_id': existing_user['id'], 'message': 'User assigned to company'}), 200
+                updated_user = db.get_user_by_id(existing_user['id'])
+                return jsonify({'success': True, 'user': updated_user, 'message': 'User assigned to company'}), 200
             else:
                 return jsonify({'error': 'Failed to assign user to company'}), 500
         else:
             # Create new user and assign to company
             new_user = auth.create_user_admin(name, role=role, company_id=company_id)
             if new_user:
-                return jsonify({'success': True, 'user_id': new_user['id'], 'message': 'User created and assigned to company'}), 201
+                return jsonify({'success': True, 'user': new_user, 'message': 'User created and assigned to company'}), 201
             else:
                 return jsonify({'error': 'Failed to create user'}), 500
     except Exception as e:
-        app.logger.error(f"Error adding company member: {e}")
+        print(f"Error adding company member: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/admin/companies/<company_id>/members/<user_id>', methods=['DELETE'])
+@auth.admin_required
+def api_admin_remove_company_member(company_id, user_id):
+    """Remove a member from a company (admin only)"""
+    try:
+        # Verify company exists
+        company = db.get_company_by_id(company_id)
+        if not company:
+            return jsonify({'error': 'Company not found'}), 404
+        
+        # Verify user exists and belongs to company
+        user = db.get_user_by_id(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        if user.get('company_id') != company_id:
+            return jsonify({'error': 'User does not belong to this company'}), 400
+        
+        # Remove user from company
+        success = db.remove_user_from_company(user_id)
+        if success:
+            return jsonify({'message': 'User removed from company'})
+        else:
+            return jsonify({'error': 'Failed to remove user from company'}), 500
+    except Exception as e:
+        print(f"Error removing company member: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/admin/companies/<company_id>/members/<user_id>', methods=['PUT'])
+@auth.admin_required
+def api_admin_update_company_member(company_id, user_id):
+    """Update member role in company (admin only)"""
+    data = request.get_json() or {}
+    role = data.get('role', '').strip()
+    
+    if role not in ['ceo', 'worker']:
+        return jsonify({'error': 'Invalid role. Must be ceo or worker'}), 400
+    
+    try:
+        # Verify company exists
+        company = db.get_company_by_id(company_id)
+        if not company:
+            return jsonify({'error': 'Company not found'}), 404
+        
+        # Verify user exists and belongs to company
+        user = db.get_user_by_id(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        if user.get('company_id') != company_id:
+            return jsonify({'error': 'User does not belong to this company'}), 400
+        
+        # Update user role
+        success = db.assign_user_to_company(user_id, company_id, role)
+        if success:
+            updated_user = db.get_user_by_id(user_id)
+            return jsonify({'message': 'Member role updated', 'user': updated_user})
+        else:
+            return jsonify({'error': 'Failed to update member role'}), 500
+    except Exception as e:
+        print(f"Error updating company member: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/admin/companies/<company_id>/executions', methods=['GET'])
+@auth.admin_required
+def api_admin_get_company_executions(company_id):
+    """Get company workflow executions (admin only)"""
+    try:
+        # Verify company exists
+        company = db.get_company_by_id(company_id)
+        if not company:
+            return jsonify({'error': 'Company not found'}), 404
+        
+        limit = request.args.get('limit', 100, type=int)
+        executions = db.get_company_executions(company_id, limit=limit)
+        return jsonify(executions)
+    except Exception as e:
+        print(f"Error getting company executions: {e}")
         return jsonify({'error': str(e)}), 500
 
 # ============================================================================
@@ -2326,8 +2473,31 @@ def api_setup_payment_method():
 
 # Old sync route removed - now use /api/admin/workflows/sync
 
+# Initialize auto-sync scheduler on app startup
+def init_auto_sync():
+    """Initialize auto-sync scheduler if enabled"""
+    global _auto_sync_enabled
+    n8n_service = get_n8n_service()
+    if _auto_sync_enabled and n8n_service.is_configured():
+        try:
+            # Start sync every 1 minute (60 seconds)
+            n8n_sync.start_auto_sync(interval_minutes=1)
+            print("Auto-sync scheduler started (1 minute interval)")
+        except Exception as e:
+            print(f"Failed to start auto-sync scheduler: {e}")
+            _auto_sync_enabled = False
+
+# Initialize on import (for Vercel/serverless, this runs once per instance)
+if os.getenv('VERCEL') != '1':  # Only start scheduler in non-serverless environments
+    try:
+        init_auto_sync()
+    except Exception as e:
+        print(f"Auto-sync initialization skipped: {e}")
+
 # Expose app as 'application' for Vercel's Python runtime
 application = app
 
 if __name__ == '__main__':
+    # Start auto-sync if enabled
+    init_auto_sync()
     app.run(host='0.0.0.0', port=int(os.getenv('PORT', '5000')), debug=os.getenv('FLASK_DEBUG') == '1')

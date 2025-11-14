@@ -267,6 +267,9 @@ def login(name: str, password: str, ip_address: str = None) -> dict:
     # Explicitly mark session as modified to ensure it's saved
     session.modified = True
     
+    # Debug: verify session was set
+    print(f"DEBUG: Login successful for {user['name']}, session['user_id'] = {session.get('user_id')}, session keys: {list(session.keys())}")
+    
     return user_dict
 
 
@@ -323,6 +326,11 @@ def current_user() -> Optional[dict]:
     """Get current logged-in user with caching in session"""
     user_id = session.get('user_id')
     if not user_id:
+        # Debug: log why user_id is missing
+        if not session:
+            print("DEBUG: Session object is None or empty")
+        else:
+            print(f"DEBUG: Session exists but user_id is missing. Session keys: {list(session.keys())}")
         return None
     
     # Check if we have cached user info in session (to avoid DB calls on every request)
@@ -373,6 +381,8 @@ def current_user() -> Optional[dict]:
         # Cache user info in session
         session['user_info'] = user_dict
         session['user_info_time'] = time.time()
+        # Ensure session is saved
+        session.modified = True
         
         return user_dict
     except Exception as e:
