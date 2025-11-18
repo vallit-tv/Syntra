@@ -60,15 +60,34 @@ class N8nService:
         if 'your-ngrok-url' in self.base_url or 'your-n8n-url' in self.base_url.lower():
             return False, "N8N_URL is still set to placeholder. Update your .env file with the actual ngrok URL from ./start-n8n-ngrok.sh"
         
+        def _is_warning_page(response_text: str) -> bool:
+            """Check if response is an ngrok/Cloudflare warning page"""
+            text_lower = response_text.lower()
+            warning_indicators = [
+                'ngrok-free.app',
+                'ngrok.io',
+                'trycloudflare',
+                'visiting an ngrok',
+                'you are about to visit',
+                'bypass warning',
+                'continue to site',
+                'click here to visit',
+                'warning: visiting an'
+            ]
+            return any(indicator in text_lower for indicator in warning_indicators)
+        
         try:
             # First try the health endpoint (simpler, doesn't require auth)
+            health_response = None
             try:
                 health_response = requests.get(
                     f"{self.base_url}/healthz",
                     timeout=5,
                     allow_redirects=False
                 )
-                # If health check works, n8n is reachable
+                # Check if health endpoint returns a warning page
+                if _is_warning_page(health_response.text):
+                    return False, f"ngrok/Cloudflare warning page detected. Visit the URL in a browser first to bypass the warning, then try again.\n\nn8n URL: {self.base_url}"
             except:
                 pass  # Continue to API check
             
@@ -80,26 +99,33 @@ class N8nService:
                 allow_redirects=False
             )
             
+            # Check for warning page regardless of status code (ngrok warnings often return 200)
+            if _is_warning_page(response.text):
+                return False, f"ngrok/Cloudflare warning page detected. Visit the URL in a browser first to bypass the warning, then try again.\n\nn8n URL: {self.base_url}"
+            
             if response.status_code == 200:
-                return True, None
+                # Verify it's actually JSON (n8n API response), not HTML
+                content_type = response.headers.get('Content-Type', '').lower()
+                if 'application/json' in content_type or response.text.strip().startswith('{'):
+                    return True, None
+                else:
+                    # Got 200 but not JSON - might be HTML warning page
+                    return False, f"Unexpected response format. Expected JSON but got {content_type}. Check that n8n is running and accessible.\n\nn8n URL: {self.base_url}"
             elif response.status_code == 401:
                 return False, "Invalid API key. Check N8N_API_KEY in your .env file."
             elif response.status_code == 404:
-                # Check if it's ngrok warning page
-                if 'ngrok' in response.text.lower() or 'trycloudflare' in response.text.lower():
-                    return False, "ngrok/Cloudflare warning page detected. Visit the URL in a browser first to bypass the warning, then try again."
-                return False, f"Connection failed: HTTP 404. Check that n8n is running and the URL is correct. Current URL: {self.base_url}"
+                return False, f"Connection failed: HTTP 404. Check that n8n is running and the URL is correct.\n\nn8n URL: {self.base_url}"
             else:
-                return False, f"Connection failed: HTTP {response.status_code}"
+                return False, f"Connection failed: HTTP {response.status_code}\n\nn8n URL: {self.base_url}"
         except requests.exceptions.Timeout:
-            return False, "Connection timeout. Check if n8n is running and accessible."
+            return False, f"Connection timeout. Check if n8n is running and accessible.\n\nn8n URL: {self.base_url}"
         except requests.exceptions.ConnectionError as e:
             error_msg = str(e)
             if 'Name or service not known' in error_msg or 'nodename nor servname provided' in error_msg:
-                return False, f"Cannot resolve hostname. Check that N8N_URL is correct: {self.base_url}"
-            return False, f"Cannot connect to n8n: {error_msg}. Check the URL and ensure n8n is running."
+                return False, f"Cannot resolve hostname. Check that N8N_URL is correct.\n\nn8n URL: {self.base_url}"
+            return False, f"Cannot connect to n8n: {error_msg}. Check the URL and ensure n8n is running.\n\nn8n URL: {self.base_url}"
         except Exception as e:
-            return False, f"Connection error: {str(e)}"
+            return False, f"Connection error: {str(e)}\n\nn8n URL: {self.base_url}"
     
     def get_workflows(self) -> List[Dict]:
         """Fetch all workflows from n8n"""

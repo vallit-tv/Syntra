@@ -87,14 +87,53 @@
                     <span class="status-badge-dot"></span>
                     Disconnected
                 </span>
-                <span style="color: var(--color-danger);">{{ n8n_status.message if n8n_status else 'Cannot connect to n8n' }}</span>
+                <span style="color: var(--color-danger);">
+                    {% if n8n_status and n8n_status.message %}
+                        {{ n8n_status.message.split('\n')[0] }}
+                    {% else %}
+                        Cannot connect to n8n
+                    {% endif %}
+                </span>
             </div>
             
             <div class="detail-item">
-                <strong>n8n URL:</strong> <code>{{ n8n_url }}</code>
+                <strong>n8n URL:</strong> 
+                {% if n8n_url %}
+                    <a href="{{ n8n_url }}" target="_blank" rel="noopener noreferrer" style="color: var(--color-primary); text-decoration: underline;">{{ n8n_url }}</a>
+                {% else %}
+                    <code>Not configured</code>
+                {% endif %}
             </div>
             
-            {% if 'your-ngrok-url' in (n8n_url or '') %}
+            {% set is_warning_page = n8n_status and n8n_status.message and 'warning page detected' in n8n_status.message.lower() %}
+            {% if is_warning_page %}
+            <div style="margin-top: 1.5rem; padding: 1rem; background-color: var(--db-bg-secondary); border-radius: var(--db-radius-md); border-left: 3px solid var(--db-warning);">
+                <h3 style="margin: 0 0 0.5rem 0; color: var(--db-text-primary);">⚠️ ngrok/Cloudflare Warning Page Detected</h3>
+                <p style="margin: 0 0 0.75rem 0; color: var(--db-text-secondary);">
+                    ngrok and Cloudflare Tunnel show a warning page on first visit for security. You need to visit the URL in a browser first to bypass the warning.
+                </p>
+                {% if n8n_url %}
+                <div style="margin: 1rem 0; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <a href="{{ n8n_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                        <i data-lucide="external-link" width="16" height="16"></i>
+                        Visit n8n URL to Bypass Warning
+                    </a>
+                    <button onclick="location.reload()" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                        <i data-lucide="refresh-cw" width="16" height="16"></i>
+                        Refresh Status
+                    </button>
+                </div>
+                <p style="margin: 0.75rem 0 0 0; font-size: 0.875rem; color: var(--db-text-secondary);">
+                    <strong>Steps:</strong>
+                </p>
+                <ol style="margin: 0.5rem 0 0 0; padding-left: 1.5rem; font-size: 0.875rem; color: var(--db-text-secondary);">
+                    <li style="margin-bottom: 0.25rem;">Click the button above or visit <a href="{{ n8n_url }}" target="_blank" rel="noopener noreferrer" style="color: var(--color-primary);">{{ n8n_url }}</a> in your browser</li>
+                    <li style="margin-bottom: 0.25rem;">Click "Continue" or "Visit Site" on the warning page to bypass it</li>
+                    <li style="margin-bottom: 0.25rem;">Come back here and click "Refresh Status" to verify the connection</li>
+                </ol>
+                {% endif %}
+            </div>
+            {% elif 'your-ngrok-url' in (n8n_url or '') %}
             <div style="margin-top: 1.5rem; padding: 1rem; background-color: var(--db-bg-secondary); border-radius: var(--db-radius-md); border-left: 3px solid var(--db-warning);">
                 <h3 style="margin: 0 0 0.5rem 0; color: var(--db-text-primary);">⚠️ Configuration Required</h3>
                 <p style="margin: 0 0 0.75rem 0; color: var(--db-text-secondary);">
