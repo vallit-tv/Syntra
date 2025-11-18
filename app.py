@@ -12,6 +12,7 @@ import auth
 import db
 from n8n_service import get_n8n_service
 import n8n_sync
+import webhook_client
 
 load_dotenv()
 
@@ -2449,6 +2450,79 @@ def api_save_workflow_defaults():
     data = request.get_json() or {}
     # Placeholder - to be replaced with actual defaults save logic
     return jsonify({'message': 'Workflow defaults saved'})
+
+@app.route('/api/start-daily-summary', methods=['POST'])
+@auth.login_required
+def api_start_daily_summary():
+    """
+    Trigger the Daily Summary workflow in n8n via webhook.
+    
+    This endpoint sends a POST request to the n8n webhook configured via
+    N8N_WEBHOOK_URL environment variable. The webhook receives the authenticated
+    user's UUID along with metadata about the trigger event.
+    
+    Returns:
+        JSON response with success/error status and details.
+        
+    Example response (success):
+        {
+            "success": true,
+            "message": "Daily summary workflow triggered successfully",
+            "user_id": "123e4567-e89b-12d3-a456-426614174000"
+        }
+        
+    Example response (error):
+        {
+            "success": false,
+            "message": "n8n webhook URL not configured",
+            "error": "N8N_WEBHOOK_URL environment variable is not set..."
+        }
+    """
+    try:
+        # Get authenticated user
+        user = auth.current_user()
+        if not user:
+            return jsonify({
+                'success': False,
+                'message': 'User not authenticated',
+                'error': 'Authentication required'
+            }), 401
+        
+        # Get user UUID from session
+        user_id = user.get('id')
+        if not user_id:
+            return jsonify({
+                'success': False,
+                'message': 'User ID not found',
+                'error': 'Unable to retrieve user ID from session'
+            }), 400
+        
+        # Optional: Get metadata from request body if provided
+        data = request.get_json() or {}
+        meta = data.get('meta', {})
+        
+        # Trigger the daily summary workflow via webhook
+        result = webhook_client.trigger_daily_summary(user_id, meta)
+        
+        # Determine HTTP status code based on result
+        if result['success']:
+            return jsonify(result), 200
+        else:
+            # Check if it's a configuration error (500) or a webhook error (502)
+            if 'not configured' in result.get('error', '').lower():
+                return jsonify(result), 500
+            elif 'timeout' in result.get('error', '').lower() or 'connect' in result.get('error', '').lower():
+                return jsonify(result), 502
+            else:
+                return jsonify(result), 500
+                
+    except Exception as e:
+        # Catch any unexpected errors
+        return jsonify({
+            'success': False,
+            'message': 'Unexpected error while triggering daily summary',
+            'error': str(e)
+        }), 500
 
 
 # ============================================================================
