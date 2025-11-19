@@ -210,12 +210,12 @@ def sync_workflows_from_n8n() -> Dict:
                 # Ensure comparison uses string keys for consistency
                 db_workflow_id_str = str(db_workflow_n8n_id)
                 if db_workflow_id_str not in n8n_workflow_ids:
-                try:
-                    db.update_workflow(db_workflow['id'], {'is_active': False})
-                    removed += 1
-                    logger.info(f"Marked workflow as inactive: {db_workflow['name']}")
-                except Exception as e:
-                    logger.error(f"Failed to mark workflow {db_workflow['id']} as inactive: {e}")
+                    try:
+                        db.update_workflow(db_workflow['id'], {'is_active': False})
+                        removed += 1
+                        logger.info(f"Marked workflow as inactive: {db_workflow['name']}")
+                    except Exception as e:
+                        logger.error(f"Failed to mark workflow {db_workflow['id']} as inactive: {e}")
         
         # Update sync stats
         _last_sync_time = datetime.now()
