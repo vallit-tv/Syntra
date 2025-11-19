@@ -105,7 +105,12 @@ def sync_workflows_from_n8n() -> Dict:
             n8n_workflows = []
         
         # Get existing workflows from database
-        db_workflows = db.get_all_workflows()
+        # Use get_all_workflows if available, otherwise fall back to get_workflows
+        if hasattr(db, 'get_all_workflows'):
+            db_workflows = db.get_all_workflows()
+        else:
+            # Fallback for older deployments
+            db_workflows = db.get_workflows(public_only=False)
         db_workflows_map = {w['n8n_workflow_id']: w for w in db_workflows if w.get('n8n_workflow_id')}
         
         # Track sync statistics

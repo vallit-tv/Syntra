@@ -1388,8 +1388,14 @@ def admin_n8n():
                              n8n_overview=n8n_overview,
                              saved_ngrok_url=saved_ngrok_url)
     except Exception as e:
-        print(f"Admin n8n error: {str(e)}")
-        return redirect(url_for('admin_dashboard'))
+        error_msg = str(e)
+        print(f"Admin n8n error: {error_msg}")
+        import traceback
+        traceback.print_exc()
+        # Return error page instead of silent redirect
+        return render_template('admin/base.html', 
+                             user=user if 'user' in locals() else None,
+                             error_message=f"Error loading n8n page: {error_msg}"), 500
 
 @app.route('/dashboard/analytics')
 @auth.login_required
