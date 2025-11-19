@@ -205,8 +205,11 @@ def sync_workflows_from_n8n() -> Dict:
         
         # Mark workflows as inactive if they no longer exist in n8n
         for db_workflow in db_workflows:
-            if db_workflow.get('n8n_workflow_id') and \
-               db_workflow['n8n_workflow_id'] not in n8n_workflow_ids:
+            db_workflow_n8n_id = db_workflow.get('n8n_workflow_id')
+            if db_workflow_n8n_id:
+                # Ensure comparison uses string keys for consistency
+                db_workflow_id_str = str(db_workflow_n8n_id)
+                if db_workflow_id_str not in n8n_workflow_ids:
                 try:
                     db.update_workflow(db_workflow['id'], {'is_active': False})
                     removed += 1
