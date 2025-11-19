@@ -1668,7 +1668,7 @@ def api_admin_sync_workflows():
     n8n_service = get_n8n_service()
     
     if not n8n_service.is_configured():
-        return jsonify({'error': 'n8n not configured. Set N8N_URL and N8N_API_KEY environment variables.'}), 400
+        return jsonify({'error': 'n8n not configured. Set N8N_API_KEY environment variable. N8N_URL is optional (defaults to https://app.n8n.cloud).'}), 400
     
     try:
         # Use the sync function from n8n_sync module

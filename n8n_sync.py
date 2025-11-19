@@ -69,7 +69,7 @@ def sync_workflows_from_n8n() -> Dict:
         n8n_service = get_n8n_service()
         
         if not n8n_service.is_configured():
-            error_msg = "n8n not configured. Set N8N_URL and N8N_API_KEY."
+            error_msg = "n8n not configured. Set N8N_API_KEY environment variable. N8N_URL is optional (defaults to https://app.n8n.cloud)."
             logger.error(error_msg)
             _sync_stats['last_error'] = error_msg
             _sync_stats['last_run'] = datetime.now().isoformat()
@@ -85,7 +85,7 @@ def sync_workflows_from_n8n() -> Dict:
         # Check n8n connection
         connected, message = n8n_service.test_connection()
         if not connected:
-            error_msg = "Failed to connect to n8n. Check N8N_URL and N8N_API_KEY."
+            error_msg = "Failed to connect to n8n. Check N8N_API_KEY and optionally N8N_URL."
             logger.error(error_msg)
             _sync_stats['last_error'] = error_msg
             _sync_stats['last_run'] = datetime.now().isoformat()

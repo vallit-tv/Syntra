@@ -24,24 +24,43 @@
 
 <!-- Sync Status Card -->
 <div class="dashboard-card" style="background: linear-gradient(135deg, var(--db-primary-light), var(--db-info-light));">
-    <div style="display: flex; align-items: center; justify-content: space-between;">
-        <div>
-            <h3 style="margin: 0 0 0.5rem 0; color: var(--db-primary); font-size: 14px; font-weight: 600;">
-                <i data-lucide="refresh-cw" width="16" height="16" style="vertical-align: middle;"></i>
-                N8N Sync Status
-            </h3>
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+        <div style="flex: 1; min-width: 200px;">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                <h3 style="margin: 0; color: var(--db-primary); font-size: 14px; font-weight: 600;">
+                    <i data-lucide="refresh-cw" width="16" height="16" style="vertical-align: middle;"></i>
+                    N8N Auto-Sync
+                </h3>
+                <label class="toggle-switch" style="margin: 0;">
+                    <input type="checkbox" id="autoSyncToggle" {% if sync_status and sync_status.enabled %}checked{% endif %}>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
             <p id="syncStatusText" style="margin: 0; color: var(--db-text-secondary); font-size: 13px;">
-                {% if workflow_stats and workflow_stats.last_updated %}
+                {% if sync_status and sync_status.last_run %}
+                    Last synced {{ sync_status.last_run|format_datetime('relative') if sync_status.last_run else 'Never' }}
+                    {% if sync_status.next_run %}
+                        • Next sync {{ sync_status.next_run|format_datetime('relative') }}
+                    {% endif %}
+                {% elif workflow_stats and workflow_stats.last_updated %}
                     Last synced {{ workflow_stats.last_updated|format_datetime('relative') }}
                 {% else %}
-                    Never synced. Click "Sync from n8n" to begin.
+                    Never synced. Enable auto-sync or click "Sync Now" to begin.
                 {% endif %}
             </p>
+            {% if sync_status and sync_status.last_error %}
+            <p style="margin: 0.5rem 0 0 0; color: var(--db-danger); font-size: 12px;">
+                <i data-lucide="alert-circle" width="12" height="12" style="vertical-align: middle;"></i>
+                {{ sync_status.last_error[:100] }}
+            </p>
+            {% endif %}
         </div>
-        <button onclick="syncWorkflows(event)" class="btn btn-sm btn-primary">
-            <i data-lucide="refresh-cw" width="14" height="14"></i>
-            Quick Sync
-        </button>
+        <div style="display: flex; gap: 0.5rem;">
+            <button onclick="syncWorkflows(event)" class="btn btn-sm btn-primary" id="syncWorkflowsButton">
+                <i data-lucide="refresh-cw" width="14" height="14"></i>
+                Sync Now
+            </button>
+        </div>
     </div>
 </div>
 
@@ -136,7 +155,7 @@
             </p>
         {% else %}
             <p class="text-secondary">
-                Provide <code>N8N_URL</code> and <code>N8N_API_KEY</code> in the environment to enable automatic syncing.
+                Provide <code>N8N_API_KEY</code> in the environment to enable automatic syncing. <code>N8N_URL</code> is optional (defaults to https://app.n8n.cloud).
             </p>
         {% endif %}
     </div>
@@ -244,6 +263,58 @@
 
 {% block admin_scripts %}
 <script>
+// Load sync status on page load
+let syncStatusInterval = null;
+
+function loadSyncStatus() {
+    fetch('/api/admin/workflows/sync/status')
+        .then(response => response.json())
+        .then(data => {
+            // Update toggle
+            const toggle = document.getElementById('autoSyncToggle');
+            if (toggle) {
+                toggle.checked = data.enabled;
+            }
+            
+            // Update status text
+            const statusText = document.getElementById('syncStatusText');
+            if (statusText) {
+                let statusMsg = '';
+                if (data.last_run) {
+                    const lastRun = new Date(data.last_run);
+                    const now = new Date();
+                    const diffMs = now - lastRun;
+                    const diffMins = Math.floor(diffMs / 60000);
+                    if (diffMins < 1) {
+                        statusMsg = 'Last synced just now';
+                    } else if (diffMins === 1) {
+                        statusMsg = 'Last synced 1 minute ago';
+                    } else {
+                        statusMsg = `Last synced ${diffMins} minutes ago`;
+                    }
+                    
+                    if (data.next_run) {
+                        const nextRun = new Date(data.next_run);
+                        const nextDiffMs = nextRun - now;
+                        const nextDiffMins = Math.floor(nextDiffMs / 60000);
+                        if (nextDiffMins > 0) {
+                            statusMsg += ` • Next sync in ${nextDiffMins} minute${nextDiffMins !== 1 ? 's' : ''}`;
+                        }
+                    }
+                } else {
+                    statusMsg = 'Never synced. Enable auto-sync or click "Sync Now" to begin.';
+                }
+                
+                if (data.last_error) {
+                    statusMsg += ` • Error: ${data.last_error.substring(0, 50)}`;
+                }
+                
+                statusText.textContent = statusMsg;
+            }
+        })
+        .catch(err => console.error('Error loading sync status:', err));
+}
+
 function syncWorkflows(event) {
     const btn = event.currentTarget || document.getElementById('syncWorkflowsButton');
     if (!btn) return;
@@ -264,13 +335,11 @@ function syncWorkflows(event) {
             if (data.error || !data.success) {
                 window.alert('Sync failed: ' + (data.error || 'Unknown error'));
             } else {
-                // Update sync status text
-                const statusText = document.getElementById('syncStatusText');
-                if (statusText) {
-                    statusText.textContent = `Just synced: ${data.added} added, ${data.updated} updated, ${data.removed} removed`;
-                }
-                window.alert(`Sync complete!\n${data.added} added, ${data.updated} updated, ${data.removed} removed\nTotal: ${data.total} workflows`);
-                window.location.reload();
+                // Update sync status
+                loadSyncStatus();
+                window.alert(`Sync complete!\n${data.added || 0} added, ${data.updated || 0} updated, ${data.removed || 0} removed\nTotal: ${data.total || 0} workflows`);
+                // Reload after a short delay to show updated status
+                setTimeout(() => window.location.reload(), 1000);
             }
         })
         .catch(err => window.alert('Sync error: ' + err))
@@ -283,6 +352,43 @@ function syncWorkflows(event) {
             }
             btn.disabled = false;
         });
+}
+
+function toggleAutoSync(enabled) {
+    const toggle = document.getElementById('autoSyncToggle');
+    if (toggle) {
+        toggle.disabled = true;
+    }
+    
+    fetch('/api/admin/workflows/sync/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled: enabled })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            window.alert('Failed to toggle auto-sync: ' + data.error);
+            // Revert toggle
+            if (toggle) {
+                toggle.checked = !enabled;
+            }
+        } else {
+            loadSyncStatus();
+        }
+    })
+    .catch(err => {
+        window.alert('Error toggling auto-sync: ' + err);
+        // Revert toggle
+        if (toggle) {
+            toggle.checked = !enabled;
+        }
+    })
+    .finally(() => {
+        if (toggle) {
+            toggle.disabled = false;
+        }
+    });
 }
 
 function toggleWorkflow(workflowId, currentState) {
@@ -322,6 +428,20 @@ function togglePublic(workflowId, currentState) {
 document.addEventListener('DOMContentLoaded', function() {
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
+    }
+    
+    // Load sync status on page load
+    loadSyncStatus();
+    
+    // Update sync status every 10 seconds
+    syncStatusInterval = setInterval(loadSyncStatus, 10000);
+    
+    // Setup auto-sync toggle
+    const autoSyncToggle = document.getElementById('autoSyncToggle');
+    if (autoSyncToggle) {
+        autoSyncToggle.addEventListener('change', function(e) {
+            toggleAutoSync(e.target.checked);
+        });
     }
 });
 </script>

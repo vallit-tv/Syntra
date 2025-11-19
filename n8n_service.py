@@ -1,4 +1,4 @@
-"""n8n API Service - System-wide connection via environment variables"""
+"""n8n API Service - Hosted n8n Cloud integration"""
 import os
 import requests
 from typing import Optional, List, Dict, Any
@@ -29,101 +29,64 @@ if os.path.exists(_env_file_path):
     _env_last_mtime = os.path.getmtime(_env_file_path)
 
 class N8nService:
-    """Centralized service for interacting with n8n API"""
+    """Centralized service for interacting with hosted n8n Cloud API"""
     
     def __init__(self):
         _reload_env_if_changed()  # Check for .env changes on init
-        self.base_url = os.getenv('N8N_URL', '').rstrip('/')
+        # For hosted n8n, use the instance URL if provided, otherwise default to app.n8n.cloud
+        self.base_url = os.getenv('N8N_URL', 'https://app.n8n.cloud').rstrip('/')
         self.api_key = os.getenv('N8N_API_KEY', '')
     
     def is_configured(self) -> bool:
         """Check if n8n is properly configured"""
         _reload_env_if_changed()  # Check for .env changes
         # Reload env vars in case they changed
-        self.base_url = os.getenv('N8N_URL', '').rstrip('/')
+        self.base_url = os.getenv('N8N_URL', 'https://app.n8n.cloud').rstrip('/')
         self.api_key = os.getenv('N8N_API_KEY', '')
-        return bool(self.base_url and self.api_key)
+        # For hosted n8n, API key is required. URL defaults to app.n8n.cloud if not set.
+        return bool(self.api_key)
     
     def _get_headers(self) -> Dict[str, str]:
         """Get headers for n8n API requests"""
         return {
             'X-N8N-API-KEY': self.api_key,
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
         }
     
     def test_connection(self) -> tuple:
-        """Test connection to n8n instance"""
+        """Test connection to hosted n8n instance"""
         if not self.is_configured():
-            return False, "n8n not configured. Set N8N_URL and N8N_API_KEY environment variables."
-        
-        # Check if URL is still the placeholder
-        if 'your-ngrok-url' in self.base_url or 'your-n8n-url' in self.base_url.lower():
-            return False, "N8N_URL is still set to placeholder. Update your .env file with the actual ngrok URL from ./start-n8n-ngrok.sh"
-        
-        def _is_warning_page(response_text: str) -> bool:
-            """Check if response is an ngrok/Cloudflare warning page"""
-            text_lower = response_text.lower()
-            warning_indicators = [
-                'ngrok-free.app',
-                'ngrok.io',
-                'trycloudflare',
-                'visiting an ngrok',
-                'you are about to visit',
-                'bypass warning',
-                'continue to site',
-                'click here to visit',
-                'warning: visiting an'
-            ]
-            return any(indicator in text_lower for indicator in warning_indicators)
+            return False, "n8n not configured. Set N8N_API_KEY environment variable. N8N_URL is optional (defaults to https://app.n8n.cloud)."
         
         try:
-            # First try the health endpoint (simpler, doesn't require auth)
-            health_response = None
-            try:
-                health_response = requests.get(
-                    f"{self.base_url}/healthz",
-                    timeout=5,
-                    allow_redirects=False
-                )
-                # Check if health endpoint returns a warning page
-                if _is_warning_page(health_response.text):
-                    return False, f"ngrok/Cloudflare warning page detected. Visit the URL in a browser first to bypass the warning, then try again.\n\nn8n URL: {self.base_url}"
-            except:
-                pass  # Continue to API check
-            
-            # Now test the actual API endpoint
+            # Test the actual API endpoint
             response = requests.get(
                 f"{self.base_url}/api/v1/workflows",
                 headers=self._get_headers(),
-                timeout=10,
-                allow_redirects=False
+                timeout=10
             )
             
-            # Check for warning page regardless of status code (ngrok warnings often return 200)
-            if _is_warning_page(response.text):
-                return False, f"ngrok/Cloudflare warning page detected. Visit the URL in a browser first to bypass the warning, then try again.\n\nn8n URL: {self.base_url}"
-            
             if response.status_code == 200:
-                # Verify it's actually JSON (n8n API response), not HTML
+                # Verify it's actually JSON (n8n API response)
                 content_type = response.headers.get('Content-Type', '').lower()
-                if 'application/json' in content_type or response.text.strip().startswith('{'):
+                if 'application/json' in content_type or response.text.strip().startswith('{') or response.text.strip().startswith('['):
                     return True, None
                 else:
-                    # Got 200 but not JSON - might be HTML warning page
-                    return False, f"Unexpected response format. Expected JSON but got {content_type}. Check that n8n is running and accessible.\n\nn8n URL: {self.base_url}"
+                    return False, f"Unexpected response format. Expected JSON but got {content_type}. Check that the n8n URL is correct.\n\nn8n URL: {self.base_url}"
             elif response.status_code == 401:
-                return False, "Invalid API key. Check N8N_API_KEY in your .env file."
+                return False, "Invalid API key. Check N8N_API_KEY in your environment variables."
             elif response.status_code == 404:
-                return False, f"Connection failed: HTTP 404. Check that n8n is running and the URL is correct.\n\nn8n URL: {self.base_url}"
+                return False, f"Connection failed: HTTP 404. Check that the n8n URL is correct.\n\nn8n URL: {self.base_url}\n\nFor hosted n8n, you may need to set N8N_URL to your workspace URL (e.g., https://your-workspace.app.n8n.cloud)."
             else:
-                return False, f"Connection failed: HTTP {response.status_code}\n\nn8n URL: {self.base_url}"
+                return False, f"Connection failed: HTTP {response.status_code}. Response: {response.text[:200]}\n\nn8n URL: {self.base_url}"
         except requests.exceptions.Timeout:
-            return False, f"Connection timeout. Check if n8n is running and accessible.\n\nn8n URL: {self.base_url}"
+            return False, f"Connection timeout. Check your internet connection and that n8n is accessible.\n\nn8n URL: {self.base_url}"
         except requests.exceptions.ConnectionError as e:
             error_msg = str(e)
             if 'Name or service not known' in error_msg or 'nodename nor servname provided' in error_msg:
-                return False, f"Cannot resolve hostname. Check that N8N_URL is correct.\n\nn8n URL: {self.base_url}"
-            return False, f"Cannot connect to n8n: {error_msg}. Check the URL and ensure n8n is running.\n\nn8n URL: {self.base_url}"
+                return False, f"Cannot resolve hostname. Check that N8N_URL is correct.\n\nn8n URL: {self.base_url}\n\nFor hosted n8n, try setting N8N_URL to your workspace URL."
+            return False, f"Cannot connect to n8n: {error_msg}\n\nn8n URL: {self.base_url}"
         except Exception as e:
             return False, f"Connection error: {str(e)}\n\nn8n URL: {self.base_url}"
     

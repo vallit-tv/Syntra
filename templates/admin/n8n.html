@@ -105,70 +105,6 @@
                 {% endif %}
             </div>
             
-            {% set is_warning_page = n8n_status and n8n_status.message and 'warning page detected' in n8n_status.message.lower() %}
-            {% if is_warning_page %}
-            <div style="margin-top: 1.5rem; padding: 1rem; background-color: var(--db-bg-secondary); border-radius: var(--db-radius-md); border-left: 3px solid var(--db-warning);">
-                <h3 style="margin: 0 0 0.5rem 0; color: var(--db-text-primary);">⚠️ ngrok/Cloudflare Warning Page Detected</h3>
-                <p style="margin: 0 0 0.75rem 0; color: var(--db-text-secondary);">
-                    ngrok and Cloudflare Tunnel show a warning page on first visit for security. You need to visit the URL in a browser first to bypass the warning.
-                </p>
-                {% if n8n_url %}
-                <div style="margin: 1rem 0; display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                    <a href="{{ n8n_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem;">
-                        <i data-lucide="external-link" width="16" height="16"></i>
-                        Visit n8n URL to Bypass Warning
-                    </a>
-                    <button onclick="location.reload()" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 0.5rem;">
-                        <i data-lucide="refresh-cw" width="16" height="16"></i>
-                        Refresh Status
-                    </button>
-                </div>
-                <p style="margin: 0.75rem 0 0 0; font-size: 0.875rem; color: var(--db-text-secondary);">
-                    <strong>Steps:</strong>
-                </p>
-                <ol style="margin: 0.5rem 0 0 0; padding-left: 1.5rem; font-size: 0.875rem; color: var(--db-text-secondary);">
-                    <li style="margin-bottom: 0.25rem;">Click the button above or visit <a href="{{ n8n_url }}" target="_blank" rel="noopener noreferrer" style="color: var(--color-primary);">{{ n8n_url }}</a> in your browser</li>
-                    <li style="margin-bottom: 0.25rem;">Click "Continue" or "Visit Site" on the warning page to bypass it</li>
-                    <li style="margin-bottom: 0.25rem;">Come back here and click "Refresh Status" to verify the connection</li>
-                </ol>
-                {% endif %}
-            </div>
-            {% elif 'your-ngrok-url' in (n8n_url or '') %}
-            <div style="margin-top: 1.5rem; padding: 1rem; background-color: var(--db-bg-secondary); border-radius: var(--db-radius-md); border-left: 3px solid var(--db-warning);">
-                <h3 style="margin: 0 0 0.5rem 0; color: var(--db-text-primary);">⚠️ Configuration Required</h3>
-                <p style="margin: 0 0 0.75rem 0; color: var(--db-text-secondary);">
-                    Your N8N_URL is still set to the placeholder value. Follow these steps:
-                </p>
-                
-                {% if saved_ngrok_url %}
-                <div style="margin: 1rem 0; padding: 0.75rem; background-color: var(--db-bg-primary); border: 1px solid var(--db-border); border-radius: var(--db-radius-sm);">
-                    <p style="margin: 0 0 0.5rem 0; font-size: 0.875rem; color: var(--db-text-secondary);">
-                        <strong>Found ngrok URL from start script:</strong>
-                    </p>
-                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
-                        <code id="ngrokUrlToCopy" style="flex: 1; padding: 0.5rem; background-color: var(--db-bg-light); border: 1px solid var(--db-border); border-radius: var(--db-radius-sm); font-size: 0.875rem; word-break: break-all;">{{ saved_ngrok_url }}</code>
-                        <button onclick="copyNgrokUrl(event)" class="btn btn-secondary btn-sm" style="white-space: nowrap;">
-                            <i data-lucide="copy" width="14" height="14"></i>
-                            Copy
-                        </button>
-                    </div>
-                    <p style="margin: 0; font-size: 0.8125rem; color: var(--db-text-secondary);">
-                        Use this command to update your .env file:
-                    </p>
-                    <code style="display: block; margin-top: 0.5rem; padding: 0.5rem; background-color: var(--db-bg-light); border: 1px solid var(--db-border); border-radius: var(--db-radius-sm); font-size: 0.8125rem;">
-                        sed -i '' 's|N8N_URL=.*|N8N_URL={{ saved_ngrok_url }}|' .env
-                    </code>
-                </div>
-                {% endif %}
-                
-                <ol style="margin: 0; padding-left: 1.5rem; color: var(--db-text-secondary);">
-                    {% if not saved_ngrok_url %}
-                    <li style="margin-bottom: 0.5rem;">Run <code>./start-n8n-ngrok.sh</code> to start n8n and get your ngrok URL</li>
-                    {% endif %}
-                    <li style="margin-bottom: 0.5rem;">{% if saved_ngrok_url %}Copy the URL above or {% endif %}Update your <code>.env</code> file: set <code>N8N_URL</code> to the ngrok URL</li>
-                    <li style="margin-bottom: 0.5rem;">Restart your Flask application</li>
-                </ol>
-            </div>
             {% else %}
             <p style="margin-top: 1rem; color: var(--color-text-secondary);">
                 Please check that your n8n instance is running and accessible at the configured URL.
@@ -184,12 +120,16 @@
         </div>
         
         <p style="color: var(--color-text-secondary);">
-            n8n is not configured. Please set the following environment variables:
+            n8n is not configured. Please set the following environment variable:
         </p>
         <ul style="margin-top: 1rem; color: var(--color-text-secondary);">
-            <li><code>N8N_URL</code> - Your n8n instance URL</li>
-            <li><code>N8N_API_KEY</code> - Your n8n API key</li>
+            <li><code>N8N_API_KEY</code> - Your n8n Cloud API key (required)</li>
+            <li><code>N8N_URL</code> - Your n8n workspace URL (optional, defaults to https://app.n8n.cloud)</li>
         </ul>
+        <p style="margin-top: 1rem; padding: 1rem; background-color: var(--db-bg-secondary); border-radius: var(--db-radius-md); border-left: 3px solid var(--db-info);">
+            <strong>Getting your API key:</strong><br>
+            Log in to your n8n Cloud account, go to Settings → n8n API, and create a new API key.
+        </p>
         {% endif %}
     </div>
 </div>
