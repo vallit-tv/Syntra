@@ -1,4 +1,4 @@
-"""Main Flask application"""
+"""Main application"""
 from datetime import timedelta, datetime, timezone
 from collections import Counter, defaultdict
 import analytics_helper
@@ -43,7 +43,7 @@ app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 # On Vercel, always use secure cookies (HTTPS is always used)
 # Only use secure cookies in production/vercel, not in local development
-app.config['SESSION_COOKIE_SECURE'] = os.getenv('VERCEL') == '1' or (os.getenv('FLASK_ENV') == 'production' and os.getenv('USE_SECURE_COOKIES', 'false').lower() == 'true')
+app.config['SESSION_COOKIE_SECURE'] = os.getenv('VERCEL') == '1' or (os.getenv('ENV') == 'production' and os.getenv('USE_SECURE_COOKIES', 'false').lower() == 'true')
 # Ensure session cookies work across the entire site
 app.config['SESSION_COOKIE_PATH'] = '/'
 
@@ -167,8 +167,7 @@ def ensure_list_filter(value):
     return [value]
 
 
-# Explicitly ensure static files are accessible
-# Flask serves static files automatically, but this ensures proper handling on Vercel
+# Static file handling
 from flask import send_from_directory, make_response
 import mimetypes
 
@@ -318,7 +317,7 @@ def health():
         db_connected, db_error = db.test_db_connection()
         status = {
             'status': 'ok',
-            'message': 'Flask app is running',
+            'message': 'App is running',
             'database': {
                 'connected': db_connected,
                 'error': db_error if not db_connected else None
@@ -330,7 +329,7 @@ def health():
         # Health endpoint should never fail - return basic status
         return jsonify({
             'status': 'ok',
-            'message': 'Flask app is running',
+            'message': 'App is running',
             'database': {
                 'connected': False,
                 'error': str(e)
@@ -368,7 +367,7 @@ def debug_env():
             'length': len(os.getenv('N8N_API_KEY', ''))
         },
         'VERCEL': os.getenv('VERCEL'),
-        'FLASK_ENV': os.getenv('FLASK_ENV'),
+        'ENV': os.getenv('ENV'),
     }
     
     # Check database configuration
@@ -1540,8 +1539,7 @@ def api_setup_password():
             'redirect': redirect_url
         })
         
-        # Explicitly ensure session is saved by accessing it
-        # This forces Flask to set the session cookie in the response
+        # Ensure session is saved by accessing it
         _ = session.get('user_id')
         
         return response
@@ -1616,8 +1614,7 @@ def api_login():
             'redirect': redirect_url
         })
         
-        # Explicitly ensure session is saved by accessing it
-        # This forces Flask to set the session cookie in the response
+        # Ensure session is saved by accessing it
         _ = session.get('user_id')
         
         return response
@@ -2596,4 +2593,4 @@ application = app
 if __name__ == '__main__':
     # Start auto-sync if enabled
     init_auto_sync()
-    app.run(host='0.0.0.0', port=int(os.getenv('PORT', '5000')), debug=os.getenv('FLASK_DEBUG') == '1')
+    # Vercel handles server startup

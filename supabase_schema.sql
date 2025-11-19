@@ -52,7 +52,7 @@ ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE api_keys ENABLE ROW LEVEL SECURITY;
 
 -- Users can read their own data (service role bypasses this)
--- Note: Since we're using service_role key in Flask, RLS is bypassed
+-- Note: Since we're using service_role key, RLS is bypassed
 -- But we add policies for security if anon key is used elsewhere
 
 -- Policy: Users can read their own data (if using anon key)

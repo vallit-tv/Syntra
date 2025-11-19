@@ -1,6 +1,6 @@
 """
 Webhook Client for n8n Automation Triggers
-Handles sending webhook requests to n8n workflows from the Flask backend.
+Handles sending webhook requests to n8n workflows.
 """
 
 import os

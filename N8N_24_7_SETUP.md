@@ -29,7 +29,7 @@ chmod +x monitor-ngrok.sh
 - Not ideal for production
 - Brief downtime during restart (~10 seconds)
 
-**Note:** Your Flask app needs to reload the `.env` file when the URL changes. Consider using a process manager that watches for `.env` changes.
+**Note:** Your app will automatically reload when deployed to Vercel.
 
 ---
 
@@ -218,54 +218,9 @@ n8n offers a managed cloud service.
 
 **For production:** Use Option 3 (VPS deployment) with a domain.
 
-## Making Your Flask App Reload .env Changes
+## Environment Variable Changes
 
-If using the monitor script, your Flask app needs to detect `.env` changes. Options:
-
-### Option A: Use python-dotenv with watch
-
-```python
-# In app.py, add auto-reload
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
-
-class EnvFileHandler(FileSystemEventHandler):
-    def on_modified(self, event):
-        if event.src_path.endswith('.env'):
-            load_dotenv(override=True)
-            # Reinitialize n8n service
-            from n8n_service import get_n8n_service
-            global _n8n_service
-            _n8n_service = None
-            get_n8n_service()
-```
-
-### Option B: Restart Flask app when .env changes
-
-Use a process manager like `supervisor` or `systemd` that watches for changes.
-
-### Option C: Poll .env file periodically
-
-```python
-# In app.py
-import threading
-import time
-
-def watch_env_file():
-    last_mtime = 0
-    while True:
-        try:
-            mtime = os.path.getmtime('.env')
-            if mtime > last_mtime:
-                load_dotenv(override=True)
-                last_mtime = mtime
-        except:
-            pass
-        time.sleep(30)  # Check every 30 seconds
-
-# Start watcher in background
-threading.Thread(target=watch_env_file, daemon=True).start()
-```
+On Vercel, environment variables are managed through the Vercel dashboard. Changes are automatically picked up on the next deployment.
 
 ## Troubleshooting
 
@@ -275,8 +230,8 @@ threading.Thread(target=watch_env_file, daemon=True).start()
 - Check n8n is running: `docker ps | grep n8n`
 
 ### URL changes but app doesn't update
-- Restart Flask app after URL change
-- Check `.env` file was updated
+- Redeploy on Vercel after updating environment variables
+- Check environment variables in Vercel dashboard
 - Verify `N8N_URL` environment variable
 
 ### Workflows not triggering

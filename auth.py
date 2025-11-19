@@ -333,7 +333,7 @@ def current_user() -> Optional[dict]:
     user_id = session.get('user_id')
     if not user_id:
         # Debug: log why user_id is missing (only in debug mode to reduce noise)
-        if os.getenv('FLASK_DEBUG') == '1' or os.getenv('DEBUG_SESSIONS') == '1':
+        if os.getenv('DEBUG') == '1' or os.getenv('DEBUG_SESSIONS') == '1':
             if not session:
                 print("DEBUG: Session object is None or empty")
             else:
