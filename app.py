@@ -40,13 +40,13 @@ app = Flask(__name__, static_folder='static', static_url_path='/static', templat
 
 # CRITICAL: Secret key must be stable across deployments on Vercel
 # Using a random key on each cold start invalidates all sessions!
-# Generate a stable key if not set (based on a constant, not random)
+# Generate a stable key automatically if not set (based on a constant, not random)
 _secret_key = os.getenv('FLASK_SECRET_KEY')
 if not _secret_key:
     # Use a stable default key based on a hash (not random) to prevent session invalidation
+    # This ensures sessions persist across Vercel cold starts
     import hashlib
     _secret_key = hashlib.sha256(b'SyntraDefaultSecretKey2024').hexdigest()
-    print("WARNING: Using default secret key. Set FLASK_SECRET_KEY environment variable for production!")
 app.secret_key = _secret_key
 
 # Increase session lifetime for better user experience
