@@ -392,6 +392,37 @@ def get_workflows(public_only: bool = False) -> List[Dict]:
     except:
         return []
 
+def get_all_workflows() -> List[Dict]:
+    """Get all workflows regardless of public/active status (for sync)"""
+    try:
+        result = get_db().table('workflows').select('*').order('created_at', desc=True).execute()
+        return result.data or []
+    except:
+        return []
+
+def create_workflow(workflow_data: Dict) -> Dict:
+    """Create a new workflow"""
+    try:
+        workflow_insert = {
+            'n8n_workflow_id': workflow_data.get('n8n_workflow_id'),
+            'name': workflow_data.get('name', ''),
+            'description': workflow_data.get('description'),
+            'category': workflow_data.get('category'),
+            'required_services': workflow_data.get('required_services', []),
+            'metadata': workflow_data.get('metadata', {}),
+            'is_active': workflow_data.get('is_active', True),
+            'is_public': workflow_data.get('is_public', False),
+            'created_at': datetime.utcnow().isoformat(),
+            'updated_at': datetime.utcnow().isoformat()
+        }
+        if 'created_by' in workflow_data:
+            workflow_insert['created_by'] = workflow_data['created_by']
+        result = get_db().table('workflows').insert(workflow_insert).execute()
+        return result.data[0]
+    except Exception as e:
+        print(f"Error creating workflow: {e}")
+        raise
+
 def get_workflow_by_id(workflow_id: str) -> Optional[Dict]:
     """Get workflow by ID"""
     try:
@@ -673,9 +704,37 @@ def get_company_by_slug(slug: str) -> Optional[Dict]:
         return None
 
 def create_company(name: str, slug: str, settings: Dict = None) -> Dict:
-    """Create a new company"""
+    """Create a new company with validation"""
+    # Validate name
+    if not name or len(name.strip()) < 2:
+        raise ValueError("Company name must be at least 2 characters")
+    if len(name) > 100:
+        raise ValueError("Company name must be less than 100 characters")
+    
+    # Validate and normalize slug
+    slug = slug.strip().lower()
+    if not slug:
+        # Auto-generate slug from name
+        slug = name.lower().replace(' ', '-').replace('_', '-')
+        # Remove special characters
+        import re
+        slug = re.sub(r'[^a-z0-9-]', '', slug)
+        slug = re.sub(r'-+', '-', slug).strip('-')
+    
+    if len(slug) < 2:
+        raise ValueError("Company slug must be at least 2 characters")
+    if len(slug) > 50:
+        raise ValueError("Company slug must be less than 50 characters")
+    if not re.match(r'^[a-z0-9-]+$', slug):
+        raise ValueError("Company slug can only contain lowercase letters, numbers, and hyphens")
+    
+    # Check if slug already exists
+    existing = get_company_by_slug(slug)
+    if existing:
+        raise ValueError(f"Company with slug '{slug}' already exists")
+    
     company_data = {
-        'name': name,
+        'name': name.strip(),
         'slug': slug,
         'settings': settings or {},
         'created_at': datetime.utcnow().isoformat(),
@@ -685,6 +744,9 @@ def create_company(name: str, slug: str, settings: Dict = None) -> Dict:
         result = get_db().table('companies').insert(company_data).execute()
         return result.data[0]
     except Exception as e:
+        error_str = str(e).lower()
+        if 'unique' in error_str or 'duplicate' in error_str:
+            raise ValueError(f"Company with slug '{slug}' already exists")
         print(f"Error creating company: {e}")
         raise
 
@@ -721,11 +783,30 @@ def get_company_activations(company_id: str) -> List[Dict]:
     except:
         return []
 
-def assign_user_to_company(user_id: str, company_id: str) -> bool:
+def assign_user_to_company(user_id: str, company_id: str, role: str = None) -> bool:
     """Assign user to a company"""
     try:
-        get_db().table('users').update({'company_id': company_id}).eq('id', user_id).execute()
+        update_data = {'company_id': company_id}
+        if role:
+            update_data['role'] = role
+        get_db().table('users').update(update_data).eq('id', user_id).execute()
         return True
     except:
         return False
+
+def remove_user_from_company(user_id: str) -> bool:
+    """Remove user from company (set company_id to None)"""
+    try:
+        get_db().table('users').update({'company_id': None}).eq('id', user_id).execute()
+        return True
+    except:
+        return False
+
+def get_company_executions(company_id: str, limit: int = 100) -> List[Dict]:
+    """Get all workflow executions for a company"""
+    try:
+        result = get_db().table('workflow_executions').select('*, workflow_activations!inner(workflow_id, workflows(*))').eq('workflow_activations.company_id', company_id).order('started_at', desc=True).limit(limit).execute()
+        return result.data or []
+    except:
+        return []
 
