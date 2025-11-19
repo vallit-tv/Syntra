@@ -135,7 +135,13 @@ def sync_workflows_from_n8n() -> Dict:
             else:
                 logger.warning(f"Skipping non-dict workflow from DB: {type(w)}")
         db_workflows = validated_db_workflows
-        db_workflows_map = {w['n8n_workflow_id']: w for w in db_workflows if isinstance(w, dict) and w.get('n8n_workflow_id')}
+        # Create map with string keys for n8n_workflow_id (to handle int/str mismatches)
+        db_workflows_map = {}
+        for w in db_workflows:
+            if isinstance(w, dict) and w.get('n8n_workflow_id'):
+                # Ensure key is always a string for consistent matching
+                key = str(w['n8n_workflow_id'])
+                db_workflows_map[key] = w
         
         # Track sync statistics
         added = 0
@@ -173,24 +179,29 @@ def sync_workflows_from_n8n() -> Dict:
                 }
             }
             
-            # Check if workflow exists in database
-            if str(n8n_id) in db_workflows_map:
+            # Check if workflow exists in database (use string key for matching)
+            workflow_key = str(n8n_id)
+            if workflow_key in db_workflows_map:
                 # Update existing workflow
-                db_workflow = db_workflows_map[str(n8n_id)]
+                db_workflow = db_workflows_map[workflow_key]
                 try:
                     db.update_workflow(db_workflow['id'], workflow_data)
                     updated += 1
-                    logger.info(f"Updated workflow: {workflow_data['name']}")
+                    logger.info(f"Updated workflow: {workflow_data['name']} (n8n_id: {n8n_id})")
                 except Exception as e:
                     logger.error(f"Failed to update workflow {n8n_id}: {e}")
+                    import traceback
+                    traceback.print_exc()
             else:
                 # Create new workflow
                 try:
                     db.create_workflow(workflow_data)
                     added += 1
-                    logger.info(f"Added workflow: {workflow_data['name']}")
+                    logger.info(f"Added workflow: {workflow_data['name']} (n8n_id: {n8n_id})")
                 except Exception as e:
                     logger.error(f"Failed to create workflow {n8n_id}: {e}")
+                    import traceback
+                    traceback.print_exc()
         
         # Mark workflows as inactive if they no longer exist in n8n
         for db_workflow in db_workflows:

@@ -1405,15 +1405,28 @@ def admin_n8n():
         print(f"Admin n8n error: {error_msg}")
         import traceback
         traceback.print_exc()
+        # Ensure user is available for template
+        if user is None:
+            try:
+                user = auth.current_user()
+            except:
+                pass
         # Return page with error message instead of redirect
-        return render_template('admin/n8n.html',
-                             user=user,
-                             n8n_configured=n8n_configured,
-                             n8n_url=n8n_url,
-                             n8n_status={'connected': False, 'message': f'Error: {error_msg}'} if not n8n_status else n8n_status,
-                             n8n_overview=n8n_overview,
-                             saved_ngrok_url=saved_ngrok_url,
-                             error_message=error_msg), 200
+        try:
+            return render_template('admin/n8n.html',
+                                 user=user,
+                                 n8n_configured=n8n_configured,
+                                 n8n_url=n8n_url,
+                                 n8n_status={'connected': False, 'message': f'Error: {error_msg}'} if not n8n_status else n8n_status,
+                                 n8n_overview=n8n_overview,
+                                 saved_ngrok_url=saved_ngrok_url,
+                                 error_message=error_msg), 200
+        except Exception as template_error:
+            # If template rendering fails, return simple error message
+            print(f"Template rendering error: {template_error}")
+            import traceback
+            traceback.print_exc()
+            return f"<h1>Error loading n8n page</h1><p>{error_msg}</p><p>Template error: {template_error}</p>", 500
 
 @app.route('/dashboard/analytics')
 @auth.login_required
