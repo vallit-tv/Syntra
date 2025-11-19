@@ -104,6 +104,21 @@ def sync_workflows_from_n8n() -> Dict:
             logger.warning("No workflows found in n8n")
             n8n_workflows = []
         
+        # Validate n8n_workflows is a list of dicts
+        if not isinstance(n8n_workflows, list):
+            error_msg = f"Invalid n8n workflows format: expected list, got {type(n8n_workflows)}"
+            logger.error(error_msg)
+            _sync_stats['last_error'] = error_msg
+            _sync_stats['last_run'] = datetime.now().isoformat()
+            return {
+                'success': False,
+                'added': 0,
+                'updated': 0,
+                'removed': 0,
+                'total': 0,
+                'error': error_msg
+            }
+        
         # Get existing workflows from database
         # Use get_all_workflows if available, otherwise fall back to get_workflows
         if hasattr(db, 'get_all_workflows'):
@@ -111,7 +126,16 @@ def sync_workflows_from_n8n() -> Dict:
         else:
             # Fallback for older deployments
             db_workflows = db.get_workflows(public_only=False)
-        db_workflows_map = {w['n8n_workflow_id']: w for w in db_workflows if w.get('n8n_workflow_id')}
+        
+        # Validate db_workflows items before processing
+        validated_db_workflows = []
+        for w in db_workflows:
+            if isinstance(w, dict):
+                validated_db_workflows.append(w)
+            else:
+                logger.warning(f"Skipping non-dict workflow from DB: {type(w)}")
+        db_workflows = validated_db_workflows
+        db_workflows_map = {w['n8n_workflow_id']: w for w in db_workflows if isinstance(w, dict) and w.get('n8n_workflow_id')}
         
         # Track sync statistics
         added = 0
@@ -123,8 +147,13 @@ def sync_workflows_from_n8n() -> Dict:
         
         # Sync workflows from n8n
         for n8n_workflow in n8n_workflows:
+            if not isinstance(n8n_workflow, dict):
+                logger.warning(f"Skipping non-dict n8n workflow: {type(n8n_workflow)}")
+                continue
+            
             n8n_id = n8n_workflow.get('id')
             if not n8n_id:
+                logger.warning(f"Skipping n8n workflow without id: {n8n_workflow}")
                 continue
             
             n8n_workflow_ids.add(str(n8n_id))

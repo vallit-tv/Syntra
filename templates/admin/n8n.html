@@ -12,6 +12,18 @@
     <p class="page-description">Access your n8n instance to create and manage workflows.</p>
 </div>
 
+{% if error_message %}
+<div class="dashboard-card" style="margin-bottom: 1.5rem; border-left: 3px solid var(--db-danger);">
+    <div class="card-body">
+        <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--db-danger);">
+            <i data-lucide="alert-circle" width="20" height="20"></i>
+            <strong>Error loading n8n page</strong>
+        </div>
+        <p style="margin-top: 0.5rem; color: var(--db-text-secondary);">{{ error_message }}</p>
+    </div>
+</div>
+{% endif %}
+
 {% if n8n_overview %}
 <div class="stats-grid">
     <div class="stat-card">
@@ -39,6 +51,29 @@
                 Awaiting first sync
             {% endif %}
         </p>
+    </div>
+</div>
+{% else %}
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-label">Workflows Tracked</span>
+            <div class="stat-icon blue">
+                <i data-lucide="workflow" width="18" height="18"></i>
+            </div>
+        </div>
+        <div class="stat-value">0</div>
+        <p class="stat-caption">No workflows tracked yet</p>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-label">Out of Sync</span>
+            <div class="stat-icon amber">
+                <i data-lucide="upload-cloud" width="18" height="18"></i>
+            </div>
+        </div>
+        <div class="stat-value">0</div>
+        <p class="stat-caption">Awaiting first sync</p>
     </div>
 </div>
 {% endif %}

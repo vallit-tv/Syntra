@@ -1344,15 +1344,26 @@ def admin_exit_company_view():
 @auth.admin_required
 def admin_n8n():
     """Admin n8n access page"""
+    # Initialize defaults first
+    n8n_overview = {
+        'total_workflows': 0,
+        'synced_workflows': 0,
+        'unsynced_workflows': 0,
+        'last_synced_at': None
+    }
+    n8n_configured = False
+    n8n_url = None
+    n8n_status = None
+    saved_ngrok_url = None
+    user = None
+    
     try:
         user = auth.current_user()
         n8n_service = get_n8n_service()
         n8n_configured = n8n_service.is_configured()
         n8n_url = n8n_service.base_url if n8n_configured else None
-        n8n_status = None
         
         # Try to read saved ngrok URL from file (if start script was run)
-        saved_ngrok_url = None
         try:
             ngrok_url_file = '/tmp/ngrok-n8n.url'
             if os.path.exists(ngrok_url_file):
@@ -1363,12 +1374,14 @@ def admin_n8n():
         
         workflows = db.get_workflows(public_only=False)
         total_workflows = len(workflows)
-        n8n_synced = sum(1 for w in workflows if w.get('n8n_workflow_id'))
+        n8n_synced = sum(1 for w in workflows if isinstance(w, dict) and w.get('n8n_workflow_id'))
         last_sync = None
         for workflow in workflows:
-            updated_ts = parse_iso_ts(workflow.get('updated_at') or workflow.get('created_at'))
-            if updated_ts and (last_sync is None or updated_ts > last_sync):
-                last_sync = updated_ts
+            if isinstance(workflow, dict):
+                updated_ts = parse_iso_ts(workflow.get('updated_at') or workflow.get('created_at'))
+                if updated_ts and (last_sync is None or updated_ts > last_sync):
+                    last_sync = updated_ts
+        
         n8n_overview = {
             'total_workflows': total_workflows,
             'synced_workflows': n8n_synced,
@@ -1392,10 +1405,15 @@ def admin_n8n():
         print(f"Admin n8n error: {error_msg}")
         import traceback
         traceback.print_exc()
-        # Return error page instead of silent redirect
-        return render_template('admin/base.html', 
-                             user=user if 'user' in locals() else None,
-                             error_message=f"Error loading n8n page: {error_msg}"), 500
+        # Return page with error message instead of redirect
+        return render_template('admin/n8n.html',
+                             user=user,
+                             n8n_configured=n8n_configured,
+                             n8n_url=n8n_url,
+                             n8n_status={'connected': False, 'message': f'Error: {error_msg}'} if not n8n_status else n8n_status,
+                             n8n_overview=n8n_overview,
+                             saved_ngrok_url=saved_ngrok_url,
+                             error_message=error_msg), 200
 
 @app.route('/dashboard/analytics')
 @auth.login_required

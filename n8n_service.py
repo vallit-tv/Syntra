@@ -102,12 +102,32 @@ class N8nService:
                 timeout=30
             )
             if response.status_code == 200:
-                return response.json() or []
+                result = response.json()
+                # Handle wrapped response format {data: [...], nextCursor: ...}
+                if isinstance(result, dict) and 'data' in result:
+                    workflows = result['data']
+                elif isinstance(result, list):
+                    workflows = result
+                else:
+                    print(f"Unexpected n8n API response format: {type(result)}, Content: {str(result)[:200]}")
+                    return []
+                
+                # Validate all items are dicts
+                validated_workflows = []
+                for item in workflows:
+                    if isinstance(item, dict):
+                        validated_workflows.append(item)
+                    else:
+                        print(f"Skipping non-dict workflow item: {type(item)}, Value: {str(item)[:100]}")
+                
+                return validated_workflows
             else:
-                print(f"Error fetching workflows: HTTP {response.status_code}")
+                print(f"Error fetching workflows: HTTP {response.status_code}, Response: {response.text[:200]}")
                 return []
         except Exception as e:
             print(f"Error fetching workflows: {e}")
+            import traceback
+            traceback.print_exc()
             return []
     
     def get_workflow(self, workflow_id: int) -> Optional[Dict]:
