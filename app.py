@@ -37,8 +37,20 @@ print(f"All N8N* env vars: {all_n8n_vars}")
 print("=" * 60)
 
 app = Flask(__name__, static_folder='static', static_url_path='/static', template_folder='templates')
-app.secret_key = os.getenv('FLASK_SECRET_KEY', os.urandom(32))
-app.permanent_session_lifetime = timedelta(minutes=30)
+
+# CRITICAL: Secret key must be stable across deployments on Vercel
+# Using a random key on each cold start invalidates all sessions!
+# Generate a stable key if not set (based on a constant, not random)
+_secret_key = os.getenv('FLASK_SECRET_KEY')
+if not _secret_key:
+    # Use a stable default key based on a hash (not random) to prevent session invalidation
+    import hashlib
+    _secret_key = hashlib.sha256(b'SyntraDefaultSecretKey2024').hexdigest()
+    print("WARNING: Using default secret key. Set FLASK_SECRET_KEY environment variable for production!")
+app.secret_key = _secret_key
+
+# Increase session lifetime for better user experience
+app.permanent_session_lifetime = timedelta(hours=24)  # 24 hours instead of 30 minutes
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 # On Vercel, always use secure cookies (HTTPS is always used)
@@ -46,6 +58,8 @@ app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['SESSION_COOKIE_SECURE'] = os.getenv('VERCEL') == '1' or (os.getenv('ENV') == 'production' and os.getenv('USE_SECURE_COOKIES', 'false').lower() == 'true')
 # Ensure session cookies work across the entire site
 app.config['SESSION_COOKIE_PATH'] = '/'
+# Set session cookie name explicitly
+app.config['SESSION_COOKIE_NAME'] = 'syntra_session'
 
 
 def parse_iso_ts(value):

@@ -187,6 +187,7 @@ def setup_password(name: str, password: str, ip_address: str = None) -> dict:
         else:
             role = 'worker'
     
+    # Create session - CRITICAL: Mark as permanent BEFORE setting values
     session.permanent = True
     session['user_id'] = user['id']
     
@@ -203,6 +204,9 @@ def setup_password(name: str, password: str, ip_address: str = None) -> dict:
     
     # Explicitly mark session as modified to ensure it's saved
     session.modified = True
+    
+    # Force session to persist by accessing it
+    _ = session.get('user_id')
     
     return user_dict
 
@@ -250,7 +254,7 @@ def login(name: str, password: str, ip_address: str = None) -> dict:
         else:
             role = 'worker'
     
-    # Create session
+    # Create session - CRITICAL: Mark as permanent BEFORE setting values
     session.permanent = True
     session['user_id'] = user['id']
     
@@ -267,6 +271,9 @@ def login(name: str, password: str, ip_address: str = None) -> dict:
     
     # Explicitly mark session as modified to ensure it's saved
     session.modified = True
+    
+    # Force session to persist by accessing it
+    _ = session.get('user_id')
     
     # Debug: verify session was set
     print(f"DEBUG: Login successful for {user['name']}, session['user_id'] = {session.get('user_id')}, session keys: {list(session.keys())}")
