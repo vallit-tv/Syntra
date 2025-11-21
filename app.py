@@ -1,6 +1,7 @@
 """Main application"""
 from datetime import timedelta, datetime, timezone
 from collections import Counter, defaultdict
+from typing import Optional, Tuple
 import analytics_helper
 import json
 import os
@@ -2499,6 +2500,61 @@ def api_save_workflow_defaults():
     # Placeholder - to be replaced with actual defaults save logic
     return jsonify({'message': 'Workflow defaults saved'})
 
+def validate_no_pii(data: dict) -> Tuple[bool, Optional[str]]:
+    """
+    Validate that request data contains no PII fields.
+    
+    Privacy-preserving validation: Rejects any request containing user identification
+    fields to ensure user_id is never accepted from client requests.
+    
+    Args:
+        data: Dictionary to validate
+        
+    Returns:
+        Tuple of (is_valid, error_message)
+        - is_valid: True if no PII fields found
+        - error_message: Error description if PII detected, None otherwise
+    """
+    # List of PII field names to reject (case-insensitive check)
+    pii_fields = [
+        'user_id', 'user_uuid', 'uuid', 'id',
+        'email', 'email_address',
+        'name', 'username', 'user_name',
+        'phone', 'phone_number', 'mobile',
+        'device_id', 'device_uuid',
+        'session_id', 'auth_token', 'token'
+    ]
+    
+    if not isinstance(data, dict):
+        return False, "Invalid request format"
+    
+    # Check for PII fields (case-insensitive)
+    data_lower = {k.lower(): v for k, v in data.items()}
+    for pii_field in pii_fields:
+        if pii_field in data_lower:
+            return False, f"Request contains unauthorized field"
+    
+    return True, None
+
+
+def mask_uuid_for_logging(uuid_str: Optional[str]) -> str:
+    """
+    Mask UUID in logs to prevent PII exposure.
+    
+    Args:
+        uuid_str: UUID string to mask
+        
+    Returns:
+        Masked string like '[USER_ID]' or '[UUID]'
+    """
+    if not uuid_str:
+        return '[USER_ID]'
+    # Show only first 8 chars and last 4 chars for debugging, but in production mask completely
+    if os.getenv('ENV') == 'production' or os.getenv('VERCEL'):
+        return '[USER_ID]'
+    return f'{uuid_str[:8]}...{uuid_str[-4:]}'
+
+
 @app.route('/api/start-daily-summary', methods=['POST'])
 @auth.login_required
 def api_start_daily_summary():
@@ -2570,6 +2626,131 @@ def api_start_daily_summary():
             'success': False,
             'message': 'Unexpected error while triggering daily summary',
             'error': str(e)
+        }), 500
+
+
+@app.route('/api/wake', methods=['POST'])
+@auth.login_required
+def api_wake():
+    """
+    Privacy-preserving wake webhook endpoint for phone automation.
+    
+    This endpoint is designed for iOS Shortcuts and other phone automation tools.
+    It accepts minimal wake events and automatically attaches the authenticated
+    user's UUID server-side. No PII is ever accepted from the client.
+    
+    Request format:
+        {
+            "event": "awake"
+        }
+    
+    Privacy guarantees:
+        - Rejects any request containing user_id, uuid, email, name, or other PII
+        - User UUID is retrieved server-side from authenticated session only
+        - User UUID is never exposed in error responses or logs
+    
+    Returns:
+        JSON response with status:
+        {
+            "status": "ok"  // on success
+        }
+        or
+        {
+            "status": "error",
+            "message": "Generic error message"  // no internal details exposed
+        }
+    """
+    try:
+        # Get authenticated user (required for this endpoint)
+        user = auth.current_user()
+        if not user:
+            print("Wake endpoint: Unauthenticated request rejected")
+            return jsonify({
+                'status': 'error',
+                'message': 'Authentication required'
+            }), 401
+        
+        # Get user UUID from authenticated session (server-side only)
+        user_id = user.get('id')
+        if not user_id:
+            print(f"Wake endpoint: User authenticated but ID missing")
+            return jsonify({
+                'status': 'error',
+                'message': 'Unable to process request'
+            }), 400
+        
+        # Get and validate request data
+        data = request.get_json()
+        if not data:
+            return jsonify({
+                'status': 'error',
+                'message': 'Invalid request format'
+            }), 400
+        
+        # Privacy validation: Reject any PII fields
+        is_valid, error_msg = validate_no_pii(data)
+        if not is_valid:
+            print(f"Wake endpoint: PII detected in request from user {mask_uuid_for_logging(user_id)}")
+            return jsonify({
+                'status': 'error',
+                'message': 'Invalid request format'
+            }), 400
+        
+        # Validate event field
+        event = data.get('event')
+        if event != 'awake':
+            return jsonify({
+                'status': 'error',
+                'message': 'Invalid event type'
+            }), 400
+        
+        # Log request (with masked UUID for privacy)
+        print(f"Wake endpoint: Processing wake event for user {mask_uuid_for_logging(user_id)}")
+        
+        # Build payload for n8n (user_uuid added server-side)
+        meta = {
+            'event': event,
+            'source': 'phone_automation'
+        }
+        
+        # Trigger the daily summary workflow via webhook
+        result = webhook_client.trigger_daily_summary(user_id, meta)
+        
+        # Return privacy-preserving response (no user_id exposed)
+        if result['success']:
+            print(f"Wake endpoint: Successfully triggered workflow for user {mask_uuid_for_logging(user_id)}")
+            return jsonify({
+                'status': 'ok'
+            }), 200
+        else:
+            # Log error with masked UUID
+            error_type = 'unknown'
+            if 'not configured' in result.get('error', '').lower():
+                error_type = 'configuration'
+            elif 'timeout' in result.get('error', '').lower():
+                error_type = 'timeout'
+            elif 'connect' in result.get('error', '').lower():
+                error_type = 'connection'
+            
+            print(f"Wake endpoint: Failed to trigger workflow for user {mask_uuid_for_logging(user_id)} - {error_type}")
+            
+            # Return generic error (no internal details exposed to client)
+            return jsonify({
+                'status': 'error',
+                'message': 'Failed to process wake event'
+            }), 500
+                
+    except Exception as e:
+        # Catch any unexpected errors
+        # Log with masked information
+        user = auth.current_user()
+        user_id = user.get('id') if user else None
+        print(f"Wake endpoint: Unexpected error for user {mask_uuid_for_logging(user_id)} - {type(e).__name__}")
+        
+        # Return generic error response
+        return jsonify({
+            'status': 'error',
+            'message': 'An error occurred processing the request'
         }), 500
 
 

@@ -38,26 +38,32 @@ def trigger_daily_summary(user_id: str, meta: Optional[Dict[str, Any]] = None) -
         else:
             print(f"Error: {result["error"]}")
     """
-    # Get webhook URL from environment
+    # Get webhook URL from environment, with default to daily-summary webhook
     webhook_url = os.getenv('N8N_WEBHOOK_URL', '').strip()
     
+    # Default to daily-summary webhook if not specified
+    if not webhook_url:
+        webhook_url = 'https://vyrez.app.n8n.cloud/webhook/daily-summary'
+    
+    # Ensure we have a valid URL
     if not webhook_url:
         return {
             'success': False,
             'message': 'n8n webhook URL not configured',
-            'error': 'N8N_WEBHOOK_URL environment variable is not set. Please configure it in your .env file.',
+            'error': 'N8N_WEBHOOK_URL environment variable is not set and default URL is unavailable.',
             'user_id': user_id
         }
     
     # Construct the payload
+    # Default source and event, but allow meta to override
     payload = {
         'user_uuid': user_id,
         'timestamp': datetime.now(timezone.utc).isoformat(),
-        'source': 'vallit_frontend',
-        'event': 'wake_up'
+        'source': meta.get('source', 'vallit_frontend') if meta else 'vallit_frontend',
+        'event': meta.get('event', 'wake_up') if meta else 'wake_up'
     }
     
-    # Merge optional metadata if provided
+    # Merge optional metadata if provided (allowing source/event override)
     if meta:
         payload.update(meta)
     
