@@ -48,3 +48,44 @@ function showMessage(message, type = 'info') {
     setTimeout(() => alertDiv.remove(), 5000);
 }
 
+(function () {
+    const syntra = window.syntra || (window.syntra = {});
+
+    syntra.openModal = function (modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.style.display = 'block';
+        }
+    };
+
+    syntra.closeModal = function (modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    };
+
+    syntra.setButtonLoading = function (button, loadingText) {
+        if (!button) return () => {};
+        const original = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = loadingText;
+        return function reset() {
+            button.disabled = false;
+            button.innerHTML = original;
+        };
+    };
+
+    document.addEventListener('click', function (event) {
+        if (event.target.classList && event.target.classList.contains('modal')) {
+            event.target.style.display = 'none';
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    });
+})();
+

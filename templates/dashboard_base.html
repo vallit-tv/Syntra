@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard – Syntra{% endblock %}</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <!-- Dashboard Core CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard-core.css') }}?v=1">
+    {% block extra_css %}{% endblock %}
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="dashboard-body">
+    {% block body_content %}
+    <!-- Sidebar Overlay for Mobile -->
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+    <div class="dashboard-layout">
+        <!-- Sidebar Navigation -->
+        <aside id="dashboardSidebar" class="dashboard-sidebar">
+            {% block sidebar %}
+            <div class="sidebar-header">
+                <a href="{% block sidebar_home_url %}#{% endblock %}" class="sidebar-logo">
+                    <div class="logo-icon">{% block logo_icon %}S{% endblock %}</div>
+                    <span class="logo-text">{% block logo_text %}Syntra{% endblock %}</span>
+                    {% block logo_badge %}{% endblock %}
+                </a>
+            </div>
+            <nav class="sidebar-nav">
+                {% block sidebar_nav %}{% endblock %}
+            </nav>
+            {% endblock %}
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="dashboard-main">
+            <!-- Top Bar -->
+            <header class="dashboard-topbar">
+                <div class="topbar-left">
+                    <button id="sidebarToggle" class="sidebar-toggle" aria-label="Toggle sidebar">
+                        <i data-lucide="menu" width="20" height="20"></i>
+                    </button>
+                    <nav class="breadcrumbs">
+                        {% block breadcrumbs %}
+                        <span>Dashboard</span>
+                        {% endblock %}
+                    </nav>
+                </div>
+                <div class="topbar-right">
+                    {% block topbar_right %}
+                    <div class="user-menu">
+                        <button id="userMenuButton" class="user-menu-button">
+                            <div class="user-avatar">{{ user.name[0].upper() if user else 'U' }}</div>
+                            <div class="user-info">
+                                <span class="user-name">{{ user.name if user else 'User' }}</span>
+                                <span class="user-role">{{ user.get('role', 'user') if user else 'User' }}</span>
+                            </div>
+                            <i data-lucide="chevron-down" width="16" height="16"></i>
+                        </button>
+                        <div id="userMenuDropdown" class="user-menu-dropdown">
+                            {% block user_menu_items %}
+                            <a href="{{ url_for('logout') }}" class="dropdown-item danger">
+                                <i data-lucide="log-out" width="16" height="16"></i>
+                                <span>Logout</span>
+                            </a>
+                            {% endblock %}
+                        </div>
+                    </div>
+                    {% endblock %}
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class="dashboard-content">
+                {% block dashboard_content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+    {% endblock %}
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        // Initialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+
+        // Sidebar toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('dashboardSidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const userMenuButton = document.getElementById('userMenuButton');
+            const userMenuDropdown = document.getElementById('userMenuDropdown');
+
+            // Sidebar toggle for mobile
+            if (sidebarToggle && sidebar && sidebarOverlay) {
+                sidebarToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('show');
+                    sidebarOverlay.classList.toggle('show');
+                });
+
+                sidebarOverlay.addEventListener('click', function() {
+                    sidebar.classList.remove('show');
+                    sidebarOverlay.classList.remove('show');
+                });
+
+                // Close sidebar when clicking a nav link on mobile
+                const navLinks = sidebar.querySelectorAll('.nav-item');
+                navLinks.forEach(link => {
+                    link.addEventListener('click', function() {
+                        if (window.innerWidth <= 768) {
+                            sidebar.classList.remove('show');
+                            sidebarOverlay.classList.remove('show');
+                        }
+                    });
+                });
+            }
+
+            // User menu dropdown
+            if (userMenuButton && userMenuDropdown) {
+                userMenuButton.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    userMenuDropdown.classList.toggle('show');
+                });
+
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!userMenuButton.contains(e.target) && !userMenuDropdown.contains(e.target)) {
+                        userMenuDropdown.classList.remove('show');
+                    }
+                });
+            }
+
+            // Reinitialize icons after any dynamic content loads
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
+
