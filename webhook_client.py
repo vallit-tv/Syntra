@@ -58,6 +58,7 @@ def trigger_daily_summary(user_id: str, meta: Optional[Dict[str, Any]] = None) -
     # Default source and event, but allow meta to override
     payload = {
         'user_uuid': user_id,
+        'user_id': user_id,  # Send both for compatibility
         'timestamp': datetime.now(timezone.utc).isoformat(),
         'source': meta.get('source', 'vallit_frontend') if meta else 'vallit_frontend',
         'event': meta.get('event', 'wake_up') if meta else 'wake_up'
