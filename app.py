@@ -35,6 +35,7 @@ all_supabase_vars = [k for k in os.environ.keys() if 'SUPABASE' in k.upper()]
 print(f"All SUPABASE* env vars: {all_supabase_vars}")
 all_n8n_vars = [k for k in os.environ.keys() if 'N8N' in k.upper()]
 print(f"All N8N* env vars: {all_n8n_vars}")
+print(f"N8N_WEBHOOK_URL set: {bool(os.getenv('N8N_WEBHOOK_URL'))}")
 print("=" * 60)
 
 app = Flask(__name__, static_folder='static', static_url_path='/static', template_folder='templates')
@@ -51,7 +52,7 @@ if not _secret_key:
 app.secret_key = _secret_key
 
 # Increase session lifetime for better user experience
-app.permanent_session_lifetime = timedelta(hours=24)  # 24 hours instead of 30 minutes
+app.permanent_session_lifetime = timedelta(days=365)  # 365 days to keep users logged in
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 # On Vercel, always use secure cookies (HTTPS is always used)
@@ -383,6 +384,11 @@ def debug_env():
         },
         'VERCEL': os.getenv('VERCEL'),
         'ENV': os.getenv('ENV'),
+        'N8N_WEBHOOK_URL': {
+            'set': bool(os.getenv('N8N_WEBHOOK_URL')),
+            'value_preview': os.getenv('N8N_WEBHOOK_URL', '')[:30] + '...' if os.getenv('N8N_WEBHOOK_URL') else None,
+            'length': len(os.getenv('N8N_WEBHOOK_URL', ''))
+        },
     }
     
     # Check database configuration
@@ -798,6 +804,63 @@ def dashboard_workflows():
         return render_template('dashboard/workflows.html', 
                              user=user, 
                              workflows=workflows,
+                             activations=activations)
+    except Exception as e:
+        print(f"Dashboard workflows error: {str(e)}")
+        return redirect(url_for('dashboard_overview'))
+
+# ============================================================================
+# AUTOMATION ENDPOINTS
+# ============================================================================
+
+@app.route('/api/wake', methods=['POST'])
+def wake_endpoint():
+    """
+    Endpoint to trigger Daily Summary from iOS Shortcuts.
+    Accepts: {"event": "awake"}
+    Requires: Session cookie (user must be logged in)
+    """
+    # 1. Authenticate
+    user = auth.current_user()
+    if not user:
+        return jsonify({'error': 'Unauthorized', 'message': 'Please log in via Safari first'}), 401
+
+    # 2. Validate Request
+    try:
+        data = request.get_json()
+    except Exception:
+        return jsonify({'error': 'Invalid JSON'}), 400
+
+    if not data or data.get('event') != 'awake':
+        return jsonify({'error': 'Invalid request', 'message': 'Expected {"event": "awake"}'}), 400
+
+    # 3. Reject PII
+    forbidden_keys = ['user_id', 'uuid', 'email', 'name', 'phone']
+    if any(k in data for k in forbidden_keys):
+        return jsonify({'error': 'Privacy violation', 'message': 'PII not allowed in request body'}), 400
+
+    # 4. Trigger Webhook
+    # User ID is extracted server-side from session, never from client
+    try:
+        result = webhook_client.trigger_daily_summary(
+            user_id=user['id'],
+            meta={
+                'event': 'awake',
+                'source': 'phone_automation'
+            }
+        )
+        
+        # Log masked success (never log full UUIDs in production logs if possible, but here we trust the logger)
+        print(f"Wake event triggered for user [MASKED] (success: {result.get('success')})")
+        
+        if result.get('success'):
+            return jsonify(result), 200
+        else:
+            return jsonify(result), 502  # Bad Gateway (upstream n8n error)
+            
+    except Exception as e:
+        print(f"Error in /api/wake: {e}")
+        return jsonify({'error': 'Internal Server Error', 'message': str(e)}), 500
                              is_admin=is_admin_user,
                              can_view_private=can_view_private)
     except Exception as e:
