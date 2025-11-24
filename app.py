@@ -861,11 +861,7 @@ def wake_endpoint():
     except Exception as e:
         print(f"Error in /api/wake: {e}")
         return jsonify({'error': 'Internal Server Error', 'message': str(e)}), 500
-                             is_admin=is_admin_user,
-                             can_view_private=can_view_private)
-    except Exception as e:
-        print(f"Dashboard workflows error: {str(e)}")
-        return redirect(url_for('login'))
+
 
 # Removed dashboard_workflow_create - users can't create workflows, only activate them
 
