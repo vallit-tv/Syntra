@@ -35,12 +35,15 @@ To trigger the Daily Summary from your iPhone:
     *   **Method**: `POST`
     *   **Headers**:
         *   `Content-Type`: `application/json`
+        *   `Authorization`: `Bearer <YOUR_API_KEY>` (Run `python3 generate_api_key.py` to get this)
     *   **Request Body**: `JSON`
         *   Add a new field: `event` (Text) -> `awake`
-5.  **CRITICAL:** You must be logged in to `vallit.net` on Safari for this to work, as it shares the session cookies.
-    *   Open Safari on your iPhone.
-    *   Go to `https://vallit.net/login` and log in.
-    *   The Shortcut will now be able to authenticate using your Safari session cookies.
+
+5.  **API Key Generation:**
+    *   Run `python3 generate_api_key.py` in your terminal.
+    *   Copy the key (starts with `sk_live_`).
+    *   Paste it into the `Authorization` header in your Shortcut.
+    *   **Note:** This method is much more reliable than using Safari cookies.
 
 ## 4. Testing the Pipeline
 

@@ -336,6 +336,17 @@ def current_user() -> Optional[dict]:
     if not hasattr(session, 'get'):
         print("DEBUG: Session object is not accessible")
         return None
+
+    # Check for API Key in header (for external automation)
+    try:
+        auth_header = request.headers.get('Authorization')
+        if auth_header and auth_header.startswith('Bearer sk_live_'):
+            api_key = auth_header.split(' ')[1]
+            user = db.get_user_by_api_key(api_key)
+            if user:
+                return user
+    except Exception as e:
+        print(f"API Key auth error: {e}")
         
     user_id = session.get('user_id')
     if not user_id:

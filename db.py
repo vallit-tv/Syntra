@@ -600,6 +600,7 @@ def set_workflow_api_key(activation_id: str, service_type: str, api_key: str, co
             'workflow_activation_id': activation_id,
             'service_type': service_type,
             'api_key': api_key,
+
             'config': config or {},
             'updated_at': datetime.utcnow().isoformat()
         }
@@ -810,3 +811,48 @@ def get_company_executions(company_id: str, limit: int = 100) -> List[Dict]:
     except:
         return []
 
+
+# ============================================================================
+# USER API KEYS (For External Access)
+# ============================================================================
+
+def get_user_by_api_key(api_key: str) -> Optional[Dict]:
+    """Get user associated with an API key"""
+    try:
+        # 1. Find the key
+        result = get_db().table('api_keys').select('*').eq('key_value', api_key).eq('is_active', True).execute()
+        if not result.data:
+            return None
+            
+        key_record = result.data[0]
+        user_id = key_record['user_id']
+        
+        # 2. Get the user
+        user = get_user_by_id(user_id)
+        return user
+    except Exception as e:
+        print(f"Error getting user by API key: {e}")
+        return None
+
+def create_api_key(user_id: str, name: str) -> Dict:
+    """Create a new API key for a user"""
+    try:
+        # Generate a secure random key
+        # Format: sk_live_<random_hex>
+        random_part = secrets.token_hex(24)
+        api_key = f"sk_live_{random_part}"
+        
+        data = {
+            'user_id': user_id,
+            'name': name,
+            'type': 'standard',
+            'key_value': api_key,
+            'is_active': True,
+            'created_at': datetime.utcnow().isoformat()
+        }
+        
+        result = get_db().table('api_keys').insert(data).execute()
+        return result.data[0]
+    except Exception as e:
+        print(f"Error creating API key: {e}")
+        raise
