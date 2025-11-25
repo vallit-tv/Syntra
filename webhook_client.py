@@ -70,10 +70,17 @@ def trigger_daily_summary(user_id: str, meta: Optional[Dict[str, Any]] = None) -
     
     try:
         # Send POST request to n8n webhook
+        # Prepare headers, include API key if set
+        headers = {'Content-Type': 'application/json'}
+        n8n_api_key = os.getenv('N8N_API_KEY')
+        if n8n_api_key:
+            headers['Authorization'] = f'Bearer {n8n_api_key}'
+        
+        # Send POST request to n8n webhook
         response = requests.post(
             webhook_url,
             json=payload,
-            headers={'Content-Type': 'application/json'},
+            headers=headers,
             timeout=30  # 30 second timeout for webhook calls
         )
         

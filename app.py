@@ -823,7 +823,7 @@ def wake_endpoint():
     # 1. Authenticate
     user = auth.current_user()
     if not user:
-        return jsonify({'error': 'Unauthorized', 'message': 'Please log in via Safari first'}), 401
+        return jsonify({'error': 'Unauthorized', 'message': 'Missing or invalid API key / session'}), 401
 
     # 2. Validate Request
     try:
