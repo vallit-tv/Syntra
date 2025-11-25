@@ -91,48 +91,18 @@ def get_db() -> Optional[Client]:
         print(f"Warning: {_db_error}")
         return None
     
-    # Create client - handle proxy-related issues
-    # The proxy error might come from Vercel environment or httpx library
-    # Temporarily unset proxy env vars if they exist
-    proxy_vars = ['HTTP_PROXY', 'HTTPS_PROXY', 'http_proxy', 'https_proxy', 'ALL_PROXY', 'all_proxy']
-    saved_proxies = {}
-    
-    for var in proxy_vars:
-        if var in os.environ:
-            saved_proxies[var] = os.environ[var]
-            del os.environ[var]
-    
+    # Create Supabase client
     try:
-        # Try simple positional arguments
         client = create_client(url, key)
         _db_client = client
         print("Database client created successfully")
         return client
     except Exception as e:
-        error_msg = str(e).lower()
+        _db_error = f"Failed to create Supabase client: {e}"
         print(f"Error creating Supabase client: {e}")
-        
-        # If it's a proxy error, try keyword args
-        if 'proxy' in error_msg or 'unexpected keyword' in error_msg:
-            try:
-                print("Retrying with keyword arguments...")
-                client = create_client(supabase_url=url, supabase_key=key)
-                _db_client = client
-                print("Database client created successfully with keyword arguments")
-                return client
-            except Exception as e2:
-                _db_error = f"Supabase client initialization failed: {e2}"
-                print(f"Error with keyword args: {e2}")
-        else:
-            _db_error = f"Failed to create Supabase client: {e}"
-        
-        # Don't raise - return None so the app can continue
         print(f"Warning: {_db_error}")
+        # Don't raise - return None so the app can continue
         return None
-    finally:
-        # Restore proxy env vars
-        for var, value in saved_proxies.items():
-            os.environ[var] = value
 
 
 # ============================================================================
