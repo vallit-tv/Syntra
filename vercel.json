@@ -18,11 +18,5 @@
   ],
   "env": {
     "APP_URL": "https://vallit.net"
-  },
-  "functions": {
-    "app.py": {
-      "memory": 1024,
-      "maxDuration": 10
-    }
   }
 }
