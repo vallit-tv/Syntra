@@ -340,13 +340,19 @@ def current_user() -> Optional[dict]:
     # Check for API Key in header (for external automation)
     try:
         auth_header = request.headers.get('Authorization')
-        if auth_header and auth_header.startswith('Bearer sk_live_'):
-            api_key = auth_header.split(' ')[1]
+        print(f"DEBUG: Authorization header: {auth_header[:50] if auth_header else 'None'}...")
+        if auth_header and auth_header.startswith('Bearer '):
+            api_key = auth_header.split(' ', 1)[1].strip()  # Get everything after 'Bearer '
+            print(f"DEBUG: Extracted API key: {api_key[:20]}...")
             user = db.get_user_by_api_key(api_key)
             if user:
+                print(f"DEBUG: User found via API key: {user.get('name')}")
                 return user
+            else:
+                print(f"DEBUG: No user found for API key")
     except Exception as e:
         print(f"API Key auth error: {e}")
+        traceback.print_exc()
         
     user_id = session.get('user_id')
     if not user_id:
