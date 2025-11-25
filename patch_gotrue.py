@@ -10,23 +10,49 @@ Run this after: pip install -r requirements.txt
 """
 import os
 import sys
+import glob
 
 def find_gotrue_file():
-    """Find the gotrue_base_api.py file in the virtual environment"""
-    # Try to find the file in the current virtual environment
-    venv_path = sys.prefix
-    gotrue_file = os.path.join(
-        venv_path,
-        'lib',
-        f'python{sys.version_info.major}.{sys.version_info.minor}',
-        'site-packages',
-        'gotrue',
-        '_sync',
-        'gotrue_base_api.py'
-    )
+    """Find the gotrue_base_api.py file in site-packages"""
     
-    if os.path.exists(gotrue_file):
-        return gotrue_file
+    # Try multiple search locations
+    search_paths = [
+        # Local venv
+        os.path.join(sys.prefix, 'lib', f'python{sys.version_info.major}.{sys.version_info.minor}', 'site-packages'),
+        # Vercel build environment
+        '/var/task',
+        '/var/runtime',
+        # Alternative locations
+        os.path.join(sys.prefix, 'lib', 'python*', 'site-packages'),
+    ]
+    
+    print(f"Python prefix: {sys.prefix}")
+    print(f"Python version: {sys.version_info.major}.{sys.version_info.minor}")
+    print(f"Searching for gotrue library...")
+    
+    for base_path in search_paths:
+        # Expand wildcards
+        if '*' in base_path:
+            expanded_paths = glob.glob(base_path)
+        else:
+            expanded_paths = [base_path] if os.path.exists(base_path) else []
+        
+        for path in expanded_paths:
+            gotrue_file = os.path.join(path, 'gotrue', '_sync', 'gotrue_base_api.py')
+            print(f"  Checking: {gotrue_file}")
+            if os.path.exists(gotrue_file):
+                print(f"  ✓ Found!")
+                return gotrue_file
+    
+    # Last resort: search the entire Python path
+    print("Searching sys.path...")
+    for path in sys.path:
+        if 'site-packages' in path or 'dist-packages' in path:
+            gotrue_file = os.path.join(path, 'gotrue', '_sync', 'gotrue_base_api.py')
+            print(f"  Checking: {gotrue_file}")
+            if os.path.exists(gotrue_file):
+                print(f"  ✓ Found!")
+                return gotrue_file
     
     return None
 
@@ -36,51 +62,47 @@ def patch_gotrue():
     
     if not gotrue_file:
         print("❌ Error: Could not find gotrue library file")
-        print(f"   Expected at: {gotrue_file}")
-        print("   Make sure you've run: pip install -r requirements.txt")
+        print(f"   Searched in sys.prefix: {sys.prefix}")
+        print(f"   sys.path: {sys.path}")
         return False
     
     print(f"📁 Found gotrue file: {gotrue_file}")
     
     # Read the file
-    with open(gotrue_file, 'r') as f:
-        content = f.read()
+    try:
+        with open(gotrue_file, 'r') as f:
+            content = f.read()
+    except Exception as e:
+        print(f"❌ Error reading file: {e}")
+        return False
     
     # Check if already patched
-    if '# PATCHED:' in content:
+    if '# PATCHED:' in content or 'PATCHED' in content:
         print("✅ File is already patched!")
         return True
     
-    # Apply the patch
-    original = """        self._http_client = http_client or SyncClient(
-            verify=bool(verify),
-            proxy=proxy,
-            follow_redirects=True,
-            http2=True,
-        )"""
-    
-    patched = """        # PATCHED: Removed proxy parameter from SyncClient (not supported in httpx 0.23+)
-        # Original code tried to pass proxy=proxy which causes TypeError
-        self._http_client = http_client or SyncClient(
-            verify=bool(verify),
-            # proxy parameter removed - not supported in httpx >=0.23
-            follow_redirects=True,
-            http2=True,
-        )"""
-    
-    if original in content:
-        content = content.replace(original, patched)
+    # Apply the patch - look for the proxy parameter usage
+    if 'proxy=proxy,' in content or 'proxy=proxy)' in content:
+        print("Applying patch...")
+        # Remove the proxy parameter from SyncClient initialization
+        content = content.replace('proxy=proxy,', '# proxy=proxy,  # PATCHED: removed')
+        content = content.replace('proxy=proxy)', '# proxy=proxy  # PATCHED: removed\n        )')
         
         # Write the patched file
-        with open(gotrue_file, 'w') as f:
-            f.write(content)
-        
-        print("✅ Successfully patched gotrue library!")
-        print("   The proxy parameter has been removed from httpx.SyncClient")
-        return True
+        try:
+            with open(gotrue_file, 'w') as f:
+                f.write(content)
+            print("✅ Successfully patched gotrue library!")
+            return True
+        except Exception as e:
+            print(f"❌ Error writing patched file: {e}")
+            return False
     else:
-        print("⚠️  Warning: Could not find the expected code to patch")
-        print("   The gotrue library may have been updated or already modified")
+        print("⚠️  Warning: Could not find proxy parameter in expected location")
+        print("   The gotrue library may have been updated or structure changed")
+        # Check if it's using a different pattern
+        if 'SyncClient' in content and 'proxy' in content:
+            print("   File contains SyncClient and proxy references, but in unexpected format")
         return False
 
 if __name__ == '__main__':
@@ -94,10 +116,11 @@ if __name__ == '__main__':
     print()
     print("=" * 60)
     if success:
-        print("✅ Patching complete! You can now run:")
-        print("   python3 generate_api_key.py")
+        print("✅ Patching complete!")
     else:
-        print("❌ Patching failed. Please check the output above.")
+        print("❌ Patching failed.")
+        print("   The application may not work correctly.")
+        print("   Check the logs above for details.")
     print("=" * 60)
     
     sys.exit(0 if success else 1)
