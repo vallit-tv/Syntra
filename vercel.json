@@ -18,5 +18,6 @@
   ],
   "env": {
     "APP_URL": "https://vallit.net"
-  }
+  },
+  "buildCommand": "bash build.sh"
 }
