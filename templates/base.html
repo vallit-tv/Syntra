@@ -1,11 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="scroll-behavior: smooth;">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Syntra – AI-Powered Workflow Automation & Analytics{% endblock %}</title>
-    <meta name="description" content="{% block description %}Transform your business with AI-driven workflow automation and intelligent analytics. Syntra helps companies optimize processes and understand their data signals.{% endblock %}">
+    <meta name="description"
+        content="{% block description %}Transform your business with AI-driven workflow automation and intelligent analytics. Syntra helps companies optimize processes and understand their data signals.{% endblock %}">
     <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Load CSS file, fallback to inline if it fails -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=5" id="main-css">
     {% block extra_css %}{% endblock %}
@@ -13,7 +19,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         // Fallback: If CSS fails to load, inject it inline
-        window.addEventListener('load', function() {
+        window.addEventListener('load', function () {
             var cssLink = document.getElementById('main-css');
             if (cssLink && !cssLink.sheet) {
                 fetch('{{ url_for("static", filename="css/style.css") }}?v=5')
@@ -27,13 +33,14 @@
             }
         });
     </script>
-    
+
     <!-- SEO Meta Tags -->
     <meta name="robots" content="index, follow">
     <meta name="googlebot" content="index, follow">
     <link rel="canonical" href="https://www.vallit.net">
 </head>
-<body>
+
+<body class="{% block body_class %}{% endblock %}">
     <!-- Navigation -->
     <header>
         <div class="container">
@@ -42,19 +49,19 @@
                     <div class="logo-icon">S</div>
                     <span class="logo-text">Syntra</span>
                 </a>
-                
+
                 <nav>
                     <ul class="nav-links">
                         <li><a href="{{ url_for('index') }}">Home</a></li>
                     </ul>
                 </nav>
-                
+
                 <div class="header-actions">
                     {% if session.user_id %}
-                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Dashboard</a>
-                        <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Dashboard</a>
+                    <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
                     {% else %}
-                        <a href="{{ url_for('register') }}" class="btn btn-primary">Get Started</a>
+                    <a href="{{ url_for('register') }}" class="btn btn-primary">Get Started</a>
                     {% endif %}
                 </div>
             </div>
@@ -63,15 +70,15 @@
 
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <div class="container" style="padding-top: 1rem;">
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category if category != 'message' else 'info' }}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
+    {% if messages %}
+    <div class="container" style="padding-top: 1rem;">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category if category != 'message' else 'info' }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
     {% endwith %}
 
     <!-- Main Content -->
@@ -88,7 +95,8 @@
                         <div class="logo-icon">S</div>
                         <span class="logo-text">Syntra</span>
                     </a>
-                    <p>AI-powered workflow automation and analytics platform that helps businesses optimize processes and make data-driven decisions.</p>
+                    <p>AI-powered workflow automation and analytics platform that helps businesses optimize processes
+                        and make data-driven decisions.</p>
                 </div>
                 <div class="footer-links">
                     <h4>Product</h4>
@@ -119,7 +127,7 @@
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script>
         // Initialize Lucide icons
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             if (typeof lucide !== 'undefined') {
                 lucide.createIcons();
             }
@@ -127,4 +135,5 @@
     </script>
     {% block scripts %}{% endblock %}
 </body>
+
 </html>
