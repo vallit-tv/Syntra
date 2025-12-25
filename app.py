@@ -1185,6 +1185,62 @@ def admin_system():
         print(f"Admin system error: {str(e)}")
         return redirect(url_for('admin_dashboard'))
 
+@app.route('/admin/chat')
+@auth.admin_required
+def admin_chat():
+    """Admin AI chat widget management page"""
+    try:
+        user = auth.current_user()
+        chat_service = get_chat_service()
+        
+        # Check configurations
+        openai_configured = chat_service.is_configured()
+        openai_model = os.getenv('OPENAI_MODEL', 'gpt-4o-mini')
+        n8n_webhook_configured = chat_service.has_n8n_integration()
+        
+        # Get widget config
+        config = chat_service.get_widget_config(db, 'default')
+        if not config:
+            config = chat_service.get_default_widget_config()
+        
+        # Get stats from database
+        stats = {
+            'total_sessions': 0,
+            'active_sessions': 0,
+            'total_messages': 0,
+            'messages_24h': 0
+        }
+        
+        sessions = []
+        try:
+            db_client = db.get_db()
+            if db_client:
+                # Get session count
+                sessions_result = db_client.table('chat_sessions').select('*').order('created_at', desc=True).limit(10).execute()
+                sessions = sessions_result.data if sessions_result.data else []
+                stats['total_sessions'] = len(sessions_result.data) if sessions_result.data else 0
+                stats['active_sessions'] = sum(1 for s in sessions if s.get('is_active'))
+                
+                # Get message count
+                messages_result = db_client.table('chat_messages').select('id', count='exact').execute()
+                stats['total_messages'] = messages_result.count if hasattr(messages_result, 'count') and messages_result.count else 0
+        except Exception as e:
+            print(f"Error getting chat stats: {e}")
+        
+        return render_template('admin/chat.html',
+                             user=user,
+                             openai_configured=openai_configured,
+                             openai_model=openai_model,
+                             n8n_webhook_configured=n8n_webhook_configured,
+                             config=config,
+                             stats=stats,
+                             sessions=sessions)
+    except Exception as e:
+        print(f"Admin chat error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return redirect(url_for('admin_dashboard'))
+
 @app.route('/admin/analytics')
 @auth.admin_required
 def admin_analytics():
@@ -2850,6 +2906,309 @@ def api_setup_payment_method():
     user = auth.current_user()
     # Placeholder - to be replaced with actual payment setup
     return jsonify({'setup_url': 'https://billing.syntra.app/setup'})
+
+# ============================================================================
+# CHAT WIDGET API ROUTES
+# ============================================================================
+
+from chat_service import get_chat_service
+import uuid as uuid_lib
+
+@app.route('/api/chat/message', methods=['POST', 'OPTIONS'])
+def chat_message():
+    """Handle incoming chat messages from the widget"""
+    # Handle CORS preflight
+    if request.method == 'OPTIONS':
+        response = jsonify({'status': 'ok'})
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+        return response
+    
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        
+        message = data.get('message', '').strip()
+        session_key = data.get('session_id') or data.get('session_key')
+        widget_id = data.get('widget_id', 'default')
+        user_context = data.get('context', {})
+        
+        if not message:
+            return jsonify({'error': 'Message is required'}), 400
+        
+        # Generate session key if not provided
+        if not session_key:
+            session_key = f"widget_{uuid_lib.uuid4().hex[:16]}"
+        
+        chat_service = get_chat_service()
+        
+        # Get or create session
+        session, is_new = chat_service.get_or_create_session(
+            db,
+            session_key=session_key,
+            widget_id=widget_id,
+            context=user_context
+        )
+        
+        if not session:
+            return jsonify({'error': 'Failed to create session'}), 500
+        
+        session_id = session['id']
+        
+        # Save user message
+        user_msg = chat_service.save_message(
+            db, session_id, 'user', message
+        )
+        
+        # Get conversation history for context
+        history = chat_service.get_conversation_history(db, session_id, limit=20)
+        
+        # Get widget config for system prompt
+        widget_config = chat_service.get_widget_config(db, widget_id)
+        if not widget_config:
+            widget_config = chat_service.get_default_widget_config()
+        
+        system_prompt = widget_config.get('system_prompt') or chat_service.default_system_prompt
+        
+        # Try n8n first if configured, otherwise use direct ChatGPT
+        ai_response = None
+        response_metadata = {}
+        n8n_execution_id = None
+        
+        if chat_service.has_n8n_integration():
+            # Trigger n8n workflow
+            success, exec_id = chat_service.trigger_n8n_workflow(
+                session_id, message, user_context, history
+            )
+            if success:
+                n8n_execution_id = exec_id
+                # n8n will call back via webhook, return pending status
+                response = jsonify({
+                    'status': 'pending',
+                    'session_id': session_key,
+                    'message_id': user_msg['id'] if user_msg else None,
+                    'n8n_execution_id': exec_id
+                })
+                response.headers['Access-Control-Allow-Origin'] = '*'
+                return response
+        
+        # Direct ChatGPT response (fallback or primary)
+        if chat_service.is_configured():
+            ai_response, response_metadata = chat_service.generate_response(
+                history,
+                system_prompt=system_prompt
+            )
+        
+        if ai_response:
+            # Save AI response
+            ai_msg = chat_service.save_message(
+                db, session_id, 'assistant', ai_response,
+                tokens_used=response_metadata.get('tokens_total'),
+                model=response_metadata.get('model'),
+                metadata=response_metadata
+            )
+            
+            response = jsonify({
+                'status': 'success',
+                'session_id': session_key,
+                'response': ai_response,
+                'message_id': ai_msg['id'] if ai_msg else None,
+                'metadata': {
+                    'tokens_used': response_metadata.get('tokens_total'),
+                    'model': response_metadata.get('model')
+                }
+            })
+        else:
+            # No AI configured or error
+            error_msg = response_metadata.get('error', 'AI service not available')
+            response = jsonify({
+                'status': 'error',
+                'session_id': session_key,
+                'error': error_msg,
+                'response': "I'm sorry, I'm unable to respond right now. Please try again later."
+            })
+        
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response
+        
+    except Exception as e:
+        print(f"Chat message error: {e}")
+        import traceback
+        traceback.print_exc()
+        response = jsonify({'error': 'Internal server error', 'details': str(e)})
+        response.status_code = 500
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response
+
+
+@app.route('/api/chat/history/<session_key>', methods=['GET', 'OPTIONS'])
+def chat_history(session_key):
+    """Get conversation history for a session"""
+    if request.method == 'OPTIONS':
+        response = jsonify({'status': 'ok'})
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+        return response
+    
+    try:
+        chat_service = get_chat_service()
+        
+        # Get session
+        session, _ = chat_service.get_or_create_session(db, session_key)
+        if not session:
+            response = jsonify({'messages': [], 'session_id': session_key})
+            response.headers['Access-Control-Allow-Origin'] = '*'
+            return response
+        
+        # Get messages
+        limit = request.args.get('limit', 50, type=int)
+        messages = chat_service.get_conversation_history(db, session['id'], limit)
+        
+        # Format for frontend
+        formatted = [{
+            'id': msg['id'],
+            'role': msg['role'],
+            'content': msg['content'],
+            'timestamp': msg['created_at']
+        } for msg in messages]
+        
+        response = jsonify({
+            'session_id': session_key,
+            'messages': formatted
+        })
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response
+        
+    except Exception as e:
+        print(f"Chat history error: {e}")
+        response = jsonify({'error': str(e), 'messages': []})
+        response.status_code = 500
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response
+
+
+@app.route('/api/chat/webhook', methods=['POST'])
+def chat_webhook():
+    """Webhook endpoint for n8n to send AI responses back"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        
+        session_id = data.get('session_id')
+        response_text = data.get('response') or data.get('message')
+        n8n_execution_id = data.get('execution_id')
+        metadata = data.get('metadata', {})
+        
+        if not session_id or not response_text:
+            return jsonify({'error': 'session_id and response are required'}), 400
+        
+        chat_service = get_chat_service()
+        
+        # Save the AI response
+        ai_msg = chat_service.save_message(
+            db, session_id, 'assistant', response_text,
+            metadata=metadata,
+            n8n_execution_id=n8n_execution_id
+        )
+        
+        if ai_msg:
+            return jsonify({
+                'status': 'success',
+                'message_id': ai_msg['id']
+            })
+        else:
+            return jsonify({'error': 'Failed to save message'}), 500
+            
+    except Exception as e:
+        print(f"Chat webhook error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/chat/config', methods=['GET', 'OPTIONS'])
+def chat_config():
+    """Get widget configuration"""
+    if request.method == 'OPTIONS':
+        response = jsonify({'status': 'ok'})
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+        return response
+    
+    try:
+        widget_id = request.args.get('widget_id', 'default')
+        chat_service = get_chat_service()
+        
+        config = chat_service.get_widget_config(db, widget_id)
+        if not config:
+            config = chat_service.get_default_widget_config()
+        
+        # Remove sensitive fields
+        safe_config = {
+            'widget_id': config.get('widget_id'),
+            'name': config.get('name'),
+            'theme': config.get('theme'),
+            'position': config.get('position'),
+            'welcome_message': config.get('welcome_message'),
+            'placeholder_text': config.get('placeholder_text'),
+            'primary_color': config.get('primary_color'),
+            'settings': config.get('settings', {})
+        }
+        
+        response = jsonify(safe_config)
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response
+        
+    except Exception as e:
+        print(f"Chat config error: {e}")
+        response = jsonify({'error': str(e)})
+        response.status_code = 500
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response
+
+
+@app.route('/widget/embed.js', methods=['GET'])
+def widget_embed_script():
+    """Serve the embeddable widget JavaScript"""
+    try:
+        widget_js_path = os.path.join(app.static_folder, 'js', 'chat-widget.js')
+        if os.path.exists(widget_js_path):
+            response = send_file(widget_js_path, mimetype='application/javascript')
+            response.headers['Access-Control-Allow-Origin'] = '*'
+            response.headers['Cache-Control'] = 'public, max-age=3600'
+            return response
+        else:
+            return "// Widget not found", 404
+    except Exception as e:
+        print(f"Widget embed error: {e}")
+        return f"// Error: {str(e)}", 500
+
+
+@app.route('/widget/styles.css', methods=['GET'])
+def widget_styles():
+    """Serve the widget CSS"""
+    try:
+        widget_css_path = os.path.join(app.static_folder, 'css', 'chat-widget.css')
+        if os.path.exists(widget_css_path):
+            response = send_file(widget_css_path, mimetype='text/css')
+            response.headers['Access-Control-Allow-Origin'] = '*'
+            response.headers['Cache-Control'] = 'public, max-age=3600'
+            return response
+        else:
+            return "/* Widget styles not found */", 404
+    except Exception as e:
+        print(f"Widget styles error: {e}")
+        return f"/* Error: {str(e)} */", 500
+
+
+@app.route('/widget-demo')
+def widget_demo():
+    """Demo page showcasing the chat widget with different themes"""
+    return render_template('widget-demo.html')
+
 
 # ============================================================================
 # n8n Sync API Routes

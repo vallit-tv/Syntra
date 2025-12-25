@@ -1,0 +1,287 @@
+{% extends "admin/base.html" %}
+
+{% block breadcrumbs %}
+<a href="{{ url_for('admin_dashboard') }}">Admin</a>
+<span class="breadcrumbs-separator">/</span>
+<span>AI Chat</span>
+{% endblock %}
+
+{% block admin_content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">AI Chat Widget</h1>
+        <p class="page-description">Configure and test the embeddable AI chat assistant.</p>
+    </div>
+    <div class="page-actions">
+        <button class="btn btn-secondary" onclick="window.syntraChat && window.syntraChat.clearHistory()">
+            <i data-lucide="trash-2" width="16" height="16"></i>
+            Clear History
+        </button>
+    </div>
+</div>
+
+<!-- Status Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-label">OpenAI Status</span>
+            <div class="stat-icon {{ 'green' if openai_configured else 'red' }}">
+                <i data-lucide="{{ 'check-circle' if openai_configured else 'x-circle' }}" width="18" height="18"></i>
+            </div>
+        </div>
+        <div class="stat-value">{{ 'Connected' if openai_configured else 'Not Configured' }}</div>
+        <p class="stat-caption">
+            {% if openai_configured %}
+            Model: {{ openai_model }}
+            {% else %}
+            Set OPENAI_API_KEY in .env
+            {% endif %}
+        </p>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-label">n8n Webhook</span>
+            <div class="stat-icon {{ 'green' if n8n_webhook_configured else 'amber' }}">
+                <i data-lucide="{{ 'zap' if n8n_webhook_configured else 'zap-off' }}" width="18" height="18"></i>
+            </div>
+        </div>
+        <div class="stat-value">{{ 'Enabled' if n8n_webhook_configured else 'Direct Mode' }}</div>
+        <p class="stat-caption">
+            {% if n8n_webhook_configured %}
+            Using n8n workflow
+            {% else %}
+            Calling ChatGPT directly
+            {% endif %}
+        </p>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-label">Sessions</span>
+            <div class="stat-icon blue">
+                <i data-lucide="message-circle" width="18" height="18"></i>
+            </div>
+        </div>
+        <div class="stat-value">{{ stats.total_sessions }}</div>
+        <p class="stat-caption">{{ stats.active_sessions }} active</p>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-label">Messages</span>
+            <div class="stat-icon purple">
+                <i data-lucide="messages-square" width="18" height="18"></i>
+            </div>
+        </div>
+        <div class="stat-value">{{ stats.total_messages }}</div>
+        <p class="stat-caption">Last 24h: {{ stats.messages_24h }}</p>
+    </div>
+</div>
+
+<!-- Configuration Section -->
+<div class="dashboard-card">
+    <div class="card-header">
+        <div>
+            <h2 class="card-title">Widget Configuration</h2>
+            <p class="card-subtitle">Current settings for the default widget</p>
+        </div>
+        <span class="status-badge active">
+            <span class="status-badge-dot"></span>
+            Active
+        </span>
+    </div>
+    <div class="card-body">
+        <div class="config-grid"
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+            <div class="config-item">
+                <label class="form-label">Theme</label>
+                <select id="theme-select" class="form-input" onchange="changeTheme(this.value)">
+                    <option value="minimal">Minimal</option>
+                    <option value="glassmorphism" selected>Glassmorphism</option>
+                    <option value="corporate">Corporate</option>
+                    <option value="dark">Dark</option>
+                    <option value="gradient">Gradient</option>
+                    <option value="rounded">Rounded</option>
+                </select>
+            </div>
+            <div class="config-item">
+                <label class="form-label">Position</label>
+                <select id="position-select" class="form-input" onchange="changePosition(this.value)">
+                    <option value="bottom-right" selected>Bottom Right</option>
+                    <option value="bottom-left">Bottom Left</option>
+                    <option value="top-right">Top Right</option>
+                    <option value="top-left">Top Left</option>
+                </select>
+            </div>
+            <div class="config-item">
+                <label class="form-label">Welcome Message</label>
+                <input type="text" class="form-input" value="{{ config.welcome_message }}" id="welcome-message"
+                    readonly>
+            </div>
+            <div class="config-item">
+                <label class="form-label">System Prompt</label>
+                <input type="text" class="form-input" value="{{ config.system_prompt[:50] }}..." id="system-prompt"
+                    readonly title="{{ config.system_prompt }}">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Embed Code Section -->
+<div class="dashboard-card">
+    <div class="card-header">
+        <div>
+            <h2 class="card-title">Embed Code</h2>
+            <p class="card-subtitle">Copy this code to add the widget to any webpage</p>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="copyEmbed()">
+            <i data-lucide="copy" width="14" height="14"></i>
+            Copy Code
+        </button>
+    </div>
+    <div class="card-body">
+        <div class="code-block"
+            style="background: var(--bg-tertiary); padding: 1rem; border-radius: 8px; font-family: monospace; font-size: 0.875rem; overflow-x: auto;">
+            <code id="embed-code"
+                style="color: var(--text-primary);">&lt;script src="{{ request.host_url }}widget/embed.js" data-theme="glassmorphism" data-position="bottom-right"&gt;&lt;/script&gt;</code>
+        </div>
+    </div>
+</div>
+
+<!-- n8n Setup Guide -->
+<div class="dashboard-card">
+    <div class="card-header">
+        <div>
+            <h2 class="card-title">n8n Workflow Setup</h2>
+            <p class="card-subtitle">Configure AI responses through n8n automation</p>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="setup-steps" style="display: flex; flex-direction: column; gap: 1rem;">
+            <div class="step" style="display: flex; gap: 1rem; align-items: flex-start;">
+                <span class="step-number"
+                    style="background: var(--primary); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; flex-shrink: 0;">1</span>
+                <div>
+                    <strong>Create a Webhook node in n8n</strong>
+                    <p class="text-secondary" style="margin-top: 0.25rem;">Set HTTP Method to POST, Path to "chat"</p>
+                </div>
+            </div>
+            <div class="step" style="display: flex; gap: 1rem; align-items: flex-start;">
+                <span class="step-number"
+                    style="background: var(--primary); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; flex-shrink: 0;">2</span>
+                <div>
+                    <strong>Add OpenAI Chat node</strong>
+                    <p class="text-secondary" style="margin-top: 0.25rem;">Use the incoming message from
+                        <code>{{ "{{ $json.message }}" }}</code></p>
+                </div>
+            </div>
+            <div class="step" style="display: flex; gap: 1rem; align-items: flex-start;">
+                <span class="step-number"
+                    style="background: var(--primary); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; flex-shrink: 0;">3</span>
+                <div>
+                    <strong>Return the response</strong>
+                    <p class="text-secondary" style="margin-top: 0.25rem;">Send HTTP POST to
+                        <code>{{ request.host_url }}api/chat/webhook</code> with session_id and response</p>
+                </div>
+            </div>
+            <div class="step" style="display: flex; gap: 1rem; align-items: flex-start;">
+                <span class="step-number"
+                    style="background: var(--primary); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; flex-shrink: 0;">4</span>
+                <div>
+                    <strong>Set environment variable</strong>
+                    <p class="text-secondary" style="margin-top: 0.25rem;">Add
+                        <code>N8N_CHAT_WEBHOOK_URL=https://your-n8n.cloud/webhook/chat</code> to .env</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Conversations -->
+<div class="dashboard-card">
+    <div class="card-header">
+        <div>
+            <h2 class="card-title">Recent Conversations</h2>
+            <p class="card-subtitle">Latest chat sessions</p>
+        </div>
+    </div>
+    <div class="card-body">
+        {% if sessions %}
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Session</th>
+                    <th>Messages</th>
+                    <th>Page URL</th>
+                    <th>Created</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for session in sessions %}
+                <tr>
+                    <td><code style="font-size: 0.75rem;">{{ session.session_key[:20] }}...</code></td>
+                    <td>{{ session.message_count or 0 }}</td>
+                    <td>{{ session.page_url or 'N/A' }}</td>
+                    <td>{{ session.created_at }}</td>
+                    <td>
+                        <span class="status-badge {{ 'active' if session.is_active else 'inactive' }}">
+                            <span class="status-badge-dot"></span>
+                            {{ 'Active' if session.is_active else 'Ended' }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+            <i data-lucide="message-square-off" width="48" height="48" style="opacity: 0.5;"></i>
+            <p style="margin-top: 1rem;">No chat sessions yet. Try the widget in the bottom-right corner!</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block admin_scripts %}
+<!-- Load widget CSS and JS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chat-widget.css') }}">
+<script src="{{ url_for('static', filename='js/chat-widget.js') }}" data-widget-id="admin-preview"
+    data-theme="glassmorphism" data-position="bottom-right" data-title="Admin Preview"
+    data-welcome-message="Hi! 👋 This is the admin preview of the chat widget.">
+    </script>
+
+<script>
+    function changeTheme(theme) {
+        if (window.syntraChat) {
+            window.syntraChat.setTheme(theme);
+            updateEmbedCode();
+        }
+    }
+
+    function changePosition(position) {
+        const widget = document.getElementById('syntra-chat-widget');
+        if (widget) {
+            // Remove old position classes
+            widget.className = widget.className.replace(/syntra-position-\S+/g, '');
+            widget.classList.add(`syntra-position-${position}`);
+            updateEmbedCode();
+        }
+    }
+
+    function updateEmbedCode() {
+        const theme = document.getElementById('theme-select').value;
+        const position = document.getElementById('position-select').value;
+        const baseUrl = window.location.origin;
+        const code = `<script src="${baseUrl}/widget/embed.js" data-theme="${theme}" data-position="${position}"><\/script>`;
+        document.getElementById('embed-code').textContent = code;
+    }
+
+    function copyEmbed() {
+        const code = document.getElementById('embed-code').textContent;
+        navigator.clipboard.writeText(code).then(() => {
+            // Show toast or feedback
+            alert('Embed code copied to clipboard!');
+        });
+    }
+</script>
+{% endblock %}

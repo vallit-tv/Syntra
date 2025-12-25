@@ -9,19 +9,22 @@
 {% block sidebar_home_url %}{{ url_for('admin_dashboard') }}{% endblock %}
 
 {% block sidebar_nav %}
-<a href="{{ url_for('admin_workflows') }}" class="nav-item {% if request.endpoint == 'admin_workflows' or request.endpoint == 'admin_workflow_detail' %}active{% endif %}">
+<a href="{{ url_for('admin_workflows') }}"
+    class="nav-item {% if request.endpoint == 'admin_workflows' or request.endpoint == 'admin_workflow_detail' %}active{% endif %}">
     <span class="nav-item-icon">
         <i data-lucide="workflow" width="20" height="20"></i>
     </span>
     <span class="nav-item-text">Workflows</span>
 </a>
-<a href="{{ url_for('admin_companies') }}" class="nav-item {% if request.endpoint == 'admin_companies' or request.endpoint == 'admin_company_detail' %}active{% endif %}">
+<a href="{{ url_for('admin_companies') }}"
+    class="nav-item {% if request.endpoint == 'admin_companies' or request.endpoint == 'admin_company_detail' %}active{% endif %}">
     <span class="nav-item-icon">
         <i data-lucide="building-2" width="20" height="20"></i>
     </span>
     <span class="nav-item-text">Companies</span>
 </a>
-<a href="{{ url_for('admin_users') }}" class="nav-item {% if request.endpoint == 'admin_users' or request.endpoint == 'admin_user_detail' %}active{% endif %}">
+<a href="{{ url_for('admin_users') }}"
+    class="nav-item {% if request.endpoint == 'admin_users' or request.endpoint == 'admin_user_detail' %}active{% endif %}">
     <span class="nav-item-icon">
         <i data-lucide="users" width="20" height="20"></i>
     </span>
@@ -33,11 +36,18 @@
     </span>
     <span class="nav-item-text">N8N</span>
 </a>
-<a href="{{ url_for('admin_analytics') }}" class="nav-item {% if request.endpoint == 'admin_analytics' %}active{% endif %}">
+<a href="{{ url_for('admin_analytics') }}"
+    class="nav-item {% if request.endpoint == 'admin_analytics' %}active{% endif %}">
     <span class="nav-item-icon">
         <i data-lucide="bar-chart-3" width="20" height="20"></i>
     </span>
     <span class="nav-item-text">Analytics</span>
+</a>
+<a href="{{ url_for('admin_chat') }}" class="nav-item {% if request.endpoint == 'admin_chat' %}active{% endif %}">
+    <span class="nav-item-icon">
+        <i data-lucide="message-square" width="20" height="20"></i>
+    </span>
+    <span class="nav-item-text">AI Chat</span>
 </a>
 <a href="{{ url_for('admin_system') }}" class="nav-item {% if request.endpoint == 'admin_system' %}active{% endif %}">
     <span class="nav-item-icon">
@@ -61,4 +71,3 @@
 {% block scripts %}
 {% block admin_scripts %}{% endblock %}
 {% endblock %}
-
