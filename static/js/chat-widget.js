@@ -5,6 +5,7 @@
  * Usage:
  * <script src="https://your-domain.com/widget/embed.js" 
  *   data-widget-id="your-widget-id"
+ *   data-company-id="your-company-id"
  *   data-theme="glassmorphism"
  *   data-position="bottom-right">
  * </script>
@@ -26,6 +27,7 @@
     // Default configuration
     const defaultConfig = {
         widgetId: 'default',
+        companyId: null,  // Multi-tenant company identifier
         theme: 'glassmorphism',
         position: 'bottom-right',
         apiUrl: DEFAULT_API_URL,
@@ -394,6 +396,7 @@
                         message: content,
                         session_id: this.sessionId,
                         widget_id: this.config.widgetId,
+                        company_id: this.config.companyId,  // Multi-tenant context
                         context: {
                             page_url: window.location.href,
                             page_title: document.title,
@@ -517,6 +520,7 @@
         scripts.forEach(script => {
             const config = {
                 widgetId: script.getAttribute('data-widget-id'),
+                companyId: script.getAttribute('data-company-id'),  // Multi-tenant
                 theme: script.getAttribute('data-theme'),
                 position: script.getAttribute('data-position'),
                 apiUrl: script.getAttribute('data-api-url'),

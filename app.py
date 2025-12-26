@@ -516,6 +516,50 @@ def setup_password():
     return render_template('setup-password.html')
 
 # ============================================================================
+# PUBLIC PAGES - Features, Pricing, About, Legal
+# ============================================================================
+
+@app.route('/features')
+def features():
+    """Features overview page"""
+    return render_template('features.html')
+
+@app.route('/features/automation')
+def feature_automation():
+    """Intelligent Automation feature page"""
+    return render_template('features/automation.html')
+
+@app.route('/features/analytics')
+def feature_analytics():
+    """Real-time Analytics feature page"""
+    return render_template('features/analytics.html')
+
+@app.route('/features/security')
+def feature_security():
+    """Enterprise Security feature page"""
+    return render_template('features/security.html')
+
+@app.route('/pricing')
+def pricing():
+    """Pricing page"""
+    return render_template('pricing.html')
+
+@app.route('/about')
+def about():
+    """About page"""
+    return render_template('about.html')
+
+@app.route('/impressum')
+def impressum():
+    """Legal notice page (German requirement)"""
+    return render_template('legal/impressum.html')
+
+@app.route('/datenschutz')
+def datenschutz():
+    """Privacy policy page (German requirement)"""
+    return render_template('legal/datenschutz.html')
+
+# ============================================================================
 # CEO DASHBOARD ROUTES
 # ============================================================================
 
@@ -2933,6 +2977,7 @@ def chat_message():
         message = data.get('message', '').strip()
         session_key = data.get('session_id') or data.get('session_key')
         widget_id = data.get('widget_id', 'default')
+        company_id = data.get('company_id')  # Multi-tenant company identifier
         user_context = data.get('context', {})
         
         if not message:
@@ -2944,11 +2989,17 @@ def chat_message():
         
         chat_service = get_chat_service()
         
-        # Get or create session
+        # Get company context for multi-tenant routing
+        company_context = None
+        if company_id:
+            company_context = chat_service.get_company_context(db, company_id)
+        
+        # Get or create session with company_id
         session, is_new = chat_service.get_or_create_session(
             db,
             session_key=session_key,
             widget_id=widget_id,
+            company_id=company_id,
             context=user_context
         )
         
@@ -2965,8 +3016,8 @@ def chat_message():
         # Get conversation history for context
         history = chat_service.get_conversation_history(db, session_id, limit=20)
         
-        # Get widget config for system prompt
-        widget_config = chat_service.get_widget_config(db, widget_id)
+        # Get widget config (optionally filtered by company)
+        widget_config = chat_service.get_widget_config(db, widget_id, company_id)
         if not widget_config:
             widget_config = chat_service.get_default_widget_config()
         
@@ -2978,9 +3029,9 @@ def chat_message():
         n8n_execution_id = None
         
         if chat_service.has_n8n_integration():
-            # Trigger n8n workflow
+            # Trigger n8n workflow with company context for multi-tenant routing
             success, exec_id = chat_service.trigger_n8n_workflow(
-                session_id, message, user_context, history
+                session_id, message, user_context, company_context, history
             )
             if success:
                 n8n_execution_id = exec_id
@@ -3243,4 +3294,5 @@ application = app
 if __name__ == '__main__':
     # Start auto-sync if enabled
     init_auto_sync()
-    # Vercel handles server startup
+    # Start Flask development server
+    app.run(host='0.0.0.0', port=5001, debug=True)

@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block title %}Insights & Analytics – Syntra{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}?v=7">
+{% endblock %}
+
+{% block body_class %}landing-page{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="page-hero feature-hero" id="main-content">
+    <div class="hero-orbs" aria-hidden="true">
+        <div class="hero-orb hero-orb-1"></div>
+        <div class="hero-orb hero-orb-2"></div>
+    </div>
+    <div class="container">
+        <div class="page-hero-content">
+            <a href="{{ url_for('features') }}" class="back-link">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7" />
+                </svg>
+                Back to What We Do
+            </a>
+            <div class="feature-hero-icon analytics">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 20V10M12 20V4M6 20v-6" />
+                </svg>
+            </div>
+            <span class="section-badge">📊 Insights & Analytics</span>
+            <h1 class="page-hero-title">
+                Know exactly<br>
+                <span class="gradient-text-violet">what's happening</span>
+            </h1>
+            <p class="page-hero-subtitle">
+                No more digging through spreadsheets. We build dashboards that answer your questions
+                in plain language — updated automatically, all in one place.
+            </p>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <span class="stat-number">1</span>
+                    <span class="stat-label">Screen for everything</span>
+                </div>
+                <div class="hero-stat-divider"></div>
+                <div class="hero-stat">
+                    <span class="stat-number">Real-time</span>
+                    <span class="stat-label">Data updates</span>
+                </div>
+                <div class="hero-stat-divider"></div>
+                <div class="hero-stat">
+                    <span class="stat-number">0</span>
+                    <span class="stat-label">Spreadsheets needed</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- What We Build -->
+<section class="feature-benefits-section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-badge" style="background: rgba(139, 92, 246, 0.2); color: #A78BFA;">🎯 What You
+                Get</span>
+            <h2 class="section-title">Answers, not data dumps</h2>
+        </div>
+        <div class="feature-benefits-grid">
+            <div class="feature-benefit-card violet">
+                <div class="benefit-number" style="background: rgba(139, 92, 246, 0.15); color: #A78BFA;">01</div>
+                <h3>One Screen, Everything You Need</h3>
+                <p>Sales, operations, finance — all the numbers that matter, on one screen. Open your dashboard in the
+                    morning and know exactly how your business is doing.</p>
+                <div class="benefit-tag violet">Executive dashboard</div>
+            </div>
+            <div class="feature-benefit-card violet">
+                <div class="benefit-number" style="background: rgba(139, 92, 246, 0.15); color: #A78BFA;">02</div>
+                <h3>Automatic Updates</h3>
+                <p>No more asking "is this up to date?" Data flows in automatically from all your systems. Real-time, or
+                    daily summaries — whatever works for you.</p>
+                <div class="benefit-tag violet">Always current</div>
+            </div>
+            <div class="feature-benefit-card violet">
+                <div class="benefit-number" style="background: rgba(139, 92, 246, 0.15); color: #A78BFA;">03</div>
+                <h3>Alerts When It Matters</h3>
+                <p>Sales dropping? Costs spiking? Something unusual? You get a notification immediately — so you can act
+                    before small problems become big ones.</p>
+                <div class="benefit-tag violet">Proactive alerts</div>
+            </div>
+            <div class="feature-benefit-card violet">
+                <div class="benefit-number" style="background: rgba(139, 92, 246, 0.15); color: #A78BFA;">04</div>
+                <h3>We Build It For You</h3>
+                <p>You tell us what questions you need answered. We design the dashboard, connect your data sources, and
+                    walk you through how to read it.</p>
+                <div class="benefit-tag violet">Custom design</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Questions We Answer -->
+<section class="use-cases-section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-badge" style="background: rgba(139, 92, 246, 0.2); color: #A78BFA;">❓ Questions
+                Answered</span>
+            <h2 class="section-title">What our dashboards tell you</h2>
+            <p class="section-subtitle">
+                These are the kind of answers you'll have at your fingertips every morning.
+            </p>
+        </div>
+
+        <div class="questions-grid">
+            <div class="question-card">
+                <span class="question-icon">📈</span>
+                <h4>How are we doing vs. last month?</h4>
+                <p>Revenue, orders, new customers — compared automatically. Trends visible at a glance.</p>
+            </div>
+            <div class="question-card">
+                <span class="question-icon">👥</span>
+                <h4>Which team members are overloaded?</h4>
+                <p>Workload distribution, project progress, bottlenecks — visualized clearly.</p>
+            </div>
+            <div class="question-card">
+                <span class="question-icon">📉</span>
+                <h4>Where are we losing customers?</h4>
+                <p>Churn patterns, cancellation reasons, at-risk accounts — flagged automatically.</p>
+            </div>
+            <div class="question-card">
+                <span class="question-icon">💳</span>
+                <h4>What's our cash position right now?</h4>
+                <p>Live view of accounts, receivables, payables. Know where you stand today.</p>
+            </div>
+            <div class="question-card">
+                <span class="question-icon">🔥</span>
+                <h4>Which products are trending?</h4>
+                <p>Sales by product, region, channel — updated in real-time.</p>
+            </div>
+            <div class="question-card">
+                <span class="question-icon">🎯</span>
+                <h4>Is the team hitting their goals?</h4>
+                <p>KPIs, targets, progress — celebrate wins, address gaps.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Dashboard Preview -->
+<section class="dashboard-preview-section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-badge" style="background: rgba(139, 92, 246, 0.2); color: #A78BFA;">👀 What It Looks
+                Like</span>
+            <h2 class="section-title">Your morning briefing, simplified</h2>
+        </div>
+
+        <div class="dashboard-mockup">
+            <div class="mockup-header">
+                <span class="mockup-dot red"></span>
+                <span class="mockup-dot yellow"></span>
+                <span class="mockup-dot green"></span>
+                <span class="mockup-title">Dashboard — Your Business at a Glance</span>
+            </div>
+            <div class="mockup-content">
+                <div class="mockup-metric">
+                    <span class="metric-label">Monthly Revenue</span>
+                    <span class="metric-value">€247,500</span>
+                    <span class="metric-change positive">↑ 12%</span>
+                </div>
+                <div class="mockup-metric">
+                    <span class="metric-label">New Customers</span>
+                    <span class="metric-value">47</span>
+                    <span class="metric-change positive">↑ 8%</span>
+                </div>
+                <div class="mockup-metric">
+                    <span class="metric-label">Open Tasks</span>
+                    <span class="metric-value">23</span>
+                    <span class="metric-change neutral">→ 0%</span>
+                </div>
+                <div class="mockup-metric">
+                    <span class="metric-label">Avg Response Time</span>
+                    <span class="metric-value">2.4h</span>
+                    <span class="metric-change positive">↓ 15%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="final-cta-section">
+    <div class="container">
+        <div class="final-cta-content">
+            <span class="cta-badge">See clearly</span>
+            <h2 class="final-cta-title">What questions do you need answered?</h2>
+            <p class="final-cta-subtitle">
+                Let's talk about what you wish you could see at a glance. We'll design a dashboard that makes those
+                answers obvious.
+            </p>
+            <div class="cta-buttons">
+                <a href="{{ url_for('pricing') }}#contact" class="btn-cta-primary">
+                    Design My Dashboard
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                </a>
+                <a href="{{ url_for('pricing') }}" class="btn-cta-secondary">
+                    View Pricing
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

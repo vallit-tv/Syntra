@@ -1,0 +1,300 @@
+{% extends "base.html" %}
+
+{% block title %}Pricing – Syntra{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}?v=7">
+{% endblock %}
+
+{% block body_class %}landing-page{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="page-hero" id="main-content">
+    <div class="hero-orbs" aria-hidden="true">
+        <div class="hero-orb hero-orb-1"></div>
+        <div class="hero-orb hero-orb-2"></div>
+    </div>
+    <div class="container">
+        <div class="page-hero-content">
+            <span class="section-badge">💎 Tailored Solutions</span>
+            <h1 class="page-hero-title">
+                Investment in your<br>
+                <span class="gradient-text">business success</span>
+            </h1>
+            <p class="page-hero-subtitle">
+                We don't do one-size-fits-all. Every solution is custom-built for your specific needs,
+                with dedicated support every step of the way.
+            </p>
+            <div class="pricing-guarantee">
+                <div class="guarantee-badge">
+                    <span class="guarantee-icon">✓</span>
+                    <span>Results guaranteed or we keep working until you're satisfied</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Pricing Cards -->
+<section class="pricing-section">
+    <div class="container">
+        <div class="pricing-grid-enterprise">
+            <!-- Professional -->
+            <div class="pricing-card-premium">
+                <div class="pricing-header">
+                    <span class="pricing-tier-icon">🚀</span>
+                    <h3>Professional</h3>
+                    <p class="pricing-description">For growing businesses ready to scale operations</p>
+                </div>
+                <div class="pricing-price">
+                    <span class="price-currency">€</span>
+                    <span class="price-amount">2.500</span>
+                    <span class="price-period">/Monat</span>
+                </div>
+                <p class="price-note">Billed monthly • Cancel anytime</p>
+                <ul class="pricing-features">
+                    <li>
+                        <span class="feature-check">✓</span>
+                        Complete workflow setup — we build it for you
+                    </li>
+                    <li>
+                        <span class="feature-check">✓</span>
+                        All integrations with your existing tools
+                    </li>
+                    <li>
+                        <span class="feature-check">✓</span>
+                        Custom dashboards tailored to your KPIs
+                    </li>
+                    <li>
+                        <span class="feature-check">✓</span>
+                        <strong>Dedicated success manager</strong>
+                    </li>
+                    <li>
+                        <span class="feature-check">✓</span>
+                        Priority support within 4 hours
+                    </li>
+                    <li>
+                        <span class="feature-check">✓</span>
+                        Monthly optimization reviews
+                    </li>
+                </ul>
+                <a href="#contact" class="pricing-cta">
+                    Book a Consultation
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                </a>
+            </div>
+
+            <!-- Enterprise -->
+            <div class="pricing-card-premium featured">
+                <div class="pricing-badge">⭐ Recommended</div>
+                <div class="pricing-header">
+                    <span class="pricing-tier-icon">🏢</span>
+                    <h3>Enterprise</h3>
+                    <p class="pricing-description">Full-service automation partnership</p>
+                </div>
+                <div class="pricing-price">
+                    <span class="price-amount">Custom</span>
+                </div>
+                <p class="price-note">Tailored to your needs</p>
+                <ul class="pricing-features">
+                    <li>
+                        <span class="feature-check">✓</span>
+                        <strong>Everything in Professional, plus:</strong>
+                    </li>
+                    <li>
+                        <span class="feature-check">✓</span>
+                        Dedicated team of specialists
+                    </li>
+                    <li>
+                        <span class="feature-check">✓</span>
+                        Unlimited workflows & automations
+                    </li>
+                    <li>
+                        <span class="feature-check">✓</span>
+                        On-site workshops & training
+                    </li>
+                    <li>
+                        <span class="feature-check">✓</span>
+                        SSO & advanced security controls
+                    </li>
+                    <li>
+                        <span class="feature-check">✓</span>
+                        <strong>Custom SLA — we guarantee results</strong>
+                    </li>
+                    <li>
+                        <span class="feature-check">✓</span>
+                        24/7 priority hotline
+                    </li>
+                </ul>
+                <a href="#contact" class="pricing-cta featured">
+                    Let's Talk
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                </a>
+            </div>
+        </div>
+
+        <!-- Comparison Note -->
+        <div class="pricing-comparison">
+            <p>Not sure which plan is right for you? <a href="#contact">Talk to our team</a> — we'll help you figure it
+                out.</p>
+        </div>
+    </div>
+</section>
+
+<!-- What's Included -->
+<section class="whats-included-section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-badge" style="background: rgba(255,255,255,0.1); color: white;">📦 What's
+                Included</span>
+            <h2 class="section-title">Everything you need, nothing you don't</h2>
+        </div>
+
+        <div class="included-grid">
+            <div class="included-item">
+                <span class="included-icon">🛠️</span>
+                <h4>Full Setup</h4>
+                <p>We handle everything from start to finish. No technical skills needed from your team.</p>
+            </div>
+            <div class="included-item">
+                <span class="included-icon">📚</span>
+                <h4>Training</h4>
+                <p>Your team learns how to use everything. We don't leave until they're comfortable.</p>
+            </div>
+            <div class="included-item">
+                <span class="included-icon">🔧</span>
+                <h4>Ongoing Maintenance</h4>
+                <p>Something breaks? We fix it. New needs? We adapt. Always evolving.</p>
+            </div>
+            <div class="included-item">
+                <span class="included-icon">📊</span>
+                <h4>Monthly Reports</h4>
+                <p>Clear reports showing exactly how much time and money you're saving.</p>
+            </div>
+            <div class="included-item">
+                <span class="included-icon">💬</span>
+                <h4>Dedicated Support</h4>
+                <p>Real humans. Real answers. No chatbots. No ticket queues.</p>
+            </div>
+            <div class="included-item">
+                <span class="included-icon">🔒</span>
+                <h4>Security & Compliance</h4>
+                <p>GDPR, German standards, encryption — all handled. You focus on business.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Why Work With Us -->
+<section class="why-us-section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-badge" style="background: rgba(255,255,255,0.1); color: white;">🤝 Why Syntra?</span>
+            <h2 class="section-title">We handle everything — so you don't have to</h2>
+        </div>
+
+        <div class="why-us-grid">
+            <div class="why-us-card">
+                <span class="why-number">01</span>
+                <h4>No technical knowledge needed</h4>
+                <p>You tell us what you want to achieve. We figure out how to make it happen — from setup to ongoing
+                    optimization.</p>
+            </div>
+            <div class="why-us-card">
+                <span class="why-number">02</span>
+                <h4>Your dedicated partner</h4>
+                <p>You get a dedicated success manager who knows your business inside-out. Not a helpdesk ticket — a
+                    real person.</p>
+            </div>
+            <div class="why-us-card">
+                <span class="why-number">03</span>
+                <h4>Continuous improvement</h4>
+                <p>We don't just set it and forget it. Monthly reviews ensure your automations evolve as your business
+                    grows.</p>
+            </div>
+            <div class="why-us-card">
+                <span class="why-number">04</span>
+                <h4>Guaranteed results</h4>
+                <p>We're not happy until you're saving hours every week. Our track record speaks for itself.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="faq-section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-badge" style="background: rgba(255,255,255,0.1); color: white;">❓ FAQ</span>
+            <h2 class="section-title">Common questions</h2>
+        </div>
+
+        <div class="faq-grid">
+            <div class="faq-item">
+                <h4>How long does setup take?</h4>
+                <p>Most projects are live within 2-4 weeks. Complex enterprise setups may take longer, but we'll give
+                    you a clear timeline upfront.</p>
+            </div>
+            <div class="faq-item">
+                <h4>Can I cancel anytime?</h4>
+                <p>Yes. No long-term contracts. We keep earning your business every month.</p>
+            </div>
+            <div class="faq-item">
+                <h4>What if I need something custom?</h4>
+                <p>That's what we specialize in. Every solution is custom-built for your specific needs.</p>
+            </div>
+            <div class="faq-item">
+                <h4>Do you work with small businesses?</h4>
+                <p>We focus on medium and enterprise businesses where we can make the biggest impact. Our minimum
+                    engagement starts at €2,500/month.</p>
+            </div>
+            <div class="faq-item">
+                <h4>What tools do you integrate with?</h4>
+                <p>Everything. Salesforce, Slack, Microsoft 365, Google Workspace, your CRM, your ERP — if it has an
+                    API, we can connect it.</p>
+            </div>
+            <div class="faq-item">
+                <h4>How do you measure success?</h4>
+                <p>We track time saved, error reduction, and process speed. You'll get monthly reports showing exactly
+                    what value we're delivering.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact CTA Section -->
+<section class="final-cta-section" id="contact">
+    <div class="container">
+        <div class="final-cta-content">
+            <span class="cta-badge">Let's talk</span>
+            <h2 class="final-cta-title">Ready to transform your operations?</h2>
+            <p class="final-cta-subtitle">
+                Book a free consultation. We'll analyze your processes and show you exactly what's possible — no
+                commitment required.
+            </p>
+            <div class="contact-options">
+                <a href="mailto:kontakt@syntra.io" class="contact-option primary">
+                    <span class="contact-icon">📧</span>
+                    <div class="contact-details">
+                        <strong>Email Us</strong>
+                        <span>kontakt@syntra.io</span>
+                    </div>
+                </a>
+                <a href="tel:+4917612345678" class="contact-option">
+                    <span class="contact-icon">📞</span>
+                    <div class="contact-details">
+                        <strong>Call Us</strong>
+                        <span>+49 176 1234 5678</span>
+                    </div>
+                </a>
+            </div>
+            <p class="cta-note">🗓️ Free consultation • ⏱️ Usually responds within 24 hours • 🔒 No commitment</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

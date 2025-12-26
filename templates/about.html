@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}About Us – Syntra{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}?v=7">
+{% endblock %}
+
+{% block body_class %}landing-page{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="page-hero" id="main-content">
+    <div class="hero-orbs" aria-hidden="true">
+        <div class="hero-orb hero-orb-1"></div>
+        <div class="hero-orb hero-orb-2"></div>
+        <div class="hero-orb hero-orb-3"></div>
+    </div>
+    <div class="container">
+        <div class="page-hero-content">
+            <span class="section-badge">🌟 About Syntra</span>
+            <h1 class="page-hero-title">
+                Your success is<br>
+                <span class="gradient-text">our business</span>
+            </h1>
+            <p class="page-hero-subtitle">
+                We're not just another software company. We're your partner in making
+                your business run smarter — without the headaches.
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Mission Statement -->
+<section class="mission-section">
+    <div class="container">
+        <div class="mission-content">
+            <div class="mission-quote">
+                <span class="quote-mark">"</span>
+                <p>
+                    We believe technology should work for you, not the other way around.
+                    Every business deserves automation that actually works — without needing
+                    a tech team to understand it.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Our Story -->
+<section class="about-story-section">
+    <div class="container">
+        <div class="story-layout">
+            <div class="story-text">
+                <span class="section-badge" style="background: rgba(255,255,255,0.1); color: white;">📖 Our Story</span>
+                <h2>Why we built Syntra</h2>
+
+                <div class="story-timeline">
+                    <div class="timeline-item">
+                        <span class="timeline-year">The Problem</span>
+                        <p>
+                            We've seen it too many times: businesses drowning in software they don't understand,
+                            IT projects that drag on for months, automation tools that promise everything
+                            and deliver nothing.
+                        </p>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="timeline-year">The Decision</span>
+                        <p>
+                            So we decided to do things differently. No complicated setups. No learning curves.
+                            No "figure it out yourself" support. Just tell us what's slowing you down, and
+                            we'll fix it.
+                        </p>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="timeline-year">Our Approach</span>
+                        <p>
+                            We work with a small number of clients because we believe in quality over quantity.
+                            When you work with Syntra, you're not a ticket number — you're a partner.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="story-stats">
+                <div class="stat-card">
+                    <span class="stat-number">10+</span>
+                    <span class="stat-label">Hours saved per client weekly</span>
+                    <div class="stat-bar" style="--width: 85%"></div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">100%</span>
+                    <span class="stat-label">Client retention rate</span>
+                    <div class="stat-bar" style="--width: 100%"></div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">48h</span>
+                    <span class="stat-label">Average response time</span>
+                    <div class="stat-bar" style="--width: 70%"></div>
+                </div>
+                <div class="stat-card featured">
+                    <span class="stat-number">∞</span>
+                    <span class="stat-label">Commitment to your success</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Our Philosophy -->
+<section class="philosophy-section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-badge" style="background: rgba(255,255,255,0.1); color: white;">💡 Our
+                Philosophy</span>
+            <h2 class="section-title">Simple principles, exceptional results</h2>
+        </div>
+
+        <div class="philosophy-grid">
+            <div class="philosophy-card">
+                <span class="philosophy-number">01</span>
+                <div class="philosophy-content">
+                    <h4>We succeed when you succeed</h4>
+                    <p>We don't just set up automations and walk away. We stay with you, optimizing and improving, until
+                        you're saving the hours we promised.</p>
+                </div>
+            </div>
+            <div class="philosophy-card">
+                <span class="philosophy-number">02</span>
+                <div class="philosophy-content">
+                    <h4>Quality over quantity</h4>
+                    <p>We deliberately work with fewer clients so we can give each one the attention they deserve.
+                        You're never just another account.</p>
+                </div>
+            </div>
+            <div class="philosophy-card">
+                <span class="philosophy-number">03</span>
+                <div class="philosophy-content">
+                    <h4>No jargon, no BS</h4>
+                    <p>We speak your language, not tech speak. If we can't explain it simply, we don't understand it
+                        well enough ourselves.</p>
+                </div>
+            </div>
+            <div class="philosophy-card">
+                <span class="philosophy-number">04</span>
+                <div class="philosophy-content">
+                    <h4>Always improving</h4>
+                    <p>Business changes. Technology changes. We make sure your automations keep up. Monthly reviews are
+                        standard.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Team Section -->
+<section class="about-team-section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-badge" style="background: rgba(255,255,255,0.1); color: white;">👥 Leadership</span>
+            <h2 class="section-title">Who you'll work with</h2>
+            <p class="section-subtitle">
+                When you partner with Syntra, you're working directly with our leadership team.
+            </p>
+        </div>
+
+        <div class="about-team-grid">
+            <div class="team-member-card featured">
+                <div class="team-avatar large">TR</div>
+                <h4>Theo Reichert</h4>
+                <p class="team-role">Founder & CEO</p>
+                <p class="team-bio">
+                    Passionate about making technology work for people, not the other way around.
+                    Personally involved with every client relationship. Background in enterprise software
+                    and AI automation.
+                </p>
+                <div class="team-social">
+                    <a href="#" class="social-link">LinkedIn</a>
+                    <a href="#" class="social-link">Email</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="team-note">
+            <p>💬 <strong>Personal Touch:</strong> Unlike most companies, you'll always have direct access to
+                leadership. No gatekeepers.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Location -->
+<section class="location-section">
+    <div class="container">
+        <div class="location-content">
+            <div class="location-badge">
+                <span class="flag-emoji">🇩🇪</span>
+                <span>Based in Germany</span>
+            </div>
+            <h2>German quality, German data protection</h2>
+            <p>
+                We're proudly based in Germany. That means we follow the strictest data protection
+                laws in the world. Your data never leaves the EU, and we provide all the documentation
+                you need for compliance.
+            </p>
+            <div class="location-features">
+                <div class="location-feature">
+                    <span class="feature-icon">🔒</span>
+                    <span>GDPR Compliant</span>
+                </div>
+                <div class="location-feature">
+                    <span class="feature-icon">🏛️</span>
+                    <span>German Jurisdiction</span>
+                </div>
+                <div class="location-feature">
+                    <span class="feature-icon">☁️</span>
+                    <span>EU Data Centers</span>
+                </div>
+                <div class="location-feature">
+                    <span class="feature-icon">📋</span>
+                    <span>Full Documentation</span>
+                </div>
+            </div>
+            <p class="location-note">
+                We work with clients across Germany, Austria, and Switzerland — and we're always
+                available for in-person meetings when needed.
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="final-cta-section">
+    <div class="container">
+        <div class="final-cta-content">
+            <span class="cta-badge">Get in touch</span>
+            <h2 class="final-cta-title">Let's have a conversation</h2>
+            <p class="final-cta-subtitle">
+                No sales pitch, no pressure. Just a conversation about what's possible for your business.
+            </p>
+            <div class="cta-buttons">
+                <a href="{{ url_for('pricing') }}#contact" class="btn-cta-primary">
+                    Book a Free Consultation
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                </a>
+                <a href="{{ url_for('features') }}" class="btn-cta-secondary">
+                    Explore What We Do
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

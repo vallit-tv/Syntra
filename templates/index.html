@@ -3,7 +3,7 @@
 {% block title %}Syntra – AI-Powered Workflow Automation{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}?v=3">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}?v=7">
 {% endblock %}
 
 {% block body_class %}landing-page{% endblock %}
@@ -12,16 +12,18 @@
 <!-- ================================
      HERO SECTION - Immersive Dark
      ================================ -->
-<section class="hero-landing">
+<section class="hero-landing" id="main-content">
+
     <!-- Animated background orbs -->
-    <div class="hero-orbs">
+    <!-- Animated background orbs (decorative) -->
+    <div class="hero-orbs" aria-hidden="true">
         <div class="hero-orb hero-orb-1"></div>
         <div class="hero-orb hero-orb-2"></div>
         <div class="hero-orb hero-orb-3"></div>
     </div>
 
     <div class="hero-content-wrapper">
-        <!-- Text Content -->
+        <!-- Text Content - Centered -->
         <div class="hero-text">
             <div class="hero-badge">
                 <span class="hero-badge-dot"></span>
@@ -57,58 +59,6 @@
                     </svg>
                     See How It Works
                 </a>
-            </div>
-        </div>
-
-        <!-- Visual Element - Workflow Preview -->
-        <div class="hero-visual">
-            <div class="hero-visual-card">
-                <div class="hero-workflow">
-                    <div class="hero-workflow-node">
-                        <div class="hero-workflow-icon trigger">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-                            </svg>
-                        </div>
-                        <div class="hero-workflow-content">
-                            <h4>Trigger</h4>
-                            <p>New data received</p>
-                        </div>
-                    </div>
-
-                    <div class="hero-workflow-connector"></div>
-
-                    <div class="hero-workflow-node">
-                        <div class="hero-workflow-icon process">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path d="M12 2a10 10 0 1 0 10 10H12V2z" />
-                                <path d="M12 2a10 10 0 0 1 10 10" />
-                            </svg>
-                        </div>
-                        <div class="hero-workflow-content">
-                            <h4>AI Analysis</h4>
-                            <p>Process & extract insights</p>
-                        </div>
-                    </div>
-
-                    <div class="hero-workflow-connector"></div>
-
-                    <div class="hero-workflow-node">
-                        <div class="hero-workflow-icon action">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                                <polyline points="22 4 12 14.01 9 11.01" />
-                            </svg>
-                        </div>
-                        <div class="hero-workflow-content">
-                            <h4>Action</h4>
-                            <p>Notify team & update systems</p>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -165,7 +115,7 @@
                     Build workflows that adapt to your business. Connect 500+ apps
                     and let AI handle the repetitive tasks so your team can focus on what matters.
                 </p>
-                <a href="#" class="feature-link">
+                <a href="{{ url_for('feature_automation') }}" class="feature-link">
                     Learn more
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M5 12h14M12 5l7 7-7 7" />
@@ -184,7 +134,7 @@
                     Get instant insights from your data with intelligent dashboards.
                     Track performance, identify trends, and make data-driven decisions.
                 </p>
-                <a href="#" class="feature-link">
+                <a href="{{ url_for('feature_analytics') }}" class="feature-link">
                     Learn more
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M5 12h14M12 5l7 7-7 7" />
@@ -203,7 +153,7 @@
                     Your data is protected with end-to-end encryption, SSO, and advanced
                     access controls. SOC 2 compliant and built for enterprise needs.
                 </p>
-                <a href="#" class="feature-link">
+                <a href="{{ url_for('feature_security') }}" class="feature-link">
                     Learn more
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M5 12h14M12 5l7 7-7 7" />
@@ -321,6 +271,7 @@
 {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+
         // ================================
         // Typewriter Effect
         // ================================
@@ -382,7 +333,7 @@
         animatedElements.forEach(el => observer.observe(el));
 
         // ================================
-        // Testimonial Carousel
+        // Testimonial Carousel with Smooth Transitions
         // ================================
         const testimonials = [
             {
@@ -406,14 +357,39 @@
         ];
 
         let currentTestimonial = 0;
+        let isTransitioning = false;
         const dots = document.querySelectorAll('.testimonial-dot');
+        const testimonialCard = document.getElementById('testimonial-active');
 
-        function updateTestimonial(index) {
+        function updateTestimonial(index, animate = true) {
+            if (isTransitioning) return;
+
             const t = testimonials[index];
-            document.getElementById('testimonial-quote').textContent = t.quote;
-            document.getElementById('testimonial-name').textContent = t.name;
-            document.getElementById('testimonial-role').textContent = t.role;
-            document.getElementById('testimonial-avatar').textContent = t.avatar;
+
+            if (animate && testimonialCard) {
+                isTransitioning = true;
+                testimonialCard.classList.add('transitioning');
+
+                setTimeout(() => {
+                    document.getElementById('testimonial-quote').textContent = t.quote;
+                    document.getElementById('testimonial-name').textContent = t.name;
+                    document.getElementById('testimonial-role').textContent = t.role;
+                    document.getElementById('testimonial-avatar').textContent = t.avatar;
+
+                    testimonialCard.classList.remove('transitioning');
+                    testimonialCard.classList.add('entering');
+
+                    setTimeout(() => {
+                        testimonialCard.classList.remove('entering');
+                        isTransitioning = false;
+                    }, 400);
+                }, 300);
+            } else {
+                document.getElementById('testimonial-quote').textContent = t.quote;
+                document.getElementById('testimonial-name').textContent = t.name;
+                document.getElementById('testimonial-role').textContent = t.role;
+                document.getElementById('testimonial-avatar').textContent = t.avatar;
+            }
 
             dots.forEach((dot, i) => {
                 dot.classList.toggle('active', i === index);
@@ -422,16 +398,26 @@
 
         dots.forEach(dot => {
             dot.addEventListener('click', () => {
-                currentTestimonial = parseInt(dot.dataset.index);
-                updateTestimonial(currentTestimonial);
+                const newIndex = parseInt(dot.dataset.index);
+                if (newIndex !== currentTestimonial) {
+                    currentTestimonial = newIndex;
+                    updateTestimonial(currentTestimonial);
+                }
             });
         });
 
-        // Auto-rotate testimonials
-        setInterval(() => {
-            currentTestimonial = (currentTestimonial + 1) % testimonials.length;
-            updateTestimonial(currentTestimonial);
+        // Auto-rotate testimonials with pause support (Fix #3, #4, #10)
+        let testimonialInterval = setInterval(() => {
+            if (!isTransitioning && !window.testimonialPaused) {
+                currentTestimonial = (currentTestimonial + 1) % testimonials.length;
+                updateTestimonial(currentTestimonial);
+            }
         }, 6000);
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            clearInterval(testimonialInterval);
+        });
 
         // ================================
         // Smooth Scroll for Anchor Links
@@ -463,6 +449,7 @@
                 header.classList.remove('scrolled');
             }
         });
+
     });
 </script>
 {% endblock %}

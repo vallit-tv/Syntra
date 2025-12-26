@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+
+{% block title %}What We Do – Syntra{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}?v=7">
+{% endblock %}
+
+{% block body_class %}landing-page{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="page-hero" id="main-content">
+    <div class="hero-orbs" aria-hidden="true">
+        <div class="hero-orb hero-orb-1"></div>
+        <div class="hero-orb hero-orb-2"></div>
+        <div class="hero-orb hero-orb-3"></div>
+    </div>
+    <div class="container">
+        <div class="page-hero-content">
+            <span class="section-badge">🚀 What We Do</span>
+            <h1 class="page-hero-title">
+                We make your business<br>
+                <span class="gradient-text">run itself</span>
+            </h1>
+            <p class="page-hero-subtitle">
+                No technical headaches. No complicated setups. Just tell us what you need,
+                and we'll build the automation that saves your team hours every day.
+            </p>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <span class="stat-number">10+</span>
+                    <span class="stat-label">Hours saved weekly</span>
+                </div>
+                <div class="hero-stat-divider"></div>
+                <div class="hero-stat">
+                    <span class="stat-number">100%</span>
+                    <span class="stat-label">Client retention</span>
+                </div>
+                <div class="hero-stat-divider"></div>
+                <div class="hero-stat">
+                    <span class="stat-number">48h</span>
+                    <span class="stat-label">Response time</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Services -->
+<section class="features-detail-section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-badge" style="background: rgba(255,255,255,0.1); color: white;">Our Services</span>
+            <h2 class="section-title">Three pillars of your digital transformation</h2>
+        </div>
+
+        <div class="features-detail-grid">
+            <!-- Automation -->
+            <a href="{{ url_for('feature_automation') }}" class="feature-detail-card">
+                <div class="feature-detail-icon automation">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                    </svg>
+                </div>
+                <div class="feature-detail-content">
+                    <span class="feature-tag">Most Popular</span>
+                    <h3>Workflow Automation</h3>
+                    <p>We connect your tools and automate the boring stuff. From data entry to report generation — if
+                        it's repetitive, we can automate it.</p>
+                    <ul class="feature-detail-list">
+                        <li>✓ Custom-built for your specific processes</li>
+                        <li>✓ Works with any tool you already use</li>
+                        <li>✓ We set it up — you just enjoy the results</li>
+                    </ul>
+                    <div class="feature-metrics">
+                        <span class="metric"><strong>3x</strong> faster processes</span>
+                        <span class="metric"><strong>85%</strong> less manual work</span>
+                    </div>
+                    <span class="feature-detail-link">
+                        Learn how it works
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                    </span>
+                </div>
+            </a>
+
+            <!-- Analytics -->
+            <a href="{{ url_for('feature_analytics') }}" class="feature-detail-card">
+                <div class="feature-detail-icon analytics">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 20V10M12 20V4M6 20v-6" />
+                    </svg>
+                </div>
+                <div class="feature-detail-content">
+                    <h3>Clear Insights</h3>
+                    <p>See exactly what's happening in your business. We build dashboards that show you what matters —
+                        in plain language, updated in real-time.</p>
+                    <ul class="feature-detail-list">
+                        <li>✓ Dashboards designed around YOUR questions</li>
+                        <li>✓ Automatic alerts when something needs attention</li>
+                        <li>✓ No spreadsheet headaches</li>
+                    </ul>
+                    <div class="feature-metrics">
+                        <span class="metric"><strong>Real-time</strong> updates</span>
+                        <span class="metric"><strong>1 screen</strong> for everything</span>
+                    </div>
+                    <span class="feature-detail-link">
+                        See the possibilities
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                    </span>
+                </div>
+            </a>
+
+            <!-- Security -->
+            <a href="{{ url_for('feature_security') }}" class="feature-detail-card">
+                <div class="feature-detail-icon security">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    </svg>
+                </div>
+                <div class="feature-detail-content">
+                    <h3>Enterprise Security</h3>
+                    <p>Your data stays safe. We handle all the compliance and security so you can focus on your
+                        business, not regulations.</p>
+                    <ul class="feature-detail-list">
+                        <li>✓ Bank-level encryption for all data</li>
+                        <li>✓ GDPR and German compliance handled</li>
+                        <li>✓ Regular security audits</li>
+                    </ul>
+                    <div class="feature-metrics">
+                        <span class="metric"><strong>100%</strong> GDPR compliant</span>
+                        <span class="metric"><strong>🇩🇪</strong> German hosting</span>
+                    </div>
+                    <span class="feature-detail-link">
+                        Learn about our standards
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                    </span>
+                </div>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Integrations Showcase -->
+<section class="integrations-section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-badge" style="background: rgba(255,255,255,0.1); color: white;">🔗 Integrations</span>
+            <h2 class="section-title">Connects with your existing tools</h2>
+            <p class="section-subtitle">
+                We integrate with 500+ tools. If you use it, we can probably connect to it.
+            </p>
+        </div>
+
+        <div class="integration-logos">
+            <div class="integration-logo">
+                <span class="integration-icon">📧</span>
+                <span>Gmail</span>
+            </div>
+            <div class="integration-logo">
+                <span class="integration-icon">💼</span>
+                <span>Salesforce</span>
+            </div>
+            <div class="integration-logo">
+                <span class="integration-icon">💬</span>
+                <span>Slack</span>
+            </div>
+            <div class="integration-logo">
+                <span class="integration-icon">📊</span>
+                <span>Excel</span>
+            </div>
+            <div class="integration-logo">
+                <span class="integration-icon">📁</span>
+                <span>Google Drive</span>
+            </div>
+            <div class="integration-logo">
+                <span class="integration-icon">🔗</span>
+                <span>Zapier</span>
+            </div>
+            <div class="integration-logo">
+                <span class="integration-icon">📋</span>
+                <span>Notion</span>
+            </div>
+            <div class="integration-logo">
+                <span class="integration-icon">🎯</span>
+                <span>HubSpot</span>
+            </div>
+        </div>
+        <p class="integrations-note">+ 500 more integrations available</p>
+    </div>
+</section>
+
+<!-- How We Work -->
+<section class="how-we-work-section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-badge" style="background: rgba(255,255,255,0.1); color: white;">📋 Our Process</span>
+            <h2 class="section-title">How we work with you</h2>
+            <p class="section-subtitle">
+                It's simple: You tell us what's slowing you down. We fix it.
+            </p>
+        </div>
+
+        <div class="process-steps">
+            <div class="process-step">
+                <div class="step-number-big">1</div>
+                <h4>Free Consultation</h4>
+                <p>We start with a conversation. What's frustrating? What's slow? What keeps you up at night?</p>
+                <span class="step-duration">30 min call</span>
+            </div>
+            <div class="process-connector">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+            </div>
+            <div class="process-step">
+                <div class="step-number-big">2</div>
+                <h4>We Design the Solution</h4>
+                <p>We create a custom plan showing exactly what we'll automate and how much time you'll save.</p>
+                <span class="step-duration">1-2 days</span>
+            </div>
+            <div class="process-connector">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+            </div>
+            <div class="process-step">
+                <div class="step-number-big">3</div>
+                <h4>We Build & Launch</h4>
+                <p>We handle everything — setup, testing, training. You don't lift a finger until it's working
+                    perfectly.</p>
+                <span class="step-duration">1-4 weeks</span>
+            </div>
+            <div class="process-connector">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+            </div>
+            <div class="process-step">
+                <div class="step-number-big">4</div>
+                <h4>Ongoing Partnership</h4>
+                <p>Monthly check-ins, continuous improvements, instant support. We grow with your business.</p>
+                <span class="step-duration">Forever</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonial -->
+<section class="testimonial-highlight-section">
+    <div class="container">
+        <div class="testimonial-highlight">
+            <div class="testimonial-quote-mark">"</div>
+            <blockquote>
+                Syntra didn't just automate our workflows — they transformed how we work.
+                What used to take our team 3 hours every day now happens automatically.
+                The best part? We didn't have to learn any new software.
+            </blockquote>
+            <div class="testimonial-author">
+                <div class="author-avatar">MK</div>
+                <div class="author-info">
+                    <strong>Michael Krause</strong>
+                    <span>Operations Director, Enterprise Client</span>
+                </div>
+            </div>
+            <div class="testimonial-rating">
+                ★★★★★
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="final-cta-section">
+    <div class="container">
+        <div class="final-cta-content">
+            <span class="cta-badge">Ready to start?</span>
+            <h2 class="final-cta-title">Curious what we could automate for you?</h2>
+            <p class="final-cta-subtitle">
+                Let's have a conversation. We'll identify your biggest time-wasters and show you what's possible — no
+                strings attached.
+            </p>
+            <div class="cta-buttons">
+                <a href="{{ url_for('pricing') }}#contact" class="btn-cta-primary">
+                    Book a Free Consultation
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                </a>
+                <a href="{{ url_for('pricing') }}" class="btn-cta-secondary">
+                    View Pricing
+                </a>
+            </div>
+            <p class="cta-note">✓ Free 30-min consultation · ✓ No commitment required</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

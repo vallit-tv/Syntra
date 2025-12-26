@@ -1,0 +1,439 @@
+{% extends "base.html" %}
+
+{% block title %}Datenschutz – Syntra{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}?v=7">
+{% endblock %}
+
+{% block body_class %}landing-page{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="page-hero legal-hero" id="main-content">
+    <div class="hero-orbs">
+        <div class="hero-orb hero-orb-1"></div>
+        <div class="hero-orb hero-orb-2"></div>
+    </div>
+    <div class="container">
+        <div class="page-hero-content">
+            <span class="section-badge">🔒 Ihre Daten sind sicher</span>
+            <h1 class="page-hero-title">
+                Datenschutz<span class="gradient-text-cyan">erklärung</span>
+            </h1>
+            <p class="page-hero-subtitle">Informationen zur Verarbeitung Ihrer personenbezogenen Daten</p>
+        </div>
+    </div>
+</section>
+
+<!-- Quick Navigation -->
+<section class="legal-nav-section">
+    <div class="container">
+        <div class="legal-nav-grid">
+            <a href="#verantwortlicher" class="legal-nav-item">
+                <span class="legal-nav-icon">👤</span>
+                <span>Verantwortlicher</span>
+            </a>
+            <a href="#cookies" class="legal-nav-item">
+                <span class="legal-nav-icon">🍪</span>
+                <span>Cookies</span>
+            </a>
+            <a href="#rechte" class="legal-nav-item">
+                <span class="legal-nav-icon">⚖️</span>
+                <span>Ihre Rechte</span>
+            </a>
+            <a href="#kontakt" class="legal-nav-item">
+                <span class="legal-nav-icon">📧</span>
+                <span>Kontakt</span>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Legal Content -->
+<section class="legal-content-section">
+    <div class="container">
+        <div class="legal-content">
+            <div class="legal-section" id="verantwortlicher">
+                <h2>1. Verantwortlicher</h2>
+                <div class="legal-info-card">
+                    <p>
+                        <strong>Syntra GmbH</strong><br>
+                        Musterstraße 123<br>
+                        12345 Berlin<br>
+                        Deutschland<br><br>
+                        <strong>E-Mail:</strong> datenschutz@syntra.io
+                    </p>
+                </div>
+            </div>
+
+            <div class="legal-section">
+                <h2>2. Übersicht der Verarbeitungen</h2>
+                <p>
+                    Die nachfolgende Übersicht fasst die Arten der verarbeiteten Daten und die Zwecke
+                    ihrer Verarbeitung zusammen.
+                </p>
+                <h3>Arten der verarbeiteten Daten</h3>
+                <ul class="legal-list">
+                    <li><span class="legal-bullet">•</span> Bestandsdaten (z.B. Namen, Adressen)</li>
+                    <li><span class="legal-bullet">•</span> Kontaktdaten (z.B. E-Mail, Telefonnummern)</li>
+                    <li><span class="legal-bullet">•</span> Inhaltsdaten (z.B. Eingaben in Formularen)</li>
+                    <li><span class="legal-bullet">•</span> Nutzungsdaten (z.B. besuchte Webseiten, Zugriffszeiten)</li>
+                    <li><span class="legal-bullet">•</span> Meta-/Kommunikationsdaten (z.B. IP-Adressen)</li>
+                </ul>
+                <h3>Zwecke der Verarbeitung</h3>
+                <ul class="legal-list">
+                    <li><span class="legal-bullet">•</span> Erbringung unserer Leistungen und Kundenservice</li>
+                    <li><span class="legal-bullet">•</span> Kontaktanfragen und Kommunikation</li>
+                    <li><span class="legal-bullet">•</span> Sicherheitsmaßnahmen</li>
+                    <li><span class="legal-bullet">•</span> Reichweitenmessung</li>
+                    <li><span class="legal-bullet">•</span> Verwaltung und Beantwortung von Anfragen</li>
+                </ul>
+            </div>
+
+            <div class="legal-section">
+                <h2>3. Rechtsgrundlagen</h2>
+                <p>
+                    Im Folgenden erhalten Sie eine Übersicht der Rechtsgrundlagen der DSGVO, auf deren
+                    Basis wir personenbezogene Daten verarbeiten:
+                </p>
+                <div class="legal-cards-grid">
+                    <div class="legal-card">
+                        <h4>Einwilligung</h4>
+                        <p>Art. 6 Abs. 1 S. 1 lit. a. DSGVO – Die betroffene Person hat ihre Einwilligung in die
+                            Verarbeitung gegeben.</p>
+                    </div>
+                    <div class="legal-card">
+                        <h4>Vertragserfüllung</h4>
+                        <p>Art. 6 Abs. 1 S. 1 lit. b. DSGVO – Die Verarbeitung ist für die Erfüllung eines Vertrags
+                            erforderlich.</p>
+                    </div>
+                    <div class="legal-card">
+                        <h4>Berechtigte Interessen</h4>
+                        <p>Art. 6 Abs. 1 S. 1 lit. f. DSGVO – Die Verarbeitung ist zur Wahrung unserer berechtigten
+                            Interessen erforderlich.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="legal-section">
+                <h2>4. Sicherheitsmaßnahmen</h2>
+                <p>
+                    Wir treffen technische und organisatorische Sicherheitsmaßnahmen entsprechend dem
+                    Stand der Technik, um ein dem Risiko angemessenes Schutzniveau zu gewährleisten.
+                </p>
+                <div class="security-measures-grid">
+                    <div class="security-measure">
+                        <span class="measure-icon">🔐</span>
+                        <span>Verschlüsselung der Datenübertragung (TLS/SSL)</span>
+                    </div>
+                    <div class="security-measure">
+                        <span class="measure-icon">💾</span>
+                        <span>Verschlüsselung der gespeicherten Daten (AES-256)</span>
+                    </div>
+                    <div class="security-measure">
+                        <span class="measure-icon">🔑</span>
+                        <span>Zugriffskontrolle und Authentifizierung</span>
+                    </div>
+                    <div class="security-measure">
+                        <span class="measure-icon">🔍</span>
+                        <span>Regelmäßige Sicherheitsüberprüfungen</span>
+                    </div>
+                    <div class="security-measure">
+                        <span class="measure-icon">👥</span>
+                        <span>Schulung unserer Mitarbeiter</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="legal-section">
+                <h2>5. Datenverarbeitung beim Besuch unserer Website</h2>
+                <p>
+                    Bei der Nutzung unserer Website werden automatisch Daten erhoben und in Server-Logfiles
+                    gespeichert:
+                </p>
+                <ul class="legal-list">
+                    <li><span class="legal-bullet">•</span> IP-Adresse (anonymisiert)</li>
+                    <li><span class="legal-bullet">•</span> Datum und Uhrzeit der Anfrage</li>
+                    <li><span class="legal-bullet">•</span> Inhalt der Anforderung (besuchte Seite)</li>
+                    <li><span class="legal-bullet">•</span> Zugriffsstatus/HTTP-Statuscode</li>
+                    <li><span class="legal-bullet">•</span> Übertragene Datenmenge</li>
+                    <li><span class="legal-bullet">•</span> Referrer-URL</li>
+                    <li><span class="legal-bullet">•</span> Browser und Betriebssystem</li>
+                </ul>
+                <p>
+                    Diese Daten sind nicht bestimmten Personen zuordenbar. Eine Zusammenführung mit anderen
+                    Datenquellen wird nicht vorgenommen.
+                </p>
+            </div>
+
+            <div class="legal-section">
+                <h2>6. Registrierung und Nutzerkonto</h2>
+                <p>
+                    Bei der Registrierung für unseren Dienst erheben wir folgende Daten:
+                </p>
+                <ul class="legal-list">
+                    <li><span class="legal-bullet">•</span> E-Mail-Adresse</li>
+                    <li><span class="legal-bullet">•</span> Name</li>
+                    <li><span class="legal-bullet">•</span> Unternehmenszugehörigkeit (optional)</li>
+                </ul>
+                <p>
+                    Diese Daten werden zur Bereitstellung unserer Dienste, zur Benutzerverifizierung und
+                    zur Kommunikation über unseren Service verwendet.
+                </p>
+            </div>
+
+            <div class="legal-section cookie-section" id="cookies">
+                <h2>7. Cookies und Einwilligungsmanagement</h2>
+                <p>
+                    Wir setzen Cookies ein. Bei Cookies handelt es sich um kleine Textdateien, die auf
+                    Ihrem Endgerät gespeichert werden und die Ihr Browser speichert.
+                </p>
+
+                <div class="cookie-consent-info">
+                    <div class="cookie-consent-header">
+                        <span class="cookie-icon">🍪</span>
+                        <h3>Unser Cookie-Einwilligungssystem</h3>
+                    </div>
+                    <p>
+                        Beim ersten Besuch unserer Website erscheint ein Cookie-Banner, über das Sie Ihre
+                        Einwilligungen verwalten können. Ihre Entscheidung wird für 365 Tage gespeichert.
+                        Sie können Ihre Einstellungen jederzeit über den Link „Cookie-Einstellungen" im
+                        Footer unserer Website ändern.
+                    </p>
+                </div>
+
+                <h3>Kategorien von Cookies</h3>
+                <div class="cookie-categories">
+                    <div class="cookie-category essential">
+                        <div class="cookie-category-header">
+                            <span class="cookie-category-icon">✓</span>
+                            <h4>Notwendige Cookies</h4>
+                            <span class="cookie-status always-on">Immer aktiv</span>
+                        </div>
+                        <p>Diese Cookies sind für die grundlegenden Funktionen der Website erforderlich und können nicht
+                            deaktiviert werden.</p>
+                        <div class="cookie-details">
+                            <table class="cookie-table">
+                                <thead>
+                                    <tr>
+                                        <th>Cookie-Name</th>
+                                        <th>Zweck</th>
+                                        <th>Speicherdauer</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><code>syntra_consent</code></td>
+                                        <td>Speichert Ihre Cookie-Einwilligungen</td>
+                                        <td>365 Tage</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>session</code></td>
+                                        <td>Session-Management und Authentifizierung</td>
+                                        <td>Session</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>csrf_token</code></td>
+                                        <td>Schutz vor Cross-Site-Request-Forgery</td>
+                                        <td>Session</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="cookie-category analytics">
+                        <div class="cookie-category-header">
+                            <span class="cookie-category-icon">📊</span>
+                            <h4>Analyse-Cookies</h4>
+                            <span class="cookie-status optional">Optional</span>
+                        </div>
+                        <p>Diese Cookies helfen uns, die Nutzung unserer Website zu verstehen und zu verbessern. Die
+                            Daten werden anonymisiert erhoben.</p>
+                        <div class="cookie-details">
+                            <table class="cookie-table">
+                                <thead>
+                                    <tr>
+                                        <th>Cookie-Name</th>
+                                        <th>Zweck</th>
+                                        <th>Speicherdauer</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><code>_analytics_id</code></td>
+                                        <td>Anonyme Besucheridentifikation</td>
+                                        <td>30 Tage</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>_analytics_session</code></td>
+                                        <td>Sitzungsverfolgung für Nutzungsstatistiken</td>
+                                        <td>Session</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="cookie-note">
+                            <strong>Hinweis:</strong> Diese Cookies werden nur gesetzt, wenn Sie im Cookie-Banner auf
+                            „Alle akzeptieren" klicken oder die Analyse-Cookies explizit aktivieren.
+                        </p>
+                    </div>
+
+                    <div class="cookie-category marketing">
+                        <div class="cookie-category-header">
+                            <span class="cookie-category-icon">📣</span>
+                            <h4>Marketing-Cookies</h4>
+                            <span class="cookie-status optional">Optional</span>
+                        </div>
+                        <p>Diese Cookies werden verwendet, um Ihnen relevante Werbung anzuzeigen und die Wirksamkeit
+                            unserer Marketingkampagnen zu messen.</p>
+                        <p class="cookie-note">
+                            <strong>Aktueller Status:</strong> Wir verwenden derzeit keine Marketing-Cookies auf unserer
+                            Website.
+                        </p>
+                    </div>
+                </div>
+
+                <h3>Ihre Cookie-Einstellungen verwalten</h3>
+                <div class="cookie-manage-info">
+                    <p>Sie haben verschiedene Möglichkeiten, Ihre Cookie-Präferenzen zu verwalten:</p>
+                    <ul class="legal-list">
+                        <li><span class="legal-bullet">1.</span> <strong>Cookie-Banner:</strong> Beim ersten Besuch
+                            können Sie Ihre Präferenzen festlegen</li>
+                        <li><span class="legal-bullet">2.</span> <strong>Footer-Link:</strong> Klicken Sie auf
+                            „Cookie-Einstellungen" im Footer, um Ihre Einstellungen jederzeit anzupassen</li>
+                        <li><span class="legal-bullet">3.</span> <strong>Browser-Einstellungen:</strong> Sie können
+                            Cookies in Ihren Browser-Einstellungen blockieren oder löschen</li>
+                    </ul>
+                    <div class="cookie-manage-buttons">
+                        <button onclick="if(typeof showCookieSettings === 'function') showCookieSettings();"
+                            class="btn-cookie-settings">
+                            Cookie-Einstellungen öffnen
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="legal-section" id="rechte">
+                <h2>8. Ihre Rechte</h2>
+                <p>Sie haben folgende Rechte in Bezug auf Ihre personenbezogenen Daten:</p>
+                <div class="rights-grid">
+                    <div class="right-card">
+                        <span class="right-icon">📋</span>
+                        <h4>Auskunftsrecht</h4>
+                        <p>Art. 15 DSGVO – Sie können Auskunft über Ihre verarbeiteten Daten verlangen.</p>
+                    </div>
+                    <div class="right-card">
+                        <span class="right-icon">✏️</span>
+                        <h4>Berichtigungsrecht</h4>
+                        <p>Art. 16 DSGVO – Sie können die Korrektur falscher Daten verlangen.</p>
+                    </div>
+                    <div class="right-card">
+                        <span class="right-icon">🗑️</span>
+                        <h4>Löschungsrecht</h4>
+                        <p>Art. 17 DSGVO – Sie können die Löschung Ihrer Daten verlangen.</p>
+                    </div>
+                    <div class="right-card">
+                        <span class="right-icon">⏸️</span>
+                        <h4>Einschränkung</h4>
+                        <p>Art. 18 DSGVO – Sie können die Einschränkung der Verarbeitung verlangen.</p>
+                    </div>
+                    <div class="right-card">
+                        <span class="right-icon">📤</span>
+                        <h4>Datenübertragbarkeit</h4>
+                        <p>Art. 20 DSGVO – Sie können Ihre Daten in einem gängigen Format erhalten.</p>
+                    </div>
+                    <div class="right-card">
+                        <span class="right-icon">✋</span>
+                        <h4>Widerspruchsrecht</h4>
+                        <p>Art. 21 DSGVO – Sie können der Verarbeitung widersprechen.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="legal-section">
+                <h2>9. Drittanbieter und Auftragsverarbeiter</h2>
+                <p>Wir arbeiten mit folgenden Dienstleistern zusammen:</p>
+                <div class="providers-grid">
+                    <div class="provider-card">
+                        <span class="provider-icon">☁️</span>
+                        <h4>Hosting</h4>
+                        <p>Amazon Web Services (AWS), Frankfurt am Main (EU-Rechenzentrum)</p>
+                    </div>
+                    <div class="provider-card">
+                        <span class="provider-icon">💾</span>
+                        <h4>Datenbank</h4>
+                        <p>Supabase Inc. (mit Standard-Vertragsklauseln)</p>
+                    </div>
+                    <div class="provider-card">
+                        <span class="provider-icon">📧</span>
+                        <h4>E-Mail</h4>
+                        <p>Eigene Server innerhalb der EU</p>
+                    </div>
+                </div>
+                <p>
+                    Mit allen Auftragsverarbeitern haben wir entsprechende Verträge nach Art. 28 DSGVO
+                    abgeschlossen.
+                </p>
+            </div>
+
+            <div class="legal-section">
+                <h2>10. Speicherdauer</h2>
+                <p>
+                    Wir speichern personenbezogene Daten nur so lange, wie es für die jeweiligen
+                    Verarbeitungszwecke erforderlich ist oder gesetzliche Aufbewahrungsfristen bestehen.
+                </p>
+                <div class="retention-grid">
+                    <div class="retention-item">
+                        <span class="retention-period">Bis Kündigung</span>
+                        <span class="retention-label">Nutzerkontodaten</span>
+                    </div>
+                    <div class="retention-item">
+                        <span class="retention-period">30 Tage</span>
+                        <span class="retention-label">Server-Logfiles</span>
+                    </div>
+                    <div class="retention-item">
+                        <span class="retention-period">6 Jahre</span>
+                        <span class="retention-label">Geschäftliche Korrespondenz (HGB)</span>
+                    </div>
+                    <div class="retention-item">
+                        <span class="retention-period">10 Jahre</span>
+                        <span class="retention-label">Rechnungsdaten (AO)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="legal-section">
+                <h2>11. Änderungen dieser Datenschutzerklärung</h2>
+                <p>
+                    Wir behalten uns vor, diese Datenschutzerklärung anzupassen, um sie stets den
+                    aktuellen rechtlichen Anforderungen anzupassen oder um Änderungen unserer Leistungen
+                    umzusetzen. Die jeweils aktuelle Fassung finden Sie auf dieser Website.
+                </p>
+            </div>
+
+            <div class="legal-section" id="kontakt">
+                <h2>12. Kontakt für Datenschutzanfragen</h2>
+                <div class="contact-card">
+                    <p>
+                        Bei Fragen zum Datenschutz wenden Sie sich bitte an:<br><br>
+                        <strong>Syntra GmbH</strong><br>
+                        Datenschutzbeauftragter<br>
+                        Musterstraße 123<br>
+                        12345 Berlin<br><br>
+                        <a href="mailto:datenschutz@syntra.io" class="contact-email">
+                            <span class="email-icon">📧</span>
+                            datenschutz@syntra.io
+                        </a>
+                    </p>
+                </div>
+            </div>
+
+            <p class="legal-update">
+                <em>Stand: Januar 2025</em>
+            </p>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{% block title %}Workflow Automation – Syntra{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}?v=7">
+{% endblock %}
+
+{% block body_class %}landing-page{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="page-hero feature-hero" id="main-content">
+    <div class="hero-orbs" aria-hidden="true">
+        <div class="hero-orb hero-orb-1"></div>
+        <div class="hero-orb hero-orb-2"></div>
+    </div>
+    <div class="container">
+        <div class="page-hero-content">
+            <a href="{{ url_for('features') }}" class="back-link">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7" />
+                </svg>
+                Back to What We Do
+            </a>
+            <div class="feature-hero-icon automation">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                </svg>
+            </div>
+            <span class="section-badge">⚡ Workflow Automation</span>
+            <h1 class="page-hero-title">
+                We automate<br>
+                <span class="gradient-text-cyan">the boring stuff</span>
+            </h1>
+            <p class="page-hero-subtitle">
+                Tell us what wastes your team's time. We'll connect your tools, build the workflows,
+                and hand you back hours every single day.
+            </p>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <span class="stat-number">85%</span>
+                    <span class="stat-label">Less manual work</span>
+                </div>
+                <div class="hero-stat-divider"></div>
+                <div class="hero-stat">
+                    <span class="stat-number">3x</span>
+                    <span class="stat-label">Faster processes</span>
+                </div>
+                <div class="hero-stat-divider"></div>
+                <div class="hero-stat">
+                    <span class="stat-number">0</span>
+                    <span class="stat-label">Technical skills needed</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- What We Automate -->
+<section class="feature-benefits-section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-badge" style="background: rgba(6, 182, 212, 0.2); color: #22D3EE;">🛠️ What We Do For
+                You</span>
+            <h2 class="section-title">You tell us the problem — we build the solution</h2>
+        </div>
+        <div class="feature-benefits-grid">
+            <div class="feature-benefit-card">
+                <div class="benefit-number">01</div>
+                <h3>Connect All Your Tools</h3>
+                <p>Using Salesforce, Slack, Excel, Google Workspace, custom software? We connect them all. Data flows
+                    automatically between systems — no more copy-pasting.</p>
+                <div class="benefit-tag">500+ integrations</div>
+            </div>
+            <div class="feature-benefit-card">
+                <div class="benefit-number">02</div>
+                <h3>Eliminate Repetitive Tasks</h3>
+                <p>Everything your team does over and over — sending follow-ups, updating spreadsheets, generating
+                    reports — we automate it. They do the work once; the system handles the rest.</p>
+                <div class="benefit-tag">Save 10+ hours/week</div>
+            </div>
+            <div class="feature-benefit-card">
+                <div class="benefit-number">03</div>
+                <h3>Smart Triggers & Actions</h3>
+                <p>When X happens, Y should happen. New lead? Routed to the right person. Invoice due? Reminder sent.
+                    Customer complains? Ticket created. It just works.</p>
+                <div class="benefit-tag">Real-time automation</div>
+            </div>
+            <div class="feature-benefit-card">
+                <div class="benefit-number">04</div>
+                <h3>We Do All the Setup</h3>
+                <p>You don't need to learn any software. You don't need to touch any settings. We build everything, test
+                    it, and train your team. You just enjoy the extra time.</p>
+                <div class="benefit-tag">Full-service</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Real Examples -->
+<section class="use-cases-section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-badge" style="background: rgba(6, 182, 212, 0.2); color: #22D3EE;">💡 Real
+                Examples</span>
+            <h2 class="section-title">What our clients automated</h2>
+            <p class="section-subtitle">
+                These are real workflows we've built. Imagine what we could build for you.
+            </p>
+        </div>
+
+        <div class="use-cases-grid">
+            <div class="use-case-card">
+                <span class="use-case-icon">📧</span>
+                <h4>"New leads used to slip through the cracks"</h4>
+                <p>Now: Every new inquiry is automatically assigned, the team is notified in Slack, and a personalized
+                    email goes out — in under 60 seconds.</p>
+                <div class="use-case-result">
+                    <span class="result-label">Result:</span>
+                    <span class="result-value">40% more conversions</span>
+                </div>
+            </div>
+            <div class="use-case-card">
+                <span class="use-case-icon">💰</span>
+                <h4>"Invoice reminders were a nightmare"</h4>
+                <p>Now: The system sends reminders 7, 14, and 30 days before due. Escalates to managers automatically.
+                    Late payments dropped 40%.</p>
+                <div class="use-case-result">
+                    <span class="result-label">Result:</span>
+                    <span class="result-value">€50k faster collections</span>
+                </div>
+            </div>
+            <div class="use-case-card">
+                <span class="use-case-icon">📊</span>
+                <h4>"We spent 3 hours on reports every day"</h4>
+                <p>Now: Reports compile themselves every morning. Data from 5 different systems, on the CEO's desk by
+                    8am. No human needed.</p>
+                <div class="use-case-result">
+                    <span class="result-label">Result:</span>
+                    <span class="result-value">15 hours saved weekly</span>
+                </div>
+            </div>
+            <div class="use-case-card">
+                <span class="use-case-icon">👤</span>
+                <h4>"New employee setup took a whole day"</h4>
+                <p>Now: One form creates accounts across all systems, sends login credentials, schedules onboarding
+                    meetings, and notifies IT. Done in 5 minutes.</p>
+                <div class="use-case-result">
+                    <span class="result-label">Result:</span>
+                    <span class="result-value">95% time reduction</span>
+                </div>
+            </div>
+            <div class="use-case-card">
+                <span class="use-case-icon">📦</span>
+                <h4>"Stock alerts came too late"</h4>
+                <p>Now: Real-time inventory tracking alerts purchasing when stock drops below threshold. Reorders
+                    suggested automatically.</p>
+                <div class="use-case-result">
+                    <span class="result-label">Result:</span>
+                    <span class="result-value">Zero stockouts</span>
+                </div>
+            </div>
+            <div class="use-case-card">
+                <span class="use-case-icon">📱</span>
+                <h4>"Social media was a full-time job"</h4>
+                <p>Now: Content posted automatically across platforms. Analytics collected. Weekly performance report
+                    generated. One hour of oversight per week.</p>
+                <div class="use-case-result">
+                    <span class="result-label">Result:</span>
+                    <span class="result-value">30 hours saved monthly</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works -->
+<section class="how-we-work-section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-badge" style="background: rgba(6, 182, 212, 0.2); color: #22D3EE;">📋 The
+                Process</span>
+            <h2 class="section-title">From idea to automation in 4 steps</h2>
+        </div>
+
+        <div class="process-steps">
+            <div class="process-step">
+                <div class="step-number-big">1</div>
+                <h4>Discovery Call</h4>
+                <p>You tell us what's frustrating. We listen, ask questions, identify opportunities.</p>
+                <span class="step-duration">30 min</span>
+            </div>
+            <div class="process-connector">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+            </div>
+            <div class="process-step">
+                <div class="step-number-big">2</div>
+                <h4>Solution Design</h4>
+                <p>We map out exactly what we'll automate and show you the expected ROI.</p>
+                <span class="step-duration">1-2 days</span>
+            </div>
+            <div class="process-connector">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+            </div>
+            <div class="process-step">
+                <div class="step-number-big">3</div>
+                <h4>Build & Test</h4>
+                <p>We build the workflows, connect your systems, and test everything thoroughly.</p>
+                <span class="step-duration">1-4 weeks</span>
+            </div>
+            <div class="process-connector">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+            </div>
+            <div class="process-step">
+                <div class="step-number-big">4</div>
+                <h4>Launch & Optimize</h4>
+                <p>We go live, monitor performance, and continuously improve based on results.</p>
+                <span class="step-duration">Ongoing</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="final-cta-section">
+    <div class="container">
+        <div class="final-cta-content">
+            <span class="cta-badge">Ready to automate?</span>
+            <h2 class="final-cta-title">What's eating your team's time?</h2>
+            <p class="final-cta-subtitle">
+                Book a free call. We'll identify your biggest time-wasters and show you exactly what we can automate.
+            </p>
+            <div class="cta-buttons">
+                <a href="{{ url_for('pricing') }}#contact" class="btn-cta-primary">
+                    Schedule Free Analysis
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                </a>
+                <a href="{{ url_for('pricing') }}" class="btn-cta-secondary">
+                    View Pricing
+                </a>
+            </div>
+            <p class="cta-note">✓ Free 30-min analysis · ✓ Custom ROI projection · ✓ No commitment</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

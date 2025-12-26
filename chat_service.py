@@ -35,9 +35,19 @@ class ChatService:
     def get_or_create_session(self, db_module, session_key: str, 
                                widget_id: str = None,
                                user_id: str = None,
+                               company_id: str = None,
                                context: Dict = None,
                                metadata: Dict = None) -> Tuple[Dict, bool]:
         """Get existing session or create new one
+        
+        Args:
+            db_module: Database module with get_db()
+            session_key: Unique session identifier
+            widget_id: Widget configuration ID
+            user_id: User ID if authenticated
+            company_id: Company ID for multi-tenant context
+            context: Session context data
+            metadata: Additional metadata
         
         Returns:
             Tuple of (session_dict, is_new)
@@ -61,6 +71,7 @@ class ChatService:
                 'session_key': session_key,
                 'widget_id': widget_id,
                 'user_id': user_id,
+                'company_id': company_id,
                 'context': context or {},
                 'metadata': metadata or {},
                 'is_active': True
@@ -234,8 +245,16 @@ class ChatService:
     
     def trigger_n8n_workflow(self, session_id: str, message: str,
                               user_context: Dict = None,
+                              company_context: Dict = None,
                               conversation_history: List[Dict] = None) -> Tuple[bool, Optional[str]]:
         """Trigger n8n workflow for AI processing
+        
+        Args:
+            session_id: Chat session ID
+            message: User message
+            user_context: Additional user context
+            company_context: Company details for multi-tenant routing
+            conversation_history: Previous messages
         
         Returns:
             Tuple of (success, execution_id or error)
@@ -249,6 +268,7 @@ class ChatService:
                 'message': message,
                 'timestamp': datetime.now(timezone.utc).isoformat(),
                 'context': user_context or {},
+                'company': company_context or {},  # Multi-tenant company data
                 'conversation_history': conversation_history or []
             }
             
@@ -280,16 +300,65 @@ class ChatService:
     # Widget Configuration
     # =========================================================================
     
-    def get_widget_config(self, db_module, widget_id: str) -> Optional[Dict]:
-        """Get widget configuration by ID"""
+    def get_company_context(self, db_module, company_id: str) -> Optional[Dict]:
+        """Get company context for multi-tenant n8n routing
+        
+        Args:
+            db_module: Database module
+            company_id: Company UUID
+            
+        Returns:
+            Company context dict with id, name, slug, settings
+        """
+        if not company_id:
+            return None
+            
         try:
             db_client = db_module.get_db()
             if db_client is None:
                 return None
             
-            result = db_client.table('widget_configs').select('*').eq(
+            result = db_client.table('companies').select('*').eq(
+                'id', company_id
+            ).execute()
+            
+            if result.data and len(result.data) > 0:
+                company = result.data[0]
+                return {
+                    'id': company.get('id'),
+                    'name': company.get('name'),
+                    'slug': company.get('slug'),
+                    'settings': company.get('settings', {})
+                }
+            return None
+            
+        except Exception as e:
+            print(f"Error getting company context: {e}")
+            return None
+    
+    def get_widget_config(self, db_module, widget_id: str, 
+                          company_id: str = None) -> Optional[Dict]:
+        """Get widget configuration by ID
+        
+        Args:
+            db_module: Database module
+            widget_id: Widget ID
+            company_id: Optional company ID to filter by
+        """
+        try:
+            db_client = db_module.get_db()
+            if db_client is None:
+                return None
+            
+            query = db_client.table('widget_configs').select('*').eq(
                 'widget_id', widget_id
-            ).eq('is_active', True).execute()
+            ).eq('is_active', True)
+            
+            # Filter by company if specified
+            if company_id:
+                query = query.eq('company_id', company_id)
+            
+            result = query.execute()
             
             if result.data and len(result.data) > 0:
                 return result.data[0]

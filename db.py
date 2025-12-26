@@ -676,6 +676,8 @@ def get_company_by_slug(slug: str) -> Optional[Dict]:
 
 def create_company(name: str, slug: str, settings: Dict = None) -> Dict:
     """Create a new company with validation"""
+    import re
+    
     # Validate name
     if not name or len(name.strip()) < 2:
         raise ValueError("Company name must be at least 2 characters")
@@ -688,7 +690,6 @@ def create_company(name: str, slug: str, settings: Dict = None) -> Dict:
         # Auto-generate slug from name
         slug = name.lower().replace(' ', '-').replace('_', '-')
         # Remove special characters
-        import re
         slug = re.sub(r'[^a-z0-9-]', '', slug)
         slug = re.sub(r'-+', '-', slug).strip('-')
     
