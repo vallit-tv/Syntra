@@ -821,44 +821,10 @@
     backdrop-filter: blur(10px);
 }
 
-/* Gradient glow border effect */
-.feature-card-v2::before {
-    content: '';
-    position: absolute;
-    inset: -1px;
-    border-radius: 20px;
-    padding: 1px;
-    background: linear-gradient(135deg, transparent, transparent);
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    opacity: 0;
-    transition: all 0.4s ease;
-}
-
-/* Cyan glow for automation */
-.feature-card-v2:nth-child(1)::before {
-    background: linear-gradient(135deg, #06B6D4, #22D3EE, #67E8F9);
-}
-
-/* Violet glow for analytics */
-.feature-card-v2:nth-child(2)::before {
-    background: linear-gradient(135deg, #8B5CF6, #A78BFA, #C4B5FD);
-}
-
-/* Amber glow for security */
-.feature-card-v2:nth-child(3)::before {
-    background: linear-gradient(135deg, #F59E0B, #FBBF24, #FCD34D);
-}
-
+/* Clean hover effect - no mask-based borders that cause box artifacts */
 .feature-card-v2:hover {
     transform: translateY(-8px);
-    border-color: transparent;
-}
-
-.feature-card-v2:hover::before {
-    opacity: 1;
+    border-color: rgba(255, 255, 255, 0.15);
 }
 
 /* Inner glow on hover */
@@ -1980,8 +1946,34 @@ header .logo-svg {
 }
 
 .nav-dropdown-icon {
-    font-size: 1.25rem;
-    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+
+.nav-dropdown-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+.nav-dropdown-icon.automation {
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), transparent);
+    color: #22D3EE;
+}
+
+.nav-dropdown-icon.analytics {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), transparent);
+    color: #A78BFA;
+}
+
+.nav-dropdown-icon.security {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), transparent);
+    color: #FBBF24;
 }
 
 .nav-dropdown-menu a div {
@@ -4459,13 +4451,30 @@ header .logo-svg {
     font-weight: 700;
 }
 
+.guarantee-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
 /* ================================
    PRICING TIER ICON & NOTE
    ================================ */
 .pricing-tier-icon {
     font-size: 2rem;
-    display: block;
-    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    margin-bottom: 16px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.pricing-tier-icon svg {
+    width: 28px;
+    height: 28px;
 }
 
 .price-note {
@@ -4506,9 +4515,21 @@ header .logo-svg {
 }
 
 .feature-check {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    background: rgba(34, 211, 238, 0.15);
+    border-radius: 6px;
     color: #22D3EE;
     font-weight: 700;
-    margin-right: 8px;
+    flex-shrink: 0;
+}
+
+.feature-check svg {
+    width: 14px;
+    height: 14px;
 }
 
 /* ================================
@@ -4542,9 +4563,20 @@ header .logo-svg {
 }
 
 .included-icon {
-    font-size: 2.5rem;
-    display: block;
-    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    margin: 0 auto 20px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.included-icon svg {
+    width: 24px;
+    height: 24px;
 }
 
 .included-item h4 {
