@@ -10,7 +10,7 @@ echo "==============================================="
 pip install -r requirements.txt
 
 # Run the gotrue patch
-python3 patch_gotrue.py
+python3 scripts/patch_gotrue.py
 
 echo "==============================================="
 echo "Build hook completed successfully"
