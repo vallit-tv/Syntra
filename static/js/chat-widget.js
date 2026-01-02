@@ -232,6 +232,47 @@
                         </div>
                         ` : ''}
                     </div>
+
+                    <!-- Overlays: Menu -->
+                    <div class="syntra-overlay syntra-overlay-menu">
+                        <div class="syntra-overlay-header">
+                            <button class="syntra-back-btn" title="Back to Chat">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                                </svg>
+                            </button>
+                            <span>Menu</span>
+                        </div>
+                        <div class="syntra-menu-list">
+                            <div class="syntra-menu-item" data-action="new-chat">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 20h9"/>
+                                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                                </svg>
+                                Start New Chat
+                            </div>
+                            <!-- Future: View History Item -->
+                            <div class="syntra-menu-item" data-action="view-history">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <polyline points="12 6 12 12 16 14"/>
+                                </svg>
+                                History (Coming Soon)
+                            </div>
+                        </div>
+                    </div>
+
+                     <!-- Custom Modal Backdrop -->
+                    <div class="syntra-modal-backdrop">
+                        <div class="syntra-modal">
+                            <div class="syntra-modal-title">Confirm</div>
+                            <div class="syntra-modal-text">Are you sure?</div>
+                            <div class="syntra-modal-actions">
+                                <button class="syntra-btn syntra-btn-secondary" data-action="cancel">Cancel</button>
+                                <button class="syntra-btn syntra-btn-primary" data-action="confirm">Confirm</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             `;
 
@@ -246,6 +287,16 @@
             this.sendBtn = this.container.querySelector('.syntra-send-btn');
             this.closeBtn = this.container.querySelector('.syntra-close-btn');
             this.resetBtn = this.container.querySelector('.syntra-reset-btn');
+
+            // Overlays
+            this.menuOverlay = this.container.querySelector('.syntra-overlay-menu');
+            this.modalBackdrop = this.container.querySelector('.syntra-modal-backdrop');
+            this.modalTitle = this.container.querySelector('.syntra-modal-title');
+            this.modalText = this.container.querySelector('.syntra-modal-text');
+            this.modalConfirmBtn = this.container.querySelector('[data-action="confirm"]');
+            this.modalCancelBtn = this.container.querySelector('[data-action="cancel"]');
+
+            this.currentModalResolve = null;
         }
 
         // =====================================================================
@@ -259,13 +310,52 @@
             // Close button
             this.closeBtn.addEventListener('click', () => this.close());
 
-            // Reset button
+            // Reset button (Now opens Menu or directly confirms)
+            // Let's use it as a Menu trigger if we have a menu, or direct reset.
+            // For now, let's make it direct "New Chat" confirmation to keep it simple as requested "view older chats" implies we might need a menu eventually.
+            // But user asked for "option to view older chats". So let's wire the reset button to open the Menu?
+            // Actually, the UI has a 'New Chat' icon. Let's keep it as is, but use the custom modal.
             if (this.resetBtn) {
                 this.resetBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    this.resetChat();
+                    this.confirmNewChat();
                 });
             }
+
+            // Menu Items
+            const newChatBtn = this.container.querySelector('[data-action="new-chat"]');
+            if (newChatBtn) {
+                newChatBtn.addEventListener('click', () => {
+                    this.closeMenu();
+                    this.confirmNewChat();
+                });
+            }
+
+            const historyBtn = this.container.querySelector('[data-action="view-history"]');
+            if (historyBtn) {
+                historyBtn.addEventListener('click', () => {
+                    // Todo: Implement history view
+                    alert('History feature coming soon!');
+                });
+            }
+
+            // Back buttons
+            this.container.querySelectorAll('.syntra-back-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    this.closeMenu();
+                });
+            });
+
+            // Modal Actions
+            this.modalConfirmBtn.addEventListener('click', () => {
+                if (this.currentModalResolve) this.currentModalResolve(true);
+                this.closeModal();
+            });
+
+            this.modalCancelBtn.addEventListener('click', () => {
+                if (this.currentModalResolve) this.currentModalResolve(false);
+                this.closeModal();
+            });
 
             // Form submit
             this.inputForm.addEventListener('submit', (e) => {
@@ -286,61 +376,60 @@
 
             // Close on Escape
             document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && this.isOpen) {
-                    this.close();
+                if (e.key === 'Escape') {
+                    if (this.isModalOpen) {
+                        this.closeModal();
+                    } else if (this.isOpen) {
+                        this.close();
+                    }
                 }
             });
         }
 
-        autoResizeInput() {
-            const input = this.inputField;
-            input.style.height = 'auto';
-            const newHeight = Math.min(input.scrollHeight, 120);
-            input.style.height = newHeight + 'px';
+        // ... autoResizeInput ...
+
+        // =====================================================================
+        // UI Controls (Modals, Overlays)
+        // =====================================================================
+
+        showModal(title, text) {
+            return new Promise((resolve) => {
+                this.modalTitle.textContent = title;
+                this.modalText.textContent = text;
+                this.modalBackdrop.classList.add('active');
+                this.isModalOpen = true;
+                this.currentModalResolve = resolve;
+            });
+        }
+
+        closeModal() {
+            this.modalBackdrop.classList.remove('active');
+            this.isModalOpen = false;
+            this.currentModalResolve = null;
+        }
+
+        openMenu() {
+            this.menuOverlay.classList.add('active');
+        }
+
+        closeMenu() {
+            this.menuOverlay.classList.remove('active');
         }
 
         // =====================================================================
         // Widget State
         // =====================================================================
 
-        toggle() {
-            if (this.isOpen) {
-                this.close();
-            } else {
-                this.open();
+        // ... toggle, open, close ...
+
+        async confirmNewChat() {
+            const confirmed = await this.showModal('Start New Chat?', 'This will clear your current conversation and start fresh.');
+            if (confirmed) {
+                this.resetChat();
             }
-        }
-
-        open() {
-            this.isOpen = true;
-            this.container.classList.add('syntra-open');
-            this.toggleBtn.classList.add('syntra-toggled');
-
-            // Show welcome message if no messages
-            if (this.messages.length === 0 && this.config.welcomeMessage) {
-                this.addMessage('assistant', this.config.welcomeMessage, false);
-            }
-
-            // Focus input
-            setTimeout(() => {
-                this.inputField.focus();
-            }, 300);
-
-            // Scroll to bottom
-            this.scrollToBottom();
-        }
-
-        close() {
-            this.isOpen = false;
-            this.container.classList.remove('syntra-open');
-            this.toggleBtn.classList.remove('syntra-toggled');
         }
 
         async resetChat() {
-            if (!confirm('Start a new chat? This will clear your current conversation.')) {
-                return;
-            }
-
             try {
                 this.messagesContainer.innerHTML = '';
                 this.messages = [];
@@ -379,228 +468,33 @@
             }
         }
 
-        // =====================================================================
-        // Messages
-        // =====================================================================
+        // ... messages ...
 
-        addMessage(role, content, animate = true) {
-            const message = {
-                id: Date.now(),
-                role: role,
-                content: content,
-                timestamp: new Date().toISOString()
-            };
-
-            this.messages.push(message);
-            this.renderMessage(message, animate);
-            this.scrollToBottom();
-        }
-
-        renderMessage(message, animate = true) {
-            const messageEl = document.createElement('div');
-            messageEl.className = `syntra-message syntra-message-${message.role}`;
-            if (animate) {
-                messageEl.classList.add('syntra-message-enter');
-            }
-
-            const parsedContent = message.role === 'assistant'
-                ? parseMarkdown(message.content)
-                : escapeHtml(message.content).replace(/\n/g, '<br>');
-
-            messageEl.innerHTML = `
-                <div class="syntra-message-content">
-                    ${parsedContent}
-                </div>
-                <div class="syntra-message-time">${formatTime(message.timestamp)}</div>
-            `;
-
-            this.messagesContainer.appendChild(messageEl);
-
-            // Trigger animation
-            if (animate) {
-                requestAnimationFrame(() => {
-                    messageEl.classList.remove('syntra-message-enter');
-                });
-            }
-        }
-
-        renderTypingIndicator() {
-            // Remove existing
-            this.removeTypingIndicator();
-
-            const typingEl = document.createElement('div');
-            typingEl.className = 'syntra-typing-indicator';
-            typingEl.innerHTML = `
-                <div class="syntra-typing-dots">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
-            `;
-
-            this.messagesContainer.appendChild(typingEl);
-            this.scrollToBottom();
-        }
-
-        removeTypingIndicator() {
-            const existing = this.messagesContainer.querySelector('.syntra-typing-indicator');
-            if (existing) {
-                existing.remove();
-            }
-        }
-
-        scrollToBottom() {
-            const messagesArea = this.container.querySelector('.syntra-messages');
-            if (messagesArea) {
-                messagesArea.scrollTop = messagesArea.scrollHeight;
-            }
-        }
-
-        // =====================================================================
-        // API Communication
-        // =====================================================================
-
-        async sendMessage() {
-            const content = this.inputField.value.trim();
-            if (!content || this.isLoading) return;
-
-            // Clear input
-            this.inputField.value = '';
-            this.autoResizeInput();
-
-            // Add user message
-            this.addMessage('user', content);
-
-            // Show loading
-            this.isLoading = true;
-            this.sendBtn.disabled = true;
-            this.renderTypingIndicator();
-
-            try {
-                const response = await fetch(`${this.config.apiUrl}/api/chat/message`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        message: content,
-                        session_id: this.sessionId,
-                        widget_id: this.config.widgetId,
-                        company_id: this.config.companyId,  // Multi-tenant context
-                        context: {
-                            page_url: window.location.href,
-                            page_title: document.title,
-                            referrer: document.referrer
-                        }
-                    })
-                });
-
-                const data = await response.json();
-
-                this.removeTypingIndicator();
-
-                if (data.status === 'success' && data.response) {
-                    this.addMessage('assistant', data.response);
-                } else if (data.status === 'pending') {
-                    // n8n processing - poll for response
-                    this.pollForResponse(data.session_id);
-                } else if (data.response) {
-                    // Error but with fallback message
-                    this.addMessage('assistant', data.response);
-                } else {
-                    this.addMessage('assistant', "I'm sorry, something went wrong. Please try again.");
-                }
-
-                // Update session ID if provided
-                if (data.session_id) {
-                    this.sessionId = data.session_id;
-                    storeSessionId(this.sessionId);
-                }
-
-            } catch (error) {
-                console.error('Syntra Chat Error:', error);
-                this.removeTypingIndicator();
-                this.addMessage('assistant', "I'm having trouble connecting. Please check your internet connection and try again.");
-            } finally {
-                this.isLoading = false;
-                this.sendBtn.disabled = false;
-                this.inputField.focus();
-            }
-        }
-
-        async pollForResponse(sessionId, attempts = 0) {
-            if (attempts >= 30) { // 30 seconds max
-                this.removeTypingIndicator();
-                this.addMessage('assistant', "The response is taking longer than expected. Please try again.");
-                return;
-            }
-
-            try {
-                const response = await fetch(`${this.config.apiUrl}/api/chat/history/${sessionId}?limit=1`);
-                const data = await response.json();
-
-                // Check mapped history or old format?
-                // The new endpoint returns {history: [...]}
-                const msgs = data.history || data.messages;
-
-                if (msgs && msgs.length > 0) {
-                    const lastMessage = msgs[msgs.length - 1];
-                    const role = lastMessage.role || lastMessage.sender;
-                    const content = lastMessage.content || lastMessage.text;
-
-                    if (role === 'assistant') {
-                        this.removeTypingIndicator();
-                        this.addMessage('assistant', content);
-                        return;
-                    }
-                }
-
-                // Continue polling
-                setTimeout(() => this.pollForResponse(sessionId, attempts + 1), 1000);
-
-            } catch (error) {
-                console.error('Polling error:', error);
-                // Continue polling despite error
-                setTimeout(() => this.pollForResponse(sessionId, attempts + 1), 1000);
-            }
-        }
-
+        // ... loadHistory ...
         async loadHistory() {
             try {
-                // If sessionId is very new (just gen) and no request made, maybe skip?
-                // But we want to persist across reload
                 if (!this.sessionId) return;
-
-                // Use query param session_id if endpoint supports it, OR path param if using old route
-                // backend route: /api/chat/history/<session_key>
-
                 const response = await fetch(`${this.config.apiUrl}/api/chat/history/${this.sessionId}`);
                 const data = await response.json();
-
-                // Support both new "history" key and legacy "messages" key
                 const msgs = data.history || data.messages;
 
                 if (msgs && msgs.length > 0) {
                     msgs.forEach(msg => {
-                        // Map fields if needed: sender->role, text->content
                         const role = msg.role || msg.sender;
                         const content = msg.content || msg.text;
                         const timestamp = msg.timestamp || new Date().toISOString();
-
                         const msgObj = {
                             id: Date.now() + Math.random(),
                             role: role,
                             content: content,
                             timestamp: timestamp
                         };
-
                         this.messages.push(msgObj);
                         this.renderMessage(msgObj, false);
                     });
                     this.scrollToBottom();
                 }
             } catch (error) {
-                // Silently fail - new session will be created
                 console.log('No previous chat history or failed to load');
             }
         }

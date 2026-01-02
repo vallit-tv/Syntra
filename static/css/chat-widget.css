@@ -797,8 +797,192 @@
     background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
 }
 
-.syntra-theme-rounded .syntra-toggle-btn:hover {
-    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+/* ============================================================================
+   Overlays (Menu, History, Modals)
+   ============================================================================ */
+
+.syntra-overlay {
+    position: absolute;
+    top: 60px;
+    /* Below header */
+    left: 0;
+    width: 100%;
+    height: calc(100% - 60px);
+    background: var(--syntra-bg);
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all var(--syntra-transition);
+}
+
+.syntra-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.syntra-menu-list {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.syntra-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: var(--syntra-bg-secondary);
+    border: 1px solid var(--syntra-border);
+    border-radius: var(--syntra-radius);
+    color: var(--syntra-text);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.syntra-menu-item:hover {
+    background: var(--syntra-primary);
+    color: white;
+    border-color: var(--syntra-primary);
+}
+
+.syntra-history-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+}
+
+.syntra-history-item {
+    padding: 12px;
+    border-bottom: 1px solid var(--syntra-border);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.syntra-history-item:hover {
+    background: var(--syntra-bg-secondary);
+}
+
+.syntra-history-date {
+    font-size: 11px;
+    color: var(--syntra-text-secondary);
+    margin-bottom: 4px;
+}
+
+.syntra-history-preview {
+    font-size: 13px;
+    color: var(--syntra-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.syntra-overlay-header {
+    padding: 16px;
+    border-bottom: 1px solid var(--syntra-border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+}
+
+.syntra-back-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--syntra-text);
+    padding: 4px;
+    display: flex;
+}
+
+/* Custom Modal */
+.syntra-modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s;
+    backdrop-filter: blur(2px);
+}
+
+.syntra-modal-backdrop.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.syntra-modal {
+    width: 85%;
+    background: var(--syntra-bg);
+    border-radius: var(--syntra-radius);
+    padding: 24px;
+    text-align: center;
+    box-shadow: var(--syntra-shadow);
+    transform: scale(0.95);
+    transition: transform 0.2s;
+}
+
+.syntra-modal-backdrop.active .syntra-modal {
+    transform: scale(1);
+}
+
+.syntra-modal-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--syntra-text);
+}
+
+.syntra-modal-text {
+    font-size: 14px;
+    color: var(--syntra-text-secondary);
+    margin-bottom: 20px;
+}
+
+.syntra-modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.syntra-btn {
+    padding: 8px 16px;
+    border-radius: var(--syntra-radius-sm);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: opacity 0.2s;
+}
+
+.syntra-btn-primary {
+    background: var(--syntra-primary);
+    color: white;
+}
+
+.syntra-btn-secondary {
+    background: var(--syntra-bg-secondary);
+    color: var(--syntra-text);
+    border: 1px solid var(--syntra-border);
+}
+
+.syntra-btn:hover {
+    opacity: 0.9;
+}
+
+background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
 }
 
 .syntra-theme-rounded .syntra-chat-window {

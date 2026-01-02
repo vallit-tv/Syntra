@@ -3492,7 +3492,7 @@ def widget_embed_script():
         if os.path.exists(widget_js_path):
             response = send_file(widget_js_path, mimetype='application/javascript')
             response.headers['Access-Control-Allow-Origin'] = '*'
-            response.headers['Cache-Control'] = 'public, max-age=3600'
+            response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
             return response
         else:
             return "// Widget not found", 404
