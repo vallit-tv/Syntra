@@ -150,6 +150,7 @@ class ChatService:
                 return None
             
             message = {
+                'id': int(datetime.utcnow().timestamp() * 1000),  # Generate unique ID (ms timestamp)
                 'role': role,
                 'content': content,
                 'timestamp': datetime.utcnow().isoformat(),
