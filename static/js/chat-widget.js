@@ -187,8 +187,7 @@
                                 </span>
                             </div>
                         </div>
-                            </div>
-                        </div>
+
                         <div class="syntra-header-actions">
                             <button class="syntra-reset-btn" aria-label="New chat" title="Start new chat">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
