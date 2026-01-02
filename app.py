@@ -3271,7 +3271,7 @@ def chat_message():
                     'model': response_metadata.get('model')
                 }
             })
-         else:
+        else:
             # No AI configured: Fallback to Demo Mode to prevent "Error" state in UI
             # error_msg = response_metadata.get('error', 'AI service not available')
             
