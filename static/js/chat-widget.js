@@ -22,7 +22,33 @@
     // =========================================================================
 
     const WIDGET_VERSION = '1.0.0';
-    const DEFAULT_API_URL = window.location.origin;
+
+    // Smart default: use the origin of this script (embed.js), not the host page
+    // This ensures the widget connects to the Syntra backend even when embedded on other domains
+    const getScriptOrigin = () => {
+        try {
+            // Try to get the current script element
+            const currentScript = document.currentScript;
+            if (currentScript && currentScript.src) {
+                return new URL(currentScript.src).origin;
+            }
+
+            // Fallback: find script by checking for embed.js in src
+            const scripts = document.querySelectorAll('script[src*="embed.js"]');
+            if (scripts.length > 0) {
+                const scriptSrc = scripts[0].getAttribute('src');
+                if (scriptSrc) {
+                    return new URL(scriptSrc, window.location.href).origin;
+                }
+            }
+        } catch (e) {
+            console.warn('Could not determine script origin, using window.location.origin as fallback');
+        }
+        // Ultimate fallback
+        return window.location.origin;
+    };
+
+    const DEFAULT_API_URL = getScriptOrigin();
 
     // Default configuration
     const defaultConfig = {

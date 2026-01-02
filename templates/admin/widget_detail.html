@@ -9,6 +9,11 @@
         <h1>{{ company.name }}</h1>
         <p class="subtitle">Chat widget configuration and statistics</p>
     </div>
+    <div>
+        <a href="{{ url_for('admin_widget_customize', company_id=company.id) }}" class="btn btn-primary">
+            🎨 Customize Widget
+        </a>
+    </div>
 </div>
 
 <!-- Statistics Overview -->

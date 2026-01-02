@@ -1293,13 +1293,14 @@ def admin_widget_detail(company_id):
             ).order('created_at', desc=True).limit(20).execute()
             recent_sessions = sessions_result.data if sessions_result.data else []
         
-        # Generate embed code
+        # Generate embed code with explicit API URL for maximum reliability
         base_url = request.host_url.rstrip('/')
-        embed_code = f'''<script src="{base_url}/widget/embed.js" 
+        embed_code = f'''\u003cscript src="{base_url}/widget/embed.js" 
     data-company-id="{company_id}"
+    data-api-url="{base_url}"
     data-theme="glassmorphism"
-    data-position="bottom-right">
-</script>'''
+    data-position="bottom-right"\u003e
+\u003c/script\u003e'''
         
         return render_template('admin/widget_detail.html',
                              user=user,
@@ -1314,6 +1315,73 @@ def admin_widget_detail(company_id):
         import traceback
         traceback.print_exc()
         return redirect(url_for('admin_widgets'))
+
+@app.route('/admin/widgets/<company_id>/customize')
+@auth.admin_required
+def admin_widget_customize(company_id):
+    """Widget customization interface"""
+    try:
+        user = auth.current_user()
+        db_client = db.get_db()
+        
+        # Get company details
+        company_result = db_client.table('companies').select('*').eq('id', company_id).execute()
+        if not company_result.data or len(company_result.data) == 0:
+            return redirect(url_for('admin_widgets'))
+        
+        company = company_result.data[0]
+        
+        return render_template('admin/widget_customize.html',
+                             user=user,
+                             company=company)
+    except Exception as e:
+        print(f"Admin widget customize error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return redirect(url_for('admin_widgets'))
+
+# Widget Settings API Routes
+@app.route('/api/admin/companies/<company_id>/widget-settings', methods=['GET'])
+@auth.admin_required
+def api_get_widget_settings(company_id):
+    """Get widget settings for a company"""
+    try:
+        db_client = db.get_db()
+        company_result = db_client.table('companies').select('widget_settings').eq('id', company_id).execute()
+        
+        if not company_result.data or len(company_result.data) == 0:
+            return jsonify({'error': 'Company not found'}), 404
+        
+        settings = company_result.data[0].get('widget_settings', {})
+        return jsonify({'settings': settings})
+    except Exception as e:
+        print(f"Get widget settings error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/admin/companies/<company_id>/widget-settings', methods=['POST'])
+@auth.admin_required
+def api_save_widget_settings(company_id):
+    """Save widget settings for a company"""
+    try:
+        data = request.get_json()
+        if not data or 'settings' not in data:
+            return jsonify({'error': 'No settings provided'}), 400
+        
+        settings = data['settings']
+        
+        db_client = db.get_db()
+        update_result = db_client.table('companies').update({
+            'widget_settings': settings
+        }).eq('id', company_id).execute()
+        
+        if not update_result.data:
+            return jsonify({'error': 'Failed to update settings'}), 500
+        
+        return jsonify({'success': True, 'message': 'Settings saved successfully'})
+    except Exception as e:
+        print(f"Save widget settings error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
 
 @app.route('/admin/widgets/<company_id>/config', methods=['POST'])
 @auth.admin_required

@@ -1,0 +1,289 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Customize Widget - {{ company.name }}{% endblock %}
+
+{% block admin_content %}
+<div class="page-header">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div style="flex: 1;">
+            <a href="{{ url_for('admin_widget_detail', company_id=company.id) }}"
+                style="display: inline-block; margin-bottom: 0.5rem; color: #6b7280; text-decoration: none; font-size: 0.875rem;">←
+                Back to Widget Details</a>
+            <h1 class="page-title">Customize Widget</h1>
+            <p class="page-description">{{ company.name }}</p>
+        </div>
+        <button id="saveSettings" class="btn btn-primary">Save Changes</button>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+    <!-- Left Column: Settings -->
+    <div>
+        <!-- Appearance Card -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h2 class="card-title">🎨 Appearance</h2>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label class="form-label">Theme</label>
+                    <select id="theme" class="form-select">
+                        <option value="glassmorphism">Glassmorphism</option>
+                        <option value="minimal">Minimal</option>
+                        <option value="professional">Professional</option>
+                        <option value="wtm-professional">WTM Professional</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Primary Color</label>
+                    <div style="display: flex; gap: 0.75rem;">
+                        <input type="color" id="primaryColor" value="#6366f1"
+                            style="width: 80px; height: 40px; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer;">
+                        <input type="text" id="primaryColorHex" value="#6366f1" class="form-input" style="flex: 1;">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Accent Color</label>
+                    <div style="display: flex; gap: 0.75rem;">
+                        <input type="color" id="accentColor" value="#3a3a38"
+                            style="width: 80px; height: 40px; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer;">
+                        <input type="text" id="accentColorHex" value="#3a3a38" class="form-input" style="flex: 1;">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Position</label>
+                    <select id="position" class="form-select">
+                        <option value="bottom-right">Bottom Right</option>
+                        <option value="bottom-left">Bottom Left</option>
+                        <option value="top-right">Top Right</option>
+                        <option value="top-left">Top Left</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Card -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h2 class="card-title">✏️ Content</h2>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label class="form-label">Header Title</label>
+                    <input type="text" id="headerTitle" value="AI Assistant" class="form-input">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Welcome Message</label>
+                    <textarea id="welcomeMessage" rows="3"
+                        class="form-textarea">Hi! 👋 I'm your AI assistant. How can I help you today?</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Placeholder Text</label>
+                    <input type="text" id="placeholderText" value="Type your message..." class="form-input">
+                </div>
+            </div>
+        </div>
+
+        <!-- Branding Card -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h2 class="card-title">🏷️ Branding</h2>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" id="showSyntraBranding" checked>
+                        <span>Show "Powered by Syntra" branding</span>
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Custom Branding Text (optional)</label>
+                    <input type="text" id="customBranding" placeholder="e.g., Powered by Your Company"
+                        class="form-input">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Preview -->
+    <div>
+        <div class="dashboard-card" style="position: sticky; top: 1rem;">
+            <div class="card-header">
+                <h2 class="card-title">👁️ Live Preview</h2>
+            </div>
+            <div class="card-body">
+                <div
+                    style="background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%); border-radius: 8px; padding: 2rem; min-height: 400px; margin-bottom: 1.5rem; position: relative;">
+                    <p style="text-align: center; color: #6b7280; font-size: 0.875rem; margin-bottom: 1rem;">Widget
+                        Preview</p>
+                    <div id="previewWidget" style="position: absolute; bottom: 1rem; right: 1rem;"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Embed Code</label>
+                    <pre
+                        style="background: #1f2937; color: #e5e7eb; padding: 1rem; border-radius: 6px; overflow-x: auto; font-family: Monaco, monospace; font-size: 0.875rem; line-height: 1.5;"><code id="embedCodePreview">&lt;script src="{{ request.host_url.rstrip('/') }}/widget/embed.js" 
+    data-company-id="{{ company.id }}"
+    data-api-url="{{ request.host_url.rstrip('/') }}"
+    data-theme="glassmorphism"
+    data-position="bottom-right"&gt;
+&lt;/script&gt;</code></pre>
+                    <button id="copyEmbedCode" class="btn btn-secondary btn-sm" style="margin-top: 0.5rem;">
+                        📋 Copy to Clipboard
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const widgetSettings = {
+        appearance: {
+            theme: 'glassmorphism',
+            primaryColor: '#6366f1',
+            accentColor: '#3a3a38',
+            position: 'bottom-right'
+        },
+        content: {
+            headerTitle: 'AI Assistant',
+            welcomeMessage: "Hi! 👋 I'm your AI assistant. How can I help you today?",
+            placeholderText: 'Type your message...'
+        },
+        branding: {
+            showSyntraBranding: true,
+            customBranding: ''
+        }
+    };
+
+    async function loadSettings() {
+        try {
+            const response = await fetch('/api/admin/companies/{{ company.id }}/widget-settings');
+            const data = await response.json();
+            if (data.settings) {
+                Object.assign(widgetSettings, data.settings);
+                applySettingsToForm();
+            }
+        } catch (error) {
+            console.error('Error loading settings:', error);
+        }
+    }
+
+    function applySettingsToForm() {
+        document.getElementById('theme').value = widgetSettings.appearance.theme || 'glassmorphism';
+        document.getElementById('primaryColor').value = widgetSettings.appearance.primaryColor || '#6366f1';
+        document.getElementById('primaryColorHex').value = widgetSettings.appearance.primaryColor || '#6366f1';
+        document.getElementById('accentColor').value = widgetSettings.appearance.accentColor || '#3a3a38';
+        document.getElementById('accentColorHex').value = widgetSettings.appearance.accentColor || '#3a3a38';
+        document.getElementById('position').value = widgetSettings.appearance.position || 'bottom-right';
+
+        document.getElementById('headerTitle').value = widgetSettings.content.headerTitle || 'AI Assistant';
+        document.getElementById('welcomeMessage').value = widgetSettings.content.welcomeMessage || "Hi! 👋 I'm your AI assistant. How can I help you today?";
+        document.getElementById('placeholderText').value = widgetSettings.content.placeholderText || 'Type your message...';
+
+        document.getElementById('showSyntraBranding').checked = widgetSettings.branding.showSyntraBranding !== false;
+        document.getElementById('customBranding').value = widgetSettings.branding.customBranding || '';
+
+        updatePreview();
+    }
+
+    function collectSettings() {
+        widgetSettings.appearance.theme = document.getElementById('theme').value;
+        widgetSettings.appearance.primaryColor = document.getElementById('primaryColor').value;
+        widgetSettings.appearance.accentColor = document.getElementById('accentColor').value;
+        widgetSettings.appearance.position = document.getElementById('position').value;
+
+        widgetSettings.content.headerTitle = document.getElementById('headerTitle').value;
+        widgetSettings.content.welcomeMessage = document.getElementById('welcomeMessage').value;
+        widgetSettings.content.placeholderText = document.getElementById('placeholderText').value;
+
+        widgetSettings.branding.showSyntraBranding = document.getElementById('showSyntraBranding').checked;
+        widgetSettings.branding.customBranding = document.getElementById('customBranding').value;
+
+        return widgetSettings;
+    }
+
+    function updatePreview() {
+        const settings = collectSettings();
+        const embedCode = `<script src="{{ request.host_url.rstrip('/') }}/widget/embed.js" 
+    data-company-id="{{ company.id }}"
+    data-api-url="{{ request.host_url.rstrip('/') }}"
+    data-theme="${settings.appearance.theme}"
+    data-position="${settings.appearance.position}"
+    data-title="${settings.content.headerTitle}"
+    data-welcome-message="${settings.content.welcomeMessage}"
+    data-placeholder="${settings.content.placeholderText}"
+    data-color="${settings.appearance.primaryColor}"
+    data-branding="${settings.branding.showSyntraBranding}">
+<` + `/script>`;
+
+        document.getElementById('embedCodePreview').textContent = embedCode;
+
+        const previewHTML = `<button
+    style="background-color: ${settings.appearance.primaryColor}; color: white; width: 60px; height: 60px; border-radius: 50%; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: none; cursor: pointer; font-size: 24px;">💬</button>`;
+        document.getElementById('previewWidget').innerHTML = previewHTML;
+    }
+
+    async function saveSettings() {
+        const settings = collectSettings();
+        try {
+            const response = await fetch('/api/admin/companies/{{ company.id }}/widget-settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ settings })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                alert('✅ Widget settings saved successfully!');
+            } else {
+                alert('❌ Error saving settings: ' + (data.error || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Error saving settings:', error);
+            alert('❌ Error saving settings: ' + error.message);
+        }
+    }
+
+    function copyEmbedCode() {
+        const code = document.getElementById('embedCodePreview').textContent;
+        navigator.clipboard.writeText(code).then(() => {
+            alert('📋 Embed code copied to clipboard!');
+        });
+    }
+
+    document.getElementById('saveSettings').addEventListener('click', saveSettings);
+    document.getElementById('copyEmbedCode').addEventListener('click', copyEmbedCode);
+
+    document.getElementById('primaryColor').addEventListener('input', (e) => {
+        document.getElementById('primaryColorHex').value = e.target.value;
+        updatePreview();
+    });
+    document.getElementById('primaryColorHex').addEventListener('input', (e) => {
+        document.getElementById('primaryColor').value = e.target.value;
+        updatePreview();
+    });
+    document.getElementById('accentColor').addEventListener('input', (e) => {
+        document.getElementById('accentColorHex').value = e.target.value;
+        updatePreview();
+    });
+    document.getElementById('accentColorHex').addEventListener('input', (e) => {
+        document.getElementById('accentColor').value = e.target.value;
+        updatePreview();
+    });
+
+    ['theme', 'position', 'headerTitle', 'welcomeMessage', 'placeholderText', 'showSyntraBranding',
+        'customBranding'].forEach(id => {
+            const element = document.getElementById(id);
+            element.addEventListener('input', updatePreview);
+            element.addEventListener('change', updatePreview);
+        });
+
+    loadSettings();
+</script>
+{% endblock %}
