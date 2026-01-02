@@ -386,7 +386,12 @@
             });
         }
 
-        // ... autoResizeInput ...
+        autoResizeInput() {
+            const input = this.inputField;
+            input.style.height = 'auto';
+            const newHeight = Math.min(input.scrollHeight, 120);
+            input.style.height = newHeight + 'px';
+        }
 
         // =====================================================================
         // UI Controls (Modals, Overlays)
@@ -420,7 +425,38 @@
         // Widget State
         // =====================================================================
 
-        // ... toggle, open, close ...
+        toggle() {
+            if (this.isOpen) {
+                this.close();
+            } else {
+                this.open();
+            }
+        }
+
+        open() {
+            this.isOpen = true;
+            this.container.classList.add('syntra-open');
+            this.toggleBtn.classList.add('syntra-toggled');
+
+            // Show welcome message if no messages
+            if (this.messages.length === 0 && this.config.welcomeMessage) {
+                this.addMessage('assistant', this.config.welcomeMessage, false);
+            }
+
+            // Focus input
+            setTimeout(() => {
+                this.inputField.focus();
+            }, 300);
+
+            // Scroll to bottom
+            this.scrollToBottom();
+        }
+
+        close() {
+            this.isOpen = false;
+            this.container.classList.remove('syntra-open');
+            this.toggleBtn.classList.remove('syntra-toggled');
+        }
 
         async confirmNewChat() {
             const confirmed = await this.showModal('Start New Chat?', 'This will clear your current conversation and start fresh.');
