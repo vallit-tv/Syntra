@@ -61,7 +61,8 @@
         placeholderText: 'Type your message...',
         primaryColor: '#6366f1',
         headerTitle: 'AI Assistant',
-        showBranding: true
+        showBranding: true,
+        privacyPolicyUrl: null  // Optional privacy policy link
     };
 
     // =========================================================================
@@ -214,9 +215,11 @@
                                 </svg>
                             </button>
                         </form>
-                        ${this.config.showBranding ? `
+                        ${this.config.showBranding || this.config.privacyPolicyUrl ? `
                         <div class="syntra-branding">
-                            Powered by <a href="https://syntra.app" target="_blank" rel="noopener">Syntra</a>
+                            ${this.config.showBranding ? 'Powered by <a href="https://vallit.net" target="_blank" rel="noopener">Syntra</a>' : ''}
+                            ${this.config.showBranding && this.config.privacyPolicyUrl ? ' • ' : ''}
+                            ${this.config.privacyPolicyUrl ? '<a href="' + this.config.privacyPolicyUrl + '" target="_blank" rel="noopener">Privacy & Data Protection</a>' : ''}
                         </div>
                         ` : ''}
                     </div>
@@ -554,7 +557,8 @@
                 placeholderText: script.getAttribute('data-placeholder'),
                 headerTitle: script.getAttribute('data-title'),
                 primaryColor: script.getAttribute('data-color'),
-                showBranding: script.getAttribute('data-branding') !== 'false'
+                showBranding: script.getAttribute('data-branding') !== 'false',
+                privacyPolicyUrl: script.getAttribute('data-privacy-url')
             };
 
             // Remove undefined values

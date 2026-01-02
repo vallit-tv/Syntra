@@ -89,6 +89,28 @@
             </div>
         </div>
 
+        <!-- Bot Knowledge & Instructions Card -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h2 class="card-title">🤖 Bot Knowledge & Instructions</h2>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label class="form-label">Custom AI Instructions</label>
+                    <textarea id="botInstructions" rows="8" maxlength="5000" class="form-textarea"
+                        placeholder="Enter custom instructions for the AI assistant (e.g., company info, FAQs, tone guidelines, specific expertise...)"></textarea>
+                    <small style="display: block; margin-top: 0.5rem; color: #6b7280;">
+                        These instructions will be used to customize the AI's behavior and knowledge for your specific
+                        company.
+                        For example: "You are Kian, a friendly AI assistant for WTM-Consulting. You specialize in
+                        leadership development and management consulting."
+                    </small>
+                    <small id="charCount" style="display: block; margin-top: 0.25rem; color: #9ca3af;">0 / 5000
+                        characters</small>
+                </div>
+            </div>
+        </div>
+
         <!-- Branding Card -->
         <div class="dashboard-card">
             <div class="card-header">
@@ -106,6 +128,16 @@
                     <label class="form-label">Custom Branding Text (optional)</label>
                     <input type="text" id="customBranding" placeholder="e.g., Powered by Your Company"
                         class="form-input">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Privacy Policy URL</label>
+                    <input type="url" id="privacyPolicyUrl" placeholder="https://vallit.net/privacy"
+                        value="https://vallit.net/privacy" class="form-input">
+                    <small style="display: block; margin-top: 0.5rem; color: #6b7280;">
+                        Link to your privacy & data protection page. Will appear as "Privacy & Data Protection" in the
+                        widget.
+                    </small>
                 </div>
             </div>
         </div>
@@ -153,12 +185,16 @@
         },
         content: {
             headerTitle: 'AI Assistant',
-            welcomeMessage: "Hi! 👋 I'm your AI assistant. How can I help you today?",
+            welcomeMessage: "Hi! 👋 I'm Kian, your AI assistant. How can I help you today?",
             placeholderText: 'Type your message...'
         },
         branding: {
             showSyntraBranding: true,
-            customBranding: ''
+            customBranding: '',
+            privacyPolicyUrl: 'https://vallit.net/privacy'
+        },
+        bot: {
+            instructions: ''
         }
     };
 
@@ -184,13 +220,23 @@
         document.getElementById('position').value = widgetSettings.appearance.position || 'bottom-right';
 
         document.getElementById('headerTitle').value = widgetSettings.content.headerTitle || 'AI Assistant';
-        document.getElementById('welcomeMessage').value = widgetSettings.content.welcomeMessage || "Hi! 👋 I'm your AI assistant. How can I help you today?";
+        document.getElementById('welcomeMessage').value = widgetSettings.content.welcomeMessage || "Hi! 👋 I'm Kian, your AI assistant. How can I help you today?";
         document.getElementById('placeholderText').value = widgetSettings.content.placeholderText || 'Type your message...';
 
         document.getElementById('showSyntraBranding').checked = widgetSettings.branding.showSyntraBranding !== false;
         document.getElementById('customBranding').value = widgetSettings.branding.customBranding || '';
+        document.getElementById('privacyPolicyUrl').value = widgetSettings.branding.privacyPolicyUrl || 'https://vallit.net/privacy';
+
+        document.getElementById('botInstructions').value = widgetSettings.bot?.instructions || '';
+        updateCharCount();
 
         updatePreview();
+    }
+
+    function updateCharCount() {
+        const textarea = document.getElementById('botInstructions');
+        const charCount = document.getElementById('charCount');
+        charCount.textContent = `${textarea.value.length} / 5000 characters`;
     }
 
     function collectSettings() {
@@ -205,6 +251,9 @@
 
         widgetSettings.branding.showSyntraBranding = document.getElementById('showSyntraBranding').checked;
         widgetSettings.branding.customBranding = document.getElementById('customBranding').value;
+        widgetSettings.branding.privacyPolicyUrl = document.getElementById('privacyPolicyUrl').value;
+
+        widgetSettings.bot.instructions = document.getElementById('botInstructions').value;
 
         return widgetSettings;
     }
@@ -278,11 +327,14 @@
     });
 
     ['theme', 'position', 'headerTitle', 'welcomeMessage', 'placeholderText', 'showSyntraBranding',
-        'customBranding'].forEach(id => {
+        'customBranding', 'privacyPolicyUrl', 'botInstructions'].forEach(id => {
             const element = document.getElementById(id);
             element.addEventListener('input', updatePreview);
             element.addEventListener('change', updatePreview);
         });
+
+    // Character counter for bot instructions
+    document.getElementById('botInstructions').addEventListener('input', updateCharCount);
 
     loadSettings();
 </script>
