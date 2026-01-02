@@ -506,6 +506,148 @@
 
         // ... messages ...
 
+        async sendMessage() {
+            const message = this.inputField.value.trim();
+            if (!message || this.isLoading) return;
+
+            // Clear input
+            this.inputField.value = '';
+            this.inputField.style.height = 'auto';
+
+            // Add user message
+            this.addMessage('user', message);
+            this.isLoading = true;
+            this.showTypingIndicator();
+
+            try {
+                const response = await fetch(`${this.config.apiUrl}/api/chat/message`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        widget_id: this.config.widgetId,
+                        session_id: this.sessionId,
+                        message: message,
+                        company_id: this.config.companyId
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    this.removeTypingIndicator();
+                    this.addMessage('assistant', data.response);
+                    this.isLoading = false;
+                } else if (data.status === 'pending') {
+                    // n8n processing
+                    this.pollForResponse();
+                } else {
+                    throw new Error(data.error || 'Failed to send message');
+                }
+            } catch (error) {
+                console.error('Send error:', error);
+                this.removeTypingIndicator();
+                this.addMessage('assistant', 'Sorry, I encountered an error. Please try again.', false);
+                this.isLoading = false;
+            }
+        }
+
+        async pollForResponse() {
+            let attempts = 0;
+            const maxAttempts = 30; // 30 seconds
+
+            const poll = async () => {
+                if (attempts >= maxAttempts) {
+                    this.removeTypingIndicator();
+                    this.addMessage('assistant', 'Sorry, the server is taking a while to respond.', false);
+                    this.isLoading = false;
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${this.config.apiUrl}/api/chat/history/${this.sessionId}`);
+                    const data = await response.json();
+                    const history = data.history || data.messages || [];
+
+                    // Check if we have a NEW message from assistant
+                    const lastMsg = history[history.length - 1];
+                    if (lastMsg && (lastMsg.sender === 'assistant' || lastMsg.role === 'assistant')) {
+                        this.removeTypingIndicator();
+                        this.addMessage('assistant', lastMsg.text || lastMsg.content);
+                        this.isLoading = false;
+                        return;
+                    }
+
+                    attempts++;
+                    setTimeout(poll, 1000);
+
+                } catch (e) {
+                    console.error('Poll error', e);
+                    attempts++;
+                    setTimeout(poll, 1000);
+                }
+            };
+
+            poll();
+        }
+
+        addMessage(role, content, animate = true) {
+            const message = {
+                id: Date.now(),
+                role: role,
+                content: content,
+                timestamp: new Date().toISOString()
+            };
+
+            this.messages.push(message);
+            this.renderMessage(message, animate);
+        }
+
+        renderMessage(message, animate = true) {
+            const messageEl = document.createElement('div');
+            messageEl.className = `syntra-message syntra-message-${message.role} ${animate ? '' : 'no-animate'}`;
+
+            // Format time
+            const time = new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            // Parse markdown for assistant
+            const contentHtml = message.role === 'assistant' ? parseMarkdown(message.content) : escapeHtml(message.content);
+
+            messageEl.innerHTML = `
+                <div class="syntra-message-content">
+                    ${contentHtml}
+                </div>
+                <div class="syntra-message-time">${time}</div>
+            `;
+
+            this.messagesContainer.appendChild(messageEl);
+            this.scrollToBottom();
+        }
+
+        showTypingIndicator() {
+            if (this.typingIndicator) return; // Already showing
+            const indicator = document.createElement('div');
+            indicator.className = 'syntra-typing-indicator';
+            indicator.innerHTML = `
+                <div class="syntra-typing-dots">
+                    <span></span><span></span><span></span>
+                </div>
+            `;
+            this.messagesContainer.appendChild(indicator);
+            this.scrollToBottom();
+            this.typingIndicator = indicator;
+        }
+
+        removeTypingIndicator() {
+            if (this.typingIndicator && this.typingIndicator.parentNode) {
+                this.typingIndicator.parentNode.removeChild(this.typingIndicator);
+                this.typingIndicator = null;
+            }
+        }
+
+        scrollToBottom() {
+            this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+        }
+
         // ... loadHistory ...
         async loadHistory() {
             try {
