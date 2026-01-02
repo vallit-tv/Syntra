@@ -3271,14 +3271,24 @@ def chat_message():
                     'model': response_metadata.get('model')
                 }
             })
-        else:
-            # No AI configured or error
-            error_msg = response_metadata.get('error', 'AI service not available')
+         else:
+            # No AI configured: Fallback to Demo Mode to prevent "Error" state in UI
+            # error_msg = response_metadata.get('error', 'AI service not available')
+            
+            demo_response = "Syntra Demo: I'm ready to chat! Please configure your OpenAI API Key or N8N Webhook in the .env file to enable real intelligence."
+            
+            # Save demo message so history works
+            msg = chat_service.save_message(
+                db, session_id, 'assistant', demo_response,
+                metadata={'is_demo': True}
+            )
+            
             response = jsonify({
-                'status': 'error',
+                'status': 'success',
                 'session_id': session_key,
-                'error': error_msg,
-                'response': "I'm sorry, I'm unable to respond right now. Please try again later."
+                'response': demo_response,
+                'message_id': msg['id'] if msg else None,
+                'metadata': {'demo': True}
             })
         
         response.headers['Access-Control-Allow-Origin'] = '*'

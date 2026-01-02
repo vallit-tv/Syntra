@@ -17,8 +17,7 @@ class ChatService:
     def __init__(self):
         self.openai_api_key = os.getenv('OPENAI_API_KEY', '')
         self.openai_model = os.getenv('OPENAI_MODEL', 'gpt-4o-mini')
-        # Fallback to generic N8N_WEBHOOK_URL if specific chat one not set
-        self.n8n_chat_webhook_url = os.getenv('N8N_CHAT_WEBHOOK_URL') or os.getenv('N8N_WEBHOOK_URL', '')
+        self.n8n_chat_webhook_url = os.getenv('N8N_CHAT_WEBHOOK_URL', '')
         self.default_system_prompt = os.getenv('CHAT_SYSTEM_PROMPT', 
             "You are a helpful AI assistant. Be concise, friendly, and helpful.")
     
@@ -150,7 +149,6 @@ class ChatService:
                 return None
             
             message = {
-                'id': int(datetime.utcnow().timestamp() * 1000),  # Generate unique ID (ms timestamp)
                 'role': role,
                 'content': content,
                 'timestamp': datetime.utcnow().isoformat(),
