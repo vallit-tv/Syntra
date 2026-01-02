@@ -6,6 +6,7 @@ import requests
 from datetime import datetime, timezone
 from typing import Optional, Dict, Any, List, Tuple
 from dotenv import load_dotenv
+import chat_analytics
 
 load_dotenv()
 
@@ -80,6 +81,9 @@ class ChatService:
             result = db_client.table('chat_sessions').insert(session_data).execute()
             
             if result.data and len(result.data) > 0:
+                # Track new session creation in analytics
+                if company_id:
+                    chat_analytics.track_session(company_id)
                 return result.data[0], True
             
             return None, False
@@ -108,8 +112,9 @@ class ChatService:
     
     def save_message(self, db_module, session_id: str, role: str, content: str,
                      tokens_used: int = None, model: str = None,
-                     metadata: Dict = None, n8n_execution_id: str = None) -> Optional[Dict]:
-        """Save a message to the database"""
+                     metadata: Dict = None, n8n_execution_id: str = None,
+                     company_id: str = None) -> Optional[Dict]:
+        """Save a message to the database and track analytics"""
         try:
             db_client = db_module.get_db()
             if db_client is None:
@@ -127,6 +132,15 @@ class ChatService:
             }
             
             result = db_client.table('chat_messages').insert(message_data).execute()
+            
+            # Track analytics for assistant responses with token counts
+            if result.data and len(result.data) > 0 and role == 'assistant':
+                if company_id and tokens_used:
+                    # Update token count in analytics
+                    chat_analytics.track_message(
+                        company_id, 
+                        tokens_used=tokens_used
+                    )
             
             if result.data and len(result.data) > 0:
                 return result.data[0]
@@ -259,7 +273,12 @@ class ChatService:
         Returns:
             Tuple of (success, execution_id or error)
         """
-        if not self.has_n8n_integration():
+        # Determine webhook URL: use company-specific or fall back to default
+        webhook_url = self.n8n_chat_webhook_url
+        if company_context and company_context.get('webhook_url'):
+            webhook_url = company_context['webhook_url']
+            print(f"Using company-specific webhook: {webhook_url[:50]}...")
+        elif not webhook_url:
             return False, 'n8n webhook not configured'
         
         try:
@@ -272,12 +291,26 @@ class ChatService:
                 'conversation_history': conversation_history or []
             }
             
+            # Track start time for analytics
+            start_time = datetime.now(timezone.utc)
+            
             response = requests.post(
-                self.n8n_chat_webhook_url,
+                webhook_url,
                 json=payload,
                 headers={'Content-Type': 'application/json'},
                 timeout=30
             )
+            
+            # Calculate response time
+            response_time_ms = int((datetime.now(timezone.utc) - start_time).total_seconds() * 1000)
+            
+            # Track analytics (will be updated with token count later)
+            if company_context and company_context.get('id'):
+                chat_analytics.track_message(
+                    company_context['id'], 
+                    tokens_used=0,  # Updated after response
+                    response_time_ms=response_time_ms
+                )
             
             if response.status_code in [200, 201]:
                 # n8n may return execution ID or direct response
@@ -328,6 +361,8 @@ class ChatService:
                     'id': company.get('id'),
                     'name': company.get('name'),
                     'slug': company.get('slug'),
+                    'webhook_url': company.get('webhook_url'),  # Per-company webhook
+                    'n8n_config': company.get('n8n_config', {}),  # Additional config
                     'settings': company.get('settings', {})
                 }
             return None

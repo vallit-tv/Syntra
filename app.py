@@ -1229,6 +1229,120 @@ def admin_system():
         print(f"Admin system error: {str(e)}")
         return redirect(url_for('admin_dashboard'))
 
+@app.route('/admin/widgets')
+@auth.admin_required
+def admin_widgets():
+    """Admin widget manager - list all companies with widget stats"""
+    try:
+        import chat_analytics
+        user = auth.current_user()
+        
+        # Get all companies with their statistics
+        companies_summaries = chat_analytics.get_all_companies_summary()
+        
+        #Get widget configurations
+        db_client = db.get_db()
+        widget_configs = {}
+        if db_client:
+            for company in companies_summaries:
+                config_result = db_client.table('widget_configs').select('*').eq(
+                    'company_id', company['company_id']
+                ).eq('is_active', True).execute()
+                if config_result.data and len(config_result.data) > 0:
+                    widget_configs[company['company_id']] = config_result.data[0]
+        
+        return render_template('admin/widgets.html',
+                             user=user,
+                             companies=companies_summaries,
+                             widget_configs=widget_configs)
+    except Exception as e:
+        print(f"Admin widgets error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/widgets/<company_id>')
+@auth.admin_required
+def admin_widget_detail(company_id):
+    """Detailed widget statistics and configuration for a company"""
+    try:
+        import chat_analytics
+        user = auth.current_user()
+        
+        # Get company details
+        company = db.get_company_by_id(company_id)
+        if not company:
+            return redirect(url_for('admin_widgets'))
+        
+        # Get statistics
+        stats_30d = chat_analytics.get_company_stats(company_id, days=30)
+        stats_today = chat_analytics.get_today_stats(company_id)
+        
+        # Get widget configuration
+        chat_service = get_chat_service()
+        widget_config = chat_service.get_widget_config(db, 'default', company_id)
+        if not widget_config:
+            widget_config = chat_service.get_default_widget_config()
+        
+        # Get recent sessions
+        db_client = db.get_db()
+        recent_sessions = []
+        if db_client:
+            sessions_result = db_client.table('chat_sessions').select('*').eq(
+                'company_id', company_id
+            ).order('created_at', desc=True).limit(20).execute()
+            recent_sessions = sessions_result.data if sessions_result.data else []
+        
+        # Generate embed code
+        base_url = request.host_url.rstrip('/')
+        embed_code = f'''<script src="{base_url}/widget/embed.js" 
+    data-company-id="{company_id}"
+    data-theme="glassmorphism"
+    data-position="bottom-right">
+</script>'''
+        
+        return render_template('admin/widget_detail.html',
+                             user=user,
+                             company=company,
+                             stats_30d=stats_30d,
+                             stats_today=stats_today,
+                             widget_config=widget_config,
+                             recent_sessions=recent_sessions,
+                             embed_code=embed_code)
+    except Exception as e:
+        print(f"Admin widget detail error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return redirect(url_for('admin_widgets'))
+
+@app.route('/admin/widgets/<company_id>/config', methods=['POST'])
+@auth.admin_required
+def admin_update_widget_config(company_id):
+    """Update widget configuration for a company"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        
+        # Update company webhook and n8n config
+        webhook_url = data.get('webhook_url', '').strip() or None
+        n8n_config = data.get('n8n_config', {})
+        
+        db_client = db.get_db()
+        if not db_client:
+            return jsonify({'error': 'Database not available'}), 500
+        
+        db_client.table('companies').update({
+            'webhook_url': webhook_url,
+            'n8n_config': n8n_config
+        }).eq('id', company_id).execute()
+        
+        return jsonify({'success': True, 'message': 'Configuration updated'})
+        
+    except Exception as e:
+        print(f"Update widget config error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/admin/chat')
 @auth.admin_required
 def admin_chat():

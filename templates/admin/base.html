@@ -49,6 +49,13 @@
     </span>
     <span class="nav-item-text">AI Chat</span>
 </a>
+<a href="{{ url_for('admin_widgets') }}"
+    class="nav-item {% if request.endpoint == 'admin_widgets' or request.endpoint == 'admin_widget_detail' %}active{% endif %}">
+    <span class="nav-item-icon">
+        <i data-lucide="bot" width="20" height="20"></i>
+    </span>
+    <span class="nav-item-text">Widgets</span>
+</a>
 <a href="{{ url_for('admin_system') }}" class="nav-item {% if request.endpoint == 'admin_system' %}active{% endif %}">
     <span class="nav-item-icon">
         <i data-lucide="server" width="20" height="20"></i>

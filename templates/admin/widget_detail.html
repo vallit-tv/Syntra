@@ -1,0 +1,278 @@
+{% extends "admin/base.html" %}
+
+{% block page_title %}{{ company.name }} - Widget Details{% endblock %}
+
+{% block admin_content %}
+<div class="admin-header">
+    <div>
+        <a href="{{ url_for('admin_widgets') }}" class="btn-back">← Back to Widgets</a>
+        <h1>{{ company.name }}</h1>
+        <p class="subtitle">Chat widget configuration and statistics</p>
+    </div>
+</div>
+
+<!-- Statistics Overview -->
+<div class="stats-grid" style="margin-bottom: 2rem;">
+    <div class="stat-card">
+        <div class="stat-label">Messages (30d)</div>
+        <div class="stat-value">{{ stats_30d.total_messages }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Sessions (30d)</div>
+        <div class="stat-value">{{ stats_30d.total_sessions }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Tokens (30d)</div>
+        <div class="stat-value">{{ (stats_30d.total_tokens / 1000)|round(1) }}K</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Avg Response Time</div>
+        <div class="stat-value">
+            {% if stats_30d.avg_response_time_ms %}
+            {{ (stats_30d.avg_response_time_ms / 1000)|round(2) }}s
+            {% else %}
+            N/A
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="grid-2col">
+    <!-- Embed Code -->
+    <div class="card">
+        <div class="card-header">
+            <h2>📋 Embed Code</h2>
+        </div>
+        <div class="card-body">
+            <p style="margin-bottom: 1rem; color: #6b7280;">
+                Copy this code and paste it into your website's HTML:
+            </p>
+            <div class="code-block-wrapper">
+                <pre id="embed-code" class="code-block">{{ embed_code }}</pre>
+                <button class="btn-code-copy" onclick="copyEmbedCode()">
+                    📋 Copy
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Webhook Configuration -->
+    <div class="card">
+        <div class="card-header">
+            <h2>⚙️ Webhook Configuration</h2>
+        </div>
+        <div class="card-body">
+            <form id="webhook-config-form" onsubmit="saveWebhookConfig(event)">
+                <div class="form-group">
+                    <label>n8n Webhook URL (Optional)</label>
+                    <input type="url" class="form-control" id="webhook_url" value="{{ company.webhook_url or '' }}"
+                        placeholder="https://your-n8n.com/webhook/chat">
+                    <small class="form-help">
+                        Leave empty to use the default global webhook
+                    </small>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    Save Configuration
+                </button>
+            </form>
+
+            <div id="config-status" class="config-status" style="display: none;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Sessions -->
+<div class="card" style="margin-top: 2rem;">
+    <div class="card-header">
+        <h2>Recent Chat Sessions</h2>
+    </div>
+    <div class="card-body">
+        {% if recent_sessions %}
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Session ID</th>
+                        <th>Started</th>
+                        <th>Widget ID</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for session in recent_sessions %}
+                    <tr>
+                        <td><code>{{ session.session_key[:20] }}...</code></td>
+                        <td>{{ session.created_at[:19] }}</td>
+                        <td>{{ session.widget_id or 'default' }}</td>
+                        <td>
+                            {% if session.is_active %}
+                            <span class="badge badge-success">Active</span>
+                            {% else %}
+                            <span class="badge badge-secondary">Ended</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <p>No chat sessions yet</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .btn-back {
+        display: inline-block;
+        margin-bottom: 0.5rem;
+        color: #6b7280;
+        text-decoration: none;
+        font-size: 0.875rem;
+    }
+
+    .btn-back:hover {
+        color: #111827;
+    }
+
+    .grid-2col {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .code-block-wrapper {
+        position: relative;
+    }
+
+    .code-block {
+        background: #1f2937;
+        color: #e5e7eb;
+        padding: 1rem;
+        border-radius: 6px;
+        overflow-x: auto;
+        font-family: 'Monaco', 'Menlo', monospace;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    .btn-code-copy {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: #374151;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.875rem;
+        transition: background 0.2s;
+    }
+
+    .btn-code-copy:hover {
+        background: #4b5563;
+    }
+
+    .config-status {
+        margin-top: 1rem;
+        padding: 0.75rem 1rem;
+        border-radius: 6px;
+        font-size: 0.875rem;
+    }
+
+    .config-status.success {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .config-status.error {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 0.75rem 1rem;
+        text-align: left;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .data-table th {
+        font-weight: 600;
+        color: #374151;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+
+    .data-table tbody tr:hover {
+        background: #f9fafb;
+    }
+</style>
+
+<script>
+    function copyEmbedCode() {
+        const codeBlock = document.getElementById('embed-code');
+        const button = document.querySelector('.btn-code-copy');
+
+        navigator.clipboard.writeText(codeBlock.textContent).then(() => {
+            const originalText = button.textContent;
+            button.textContent = '✓ Copied!';
+            button.style.background = '#10b981';
+
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.style.background = '#374151';
+            }, 2000);
+        });
+    }
+
+    async function saveWebhookConfig(event) {
+        event.preventDefault();
+
+        const webhookUrl = document.getElementById('webhook_url').value.trim();
+        const statusDiv = document.getElementById('config-status');
+
+        try {
+            const response = await fetch('{{ url_for("admin_update_widget_config", company_id=company.id) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    webhook_url: webhookUrl || null,
+                    n8n_config: {}
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                statusDiv.textContent = '✓ Configuration saved successfully';
+                statusDiv.className = 'config-status success';
+                statusDiv.style.display = 'block';
+
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 3000);
+            } else {
+                throw new Error(data.error || 'Failed to save');
+            }
+        } catch (error) {
+            statusDiv.textContent = '✗ Error: ' + error.message;
+            statusDiv.className = 'config-status error';
+            statusDiv.style.display = 'block';
+        }
+    }
+</script>
+{% endblock %}
