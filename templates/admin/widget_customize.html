@@ -22,46 +22,23 @@
         <!-- Appearance Card -->
         <div class="dashboard-card">
             <div class="card-header">
-                <h2 class="card-title">🎨 Appearance</h2>
+                <h2 class="card-title">🎨 Theme</h2>
             </div>
             <div class="card-body">
                 <div class="form-group">
-                    <label class="form-label">Theme</label>
+                    <label class="form-label">Widget Theme</label>
                     <select id="theme" class="form-select">
-                        <option value="glassmorphism">Glassmorphism</option>
+                        <option value="glassmorphism">Glassmorphism (Recommended)</option>
                         <option value="minimal">Minimal</option>
-                        <option value="professional">Professional</option>
-                        <option value="wtm-professional">WTM Professional</option>
+                        <option value="corporate">Corporate</option>
+                        <option value="playful">Playful</option>
                     </select>
+                    <small style="display: block; margin-top: 0.5rem; color: #6b7280;">
+                        Each theme comes with predefined colors and styling. The widget will appear in the bottom-right
+                        corner.
+                    </small>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">Primary Color</label>
-                    <div style="display: flex; gap: 0.75rem;">
-                        <input type="color" id="primaryColor" value="#6366f1"
-                            style="width: 80px; height: 40px; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer;">
-                        <input type="text" id="primaryColorHex" value="#6366f1" class="form-input" style="flex: 1;">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Accent Color</label>
-                    <div style="display: flex; gap: 0.75rem;">
-                        <input type="color" id="accentColor" value="#3a3a38"
-                            style="width: 80px; height: 40px; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer;">
-                        <input type="text" id="accentColorHex" value="#3a3a38" class="form-input" style="flex: 1;">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Position</label>
-                    <select id="position" class="form-select">
-                        <option value="bottom-right">Bottom Right</option>
-                        <option value="bottom-left">Bottom Left</option>
-                        <option value="top-right">Top Right</option>
-                        <option value="top-left">Top Left</option>
-                    </select>
-                </div>
             </div>
         </div>
 
@@ -96,6 +73,22 @@
             </div>
             <div class="card-body">
                 <div class="form-group">
+                    <label class="form-label">Company Homepage URL</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="url" id="companyHomepage" placeholder="https://www.example.com" class="form-input"
+                            style="flex: 1;">
+                        <button id="scrapeButton" class="btn btn-secondary" style="white-space: nowrap;">
+                            🔄 Scrape & Index
+                        </button>
+                    </div>
+                    <small style="display: block; margin-top: 0.5rem; color: #6b7280;">
+                        Enter your main website URL. Any content found will be indexed to help the AI answer questions
+                        accurately.
+                    </small>
+                    <div id="scrapeStatus" style="margin-top: 0.5rem; font-size: 0.875rem; display: none;"></div>
+                </div>
+
+                <div class="form-group">
                     <label class="form-label">Custom AI Instructions</label>
                     <textarea id="botInstructions" rows="8" maxlength="5000" class="form-textarea"
                         placeholder="Enter custom instructions for the AI assistant (e.g., company info, FAQs, tone guidelines, specific expertise...)"></textarea>
@@ -117,17 +110,18 @@
                 <h2 class="card-title">🏷️ Branding</h2>
             </div>
             <div class="card-body">
-                <div class="form-group">
-                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                        <input type="checkbox" id="showSyntraBranding" checked>
-                        <span>Show "Powered by Syntra" branding</span>
-                    </label>
-                </div>
+                <p style="color: #6b7280; margin-bottom: 1rem;">
+                    All widgets display "Powered by <a href="https://vallit.net" target="_blank"
+                        style="color: var(--color-primary);">Syntra</a>" branding.
+                </p>
 
                 <div class="form-group">
                     <label class="form-label">Custom Branding Text (optional)</label>
                     <input type="text" id="customBranding" placeholder="e.g., Powered by Your Company"
                         class="form-input">
+                    <small style="display: block; margin-top: 0.5rem; color: #6b7280;">
+                        Add additional branding text that will appear alongside the Syntra branding.
+                    </small>
                 </div>
 
                 <div class="form-group">
@@ -141,47 +135,70 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Right Column: Preview -->
-    <div>
-        <div class="dashboard-card" style="position: sticky; top: 1rem;">
+        <!-- Appointment Scheduling Card -->
+        <div class="dashboard-card">
             <div class="card-header">
-                <h2 class="card-title">👁️ Live Preview</h2>
+                <h2 class="card-title">📅 Appointment Scheduling</h2>
             </div>
             <div class="card-body">
-                <div
-                    style="background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%); border-radius: 8px; padding: 2rem; min-height: 400px; margin-bottom: 1.5rem; position: relative;">
-                    <p style="text-align: center; color: #6b7280; font-size: 0.875rem; margin-bottom: 1rem;">Widget
-                        Preview</p>
-                    <div id="previewWidget" style="position: absolute; bottom: 1rem; right: 1rem;"></div>
+                <div class="form-group">
+                    <label class="form-label" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" id="enableScheduling">
+                        Enable Appointment Scheduling
+                    </label>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Embed Code</label>
-                    <pre
-                        style="background: #1f2937; color: #e5e7eb; padding: 1rem; border-radius: 6px; overflow-x: auto; font-family: Monaco, monospace; font-size: 0.875rem; line-height: 1.5;"><code id="embedCodePreview">&lt;script src="{{ request.host_url.rstrip('/') }}/widget/embed.js" 
-    data-company-id="{{ company.id }}"
-    data-api-url="{{ request.host_url.rstrip('/') }}"
-    data-theme="glassmorphism"
-    data-position="bottom-right"&gt;
-&lt;/script&gt;</code></pre>
-                    <button id="copyEmbedCode" class="btn btn-secondary btn-sm" style="margin-top: 0.5rem;">
-                        📋 Copy to Clipboard
-                    </button>
+                    <label class="form-label">Notification Email</label>
+                    <input type="email" id="schedulingEmail" placeholder="appointments@company.com" class="form-input">
+                    <small style="display: block; margin-top: 0.5rem; color: #6b7280;">
+                        Waitlist/confirmation strings will be sent here. The AI will collect Name, Email, and Preferred
+                        Time.
+                    </small>
                 </div>
             </div>
         </div>
     </div>
 </div>
+</div>
+
+<!-- Right Column: Preview -->
+<div>
+    <div class="dashboard-card" style="position: sticky; top: 1rem;">
+        <div class="card-header">
+            <h2 class="card-title">👁️ Live Preview</h2>
+        </div>
+        <div class="card-body">
+            <div
+                style="background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%); border-radius: 8px; padding: 2rem; min-height: 400px; margin-bottom: 1.5rem; position: relative;">
+                <p style="text-align: center; color: #6b7280; font-size: 0.875rem; margin-bottom: 1rem;">Widget
+                    Preview</p>
+                <div id="previewWidget" style="position: absolute; bottom: 1rem; right: 1rem;"></div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Embed Code</label>
+                <pre
+                    style="background: #1f2937; color: #e5e7eb; padding: 1rem; border-radius: 6px; overflow-x: auto; font-family: Monaco, monospace; font-size: 0.875rem; line-height: 1.5;"><code id="embedCodePreview">&lt;script src="{{ request.host_url.rstrip('/') }}/widget/embed.js" 
+    data-company-id="{{ company.id }}"
+    data-api-url="{{ request.host_url.rstrip('/') }}"
+    data-theme="glassmorphism"
+    data-position="bottom-right"&gt;
+&lt;/script&gt;</code></pre>
+                <button id="copyEmbedCode" class="btn btn-secondary btn-sm" style="margin-top: 0.5rem;">
+                    📋 Copy to Clipboard
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
 
 <script>
     const widgetSettings = {
         appearance: {
-            theme: 'glassmorphism',
-            primaryColor: '#6366f1',
-            accentColor: '#3a3a38',
-            position: 'bottom-right'
+            theme: 'glassmorphism'
         },
         content: {
             headerTitle: 'AI Assistant',
@@ -189,12 +206,12 @@
             placeholderText: 'Type your message...'
         },
         branding: {
-            showSyntraBranding: true,
             customBranding: '',
             privacyPolicyUrl: 'https://vallit.net/privacy'
         },
         bot: {
-            instructions: ''
+            instructions: '',
+            homepage: ''
         }
     };
 
@@ -203,7 +220,13 @@
             const response = await fetch('/api/admin/companies/{{ company.id }}/widget-settings');
             const data = await response.json();
             if (data.settings) {
-                Object.assign(widgetSettings, data.settings);
+                // deep merge helper or just assign top level specific
+                // Careful not to overwrite if structure changes
+                if (data.settings.appearance) Object.assign(widgetSettings.appearance, data.settings.appearance);
+                if (data.settings.content) Object.assign(widgetSettings.content, data.settings.content);
+                if (data.settings.branding) Object.assign(widgetSettings.branding, data.settings.branding);
+                if (data.settings.bot) Object.assign(widgetSettings.bot, data.settings.bot);
+
                 applySettingsToForm();
             }
         } catch (error) {
@@ -213,23 +236,18 @@
 
     function applySettingsToForm() {
         document.getElementById('theme').value = widgetSettings.appearance.theme || 'glassmorphism';
-        document.getElementById('primaryColor').value = widgetSettings.appearance.primaryColor || '#6366f1';
-        document.getElementById('primaryColorHex').value = widgetSettings.appearance.primaryColor || '#6366f1';
-        document.getElementById('accentColor').value = widgetSettings.appearance.accentColor || '#3a3a38';
-        document.getElementById('accentColorHex').value = widgetSettings.appearance.accentColor || '#3a3a38';
-        document.getElementById('position').value = widgetSettings.appearance.position || 'bottom-right';
 
         document.getElementById('headerTitle').value = widgetSettings.content.headerTitle || 'AI Assistant';
         document.getElementById('welcomeMessage').value = widgetSettings.content.welcomeMessage || "Hi! 👋 I'm Kian, your AI assistant. How can I help you today?";
         document.getElementById('placeholderText').value = widgetSettings.content.placeholderText || 'Type your message...';
 
-        document.getElementById('showSyntraBranding').checked = widgetSettings.branding.showSyntraBranding !== false;
         document.getElementById('customBranding').value = widgetSettings.branding.customBranding || '';
         document.getElementById('privacyPolicyUrl').value = widgetSettings.branding.privacyPolicyUrl || 'https://vallit.net/privacy';
 
         document.getElementById('botInstructions').value = widgetSettings.bot?.instructions || '';
-        updateCharCount();
+        document.getElementById('companyHomepage').value = widgetSettings.bot?.homepage || '';
 
+        updateCharCount();
         updatePreview();
     }
 
@@ -241,19 +259,17 @@
 
     function collectSettings() {
         widgetSettings.appearance.theme = document.getElementById('theme').value;
-        widgetSettings.appearance.primaryColor = document.getElementById('primaryColor').value;
-        widgetSettings.appearance.accentColor = document.getElementById('accentColor').value;
-        widgetSettings.appearance.position = document.getElementById('position').value;
 
         widgetSettings.content.headerTitle = document.getElementById('headerTitle').value;
         widgetSettings.content.welcomeMessage = document.getElementById('welcomeMessage').value;
         widgetSettings.content.placeholderText = document.getElementById('placeholderText').value;
 
-        widgetSettings.branding.showSyntraBranding = document.getElementById('showSyntraBranding').checked;
         widgetSettings.branding.customBranding = document.getElementById('customBranding').value;
         widgetSettings.branding.privacyPolicyUrl = document.getElementById('privacyPolicyUrl').value;
 
+        if (!widgetSettings.bot) widgetSettings.bot = {};
         widgetSettings.bot.instructions = document.getElementById('botInstructions').value;
+        widgetSettings.bot.homepage = document.getElementById('companyHomepage').value;
 
         return widgetSettings;
     }
@@ -264,18 +280,14 @@
     data-company-id="{{ company.id }}"
     data-api-url="{{ request.host_url.rstrip('/') }}"
     data-theme="${settings.appearance.theme}"
-    data-position="${settings.appearance.position}"
     data-title="${settings.content.headerTitle}"
     data-welcome-message="${settings.content.welcomeMessage}"
-    data-placeholder="${settings.content.placeholderText}"
-    data-color="${settings.appearance.primaryColor}"
-    data-branding="${settings.branding.showSyntraBranding}">
+    data-privacy-url="${settings.branding.privacyPolicyUrl}">
 <` + `/script>`;
 
         document.getElementById('embedCodePreview').textContent = embedCode;
 
-        const previewHTML = `<button
-    style="background-color: ${settings.appearance.primaryColor}; color: white; width: 60px; height: 60px; border-radius: 50%; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: none; cursor: pointer; font-size: 24px;">💬</button>`;
+        const previewHTML = `<div style="text-align: center; padding: 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white;"><div style="font-size: 24px; margin-bottom: 0.5rem;">💬</div><div style="font-size: 14px; opacity: 0.9;">Theme: ${settings.appearance.theme}</div></div>`;
         document.getElementById('previewWidget').innerHTML = previewHTML;
     }
 
@@ -299,6 +311,50 @@
         }
     }
 
+    // Scraping functionality
+    async function triggerScraping() {
+        const url = document.getElementById('companyHomepage').value;
+        const statusDiv = document.getElementById('scrapeStatus');
+        const scrapeBtn = document.getElementById('scrapeButton');
+
+        if (!url) {
+            alert('Please enter a URL first');
+            return;
+        }
+
+        // Save URL first just in case
+        collectSettings();
+
+        statusDiv.style.display = 'block';
+        statusDiv.style.color = '#6366f1';
+        statusDiv.innerHTML = '⏳ Scraping started... This may take a minute.';
+        scrapeBtn.disabled = true;
+
+        try {
+            const response = await fetch(`/api/admin/companies/{{ company.id }}/scrape`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: url })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                statusDiv.style.color = '#10b981';
+                statusDiv.innerHTML = `✅ Successfully indexed! Found ${data.pages_count || 1} page(s).`;
+            } else {
+                statusDiv.style.color = '#ef4444';
+                statusDiv.innerHTML = `❌ Error: ${data.error || 'Scraping failed'}`;
+            }
+        } catch (error) {
+            console.error('Scraping error:', error);
+            statusDiv.style.color = '#ef4444';
+            statusDiv.innerHTML = `❌ Connection error: ${error.message}`;
+        } finally {
+            scrapeBtn.disabled = false;
+        }
+    }
+
     function copyEmbedCode() {
         const code = document.getElementById('embedCodePreview').textContent;
         navigator.clipboard.writeText(code).then(() => {
@@ -308,29 +364,16 @@
 
     document.getElementById('saveSettings').addEventListener('click', saveSettings);
     document.getElementById('copyEmbedCode').addEventListener('click', copyEmbedCode);
+    document.getElementById('scrapeButton').addEventListener('click', triggerScraping);
 
-    document.getElementById('primaryColor').addEventListener('input', (e) => {
-        document.getElementById('primaryColorHex').value = e.target.value;
-        updatePreview();
-    });
-    document.getElementById('primaryColorHex').addEventListener('input', (e) => {
-        document.getElementById('primaryColor').value = e.target.value;
-        updatePreview();
-    });
-    document.getElementById('accentColor').addEventListener('input', (e) => {
-        document.getElementById('accentColorHex').value = e.target.value;
-        updatePreview();
-    });
-    document.getElementById('accentColorHex').addEventListener('input', (e) => {
-        document.getElementById('accentColor').value = e.target.value;
-        updatePreview();
-    });
 
-    ['theme', 'position', 'headerTitle', 'welcomeMessage', 'placeholderText', 'showSyntraBranding',
-        'customBranding', 'privacyPolicyUrl', 'botInstructions'].forEach(id => {
+    ['theme', 'headerTitle', 'welcomeMessage', 'placeholderText',
+        'customBranding', 'privacyPolicyUrl', 'botInstructions', 'companyHomepage'].forEach(id => {
             const element = document.getElementById(id);
-            element.addEventListener('input', updatePreview);
-            element.addEventListener('change', updatePreview);
+            if (element) {
+                element.addEventListener('input', updatePreview);
+                element.addEventListener('change', updatePreview);
+            }
         });
 
     // Character counter for bot instructions

@@ -827,3 +827,99 @@ def create_api_key(user_id: str, name: str) -> Dict:
     except Exception as e:
         print(f"Error creating API key: {e}")
         raise
+
+
+# ============================================================================
+# CHAT SESSION OPERATIONS
+# ============================================================================
+
+def create_chat_session(company_id: str, widget_id: str, user_identifier: str, metadata: Dict = None) -> Dict:
+    """Create a new chat session"""
+    import uuid
+    session_id = str(uuid.uuid4())
+    
+    session_data = {
+        'session_id': session_id,
+        'company_id': company_id,
+        'widget_id': widget_id,
+        'user_identifier': user_identifier,
+        'metadata': metadata or {},
+        'messages': [],
+        'is_active': True,
+        'created_at': datetime.utcnow().isoformat(),
+        'updated_at': datetime.utcnow().isoformat()
+    }
+    
+    try:
+        # Check if table exists (basic check by trying insert)
+        # Note: If this fails due to missing table, migration is needed.
+        result = get_db().table('chat_sessions').insert(session_data).execute()
+        return result.data[0]
+    except Exception as e:
+        print(f"Error creating chat session: {e}")
+        raise
+
+def get_chat_session(session_id: str) -> Optional[Dict]:
+    """Get chat session by session_id"""
+    try:
+        result = get_db().table('chat_sessions').select('*').eq('session_id', session_id).execute()
+        return result.data[0] if result.data else None
+    except:
+        return None
+
+def get_active_chat_session(user_identifier: str, company_id: str) -> Optional[Dict]:
+    """Get the most recent active chat session for a user"""
+    try:
+        result = get_db().table('chat_sessions').select('*')\
+            .eq('user_identifier', user_identifier)\
+            .eq('company_id', company_id)\
+            .eq('is_active', True)\
+            .order('created_at', desc=True)\
+            .limit(1)\
+            .execute()
+        return result.data[0] if result.data else None
+    except:
+        return None
+
+def save_chat_message(session_id: str, role: str, content: str, metadata: Dict = None) -> bool:
+    """Save a message to the chat session"""
+    message = {
+        'role': role,
+        'content': content,
+        'timestamp': datetime.utcnow().isoformat(),
+        'metadata': metadata or {}
+    }
+    
+    try:
+        # Fetch current messages to append
+        # Note: concurrency issue possible but acceptable for chat widget
+        session = get_chat_session(session_id)
+        if not session:
+            return False
+            
+        messages = session.get('messages', [])
+        if not isinstance(messages, list):
+            messages = []
+            
+        messages.append(message)
+        
+        get_db().table('chat_sessions').update({
+            'messages': messages,
+            'updated_at': datetime.utcnow().isoformat()
+        }).eq('session_id', session_id).execute()
+        return True
+    except Exception as e:
+        print(f"Error saving chat message: {e}")
+        return False
+
+def close_chat_session(session_id: str) -> bool:
+    """Close a chat session"""
+    try:
+        get_db().table('chat_sessions').update({
+            'is_active': False,
+            'closed_at': datetime.utcnow().isoformat(),
+            'updated_at': datetime.utcnow().isoformat()
+        }).eq('session_id', session_id).execute()
+        return True
+    except:
+        return False

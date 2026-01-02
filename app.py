@@ -12,8 +12,10 @@ from dateutil import parser as date_parser
 import auth
 import db
 from n8n_service import get_n8n_service
+from n8n_service import get_n8n_service
 import n8n_sync
 import webhook_client
+from knowledge_scraper import SimpleScraper
 
 load_dotenv()
 
@@ -3205,6 +3207,12 @@ def chat_message():
         
         system_prompt = widget_config.get('system_prompt') or chat_service.default_system_prompt
         
+        # Inject Knowledge Base Context (Phase 3)
+        if company_id:
+            knowledge_context = chat_service.get_company_knowledge(db, company_id)
+            if knowledge_context:
+                system_prompt += f"\n\n{knowledge_context}\n\nUse the above Company Knowledge Base to answer questions accurately."
+
         # Try n8n first if configured, otherwise use direct ChatGPT
         ai_response = None
         response_metadata = {}
@@ -3227,11 +3235,21 @@ def chat_message():
                 response.headers['Access-Control-Allow-Origin'] = '*'
                 return response
         
+        # Check if scheduling is enabled
+        enable_scheduling = False
+        if widget_config.get('settings', {}).get('scheduling', {}).get('enabled'):
+            enable_scheduling = True
+            system_prompt += "\n\nYou have access to an appointment booking tool. If the user wants to book, ask for their Name, Email, and Preferred Date/Time needed to use the tool."
+
         # Direct ChatGPT response (fallback or primary)
         if chat_service.is_configured():
             ai_response, response_metadata = chat_service.generate_response(
                 history,
-                system_prompt=system_prompt
+                system_prompt=system_prompt,
+                db_module=db,
+                company_id=company_id,
+                session_id=session_id,  # Need UUID for appt
+                enable_tools=enable_scheduling
             )
         
         if ai_response:
@@ -3298,6 +3316,69 @@ def chat_history(session_key):
         
         # Get messages
         limit = request.args.get('limit', 50, type=int)
+        history = chat_service.get_conversation_history(db, session['id'], limit=limit)
+        
+        # Transform for client
+        # JSONB messages: {role, content, timestamp ...}
+        client_history = []
+        for msg in history:
+            client_history.append({
+                'sender': msg.get('role'), # 'user' or 'assistant'
+                'text': msg.get('content'),
+                'timestamp': msg.get('timestamp')
+            })
+            
+        response = jsonify({'history': client_history, 'session_id': session_key})
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response
+        
+    except Exception as e:
+        print(f"History error: {e}")
+        response = jsonify({'error': 'Internal server error'})
+        response.status_code = 500
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response
+
+
+@app.route('/api/chat/reset', methods=['POST', 'OPTIONS'])
+def chat_reset():
+    """Reset chat session (New Chat)"""
+    if request.method == 'OPTIONS':
+        response = jsonify({'status': 'ok'})
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+        return response
+        
+    try:
+        data = request.get_json()
+        session_key = data.get('session_id')
+        
+        if session_key:
+            chat_service = get_chat_service()
+            # Resolve to UUID
+            session, _ = chat_service.get_or_create_session(db, session_key)
+            if session:
+                chat_service.close_session(db, session['id'])
+        
+        # Generate new session key
+        # We don't necessarily need to return a key, the client will generate one or we return one.
+        # Client usually generates or we return one.
+        new_session_key = f"widget_{uuid_lib.uuid4().hex[:16]}"
+        
+        response = jsonify({
+            'status': 'success',
+            'new_session_id': new_session_key
+        })
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response
+        
+    except Exception as e:
+        print(f"Reset error: {e}")
+        response = jsonify({'error': 'Internal server error'})
+        response.status_code = 500
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response
         messages = chat_service.get_conversation_history(db, session['id'], limit)
         
         # Format for frontend

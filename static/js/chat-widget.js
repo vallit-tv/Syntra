@@ -187,12 +187,22 @@
                                 </span>
                             </div>
                         </div>
-                        <button class="syntra-close-btn" aria-label="Close chat">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <line x1="18" y1="6" x2="6" y2="18"/>
-                                <line x1="6" y1="6" x2="18" y2="18"/>
-                            </svg>
-                        </button>
+                            </div>
+                        </div>
+                        <div class="syntra-header-actions">
+                            <button class="syntra-reset-btn" aria-label="New chat" title="Start new chat">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                                    <path d="M3 3v5h5"></path>
+                                </svg>
+                            </button>
+                            <button class="syntra-close-btn" aria-label="Close chat">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"/>
+                                    <line x1="6" y1="6" x2="18" y2="18"/>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Messages Area -->
@@ -236,6 +246,7 @@
             this.inputField = this.container.querySelector('.syntra-input');
             this.sendBtn = this.container.querySelector('.syntra-send-btn');
             this.closeBtn = this.container.querySelector('.syntra-close-btn');
+            this.resetBtn = this.container.querySelector('.syntra-reset-btn');
         }
 
         // =====================================================================
@@ -248,6 +259,14 @@
 
             // Close button
             this.closeBtn.addEventListener('click', () => this.close());
+
+            // Reset button
+            if (this.resetBtn) {
+                this.resetBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.resetChat();
+                });
+            }
 
             // Form submit
             this.inputForm.addEventListener('submit', (e) => {
@@ -316,6 +335,49 @@
             this.isOpen = false;
             this.container.classList.remove('syntra-open');
             this.toggleBtn.classList.remove('syntra-toggled');
+        }
+
+        async resetChat() {
+            if (!confirm('Start a new chat? This will clear your current conversation.')) {
+                return;
+            }
+
+            try {
+                this.messagesContainer.innerHTML = '';
+                this.messages = [];
+                // Add loading indicator? No, just clear.
+
+                // Call API to reset/close old session
+                const response = await fetch(`${this.config.apiUrl}/api/chat/reset`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ session_id: this.sessionId })
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success' && data.new_session_id) {
+                    this.sessionId = data.new_session_id;
+                    storeSessionId(this.sessionId);
+                } else {
+                    // Fallback generator
+                    this.sessionId = generateSessionId();
+                    storeSessionId(this.sessionId);
+                }
+
+                // Re-add welcome message
+                if (this.config.welcomeMessage) {
+                    this.addMessage('assistant', this.config.welcomeMessage, true);
+                }
+
+            } catch (e) {
+                console.error('Error resetting chat:', e);
+                // Fallback local reset
+                this.clearHistory();
+                if (this.config.welcomeMessage) {
+                    this.addMessage('assistant', this.config.welcomeMessage, true);
+                }
+            }
         }
 
         // =====================================================================
@@ -478,11 +540,18 @@
                 const response = await fetch(`${this.config.apiUrl}/api/chat/history/${sessionId}?limit=1`);
                 const data = await response.json();
 
-                if (data.messages && data.messages.length > 0) {
-                    const lastMessage = data.messages[data.messages.length - 1];
-                    if (lastMessage.role === 'assistant') {
+                // Check mapped history or old format?
+                // The new endpoint returns {history: [...]}
+                const msgs = data.history || data.messages;
+
+                if (msgs && msgs.length > 0) {
+                    const lastMessage = msgs[msgs.length - 1];
+                    const role = lastMessage.role || lastMessage.sender;
+                    const content = lastMessage.content || lastMessage.text;
+
+                    if (role === 'assistant') {
                         this.removeTypingIndicator();
-                        this.addMessage('assistant', lastMessage.content);
+                        this.addMessage('assistant', content);
                         return;
                     }
                 }
@@ -499,18 +568,41 @@
 
         async loadHistory() {
             try {
+                // If sessionId is very new (just gen) and no request made, maybe skip?
+                // But we want to persist across reload
+                if (!this.sessionId) return;
+
+                // Use query param session_id if endpoint supports it, OR path param if using old route
+                // backend route: /api/chat/history/<session_key>
+
                 const response = await fetch(`${this.config.apiUrl}/api/chat/history/${this.sessionId}`);
                 const data = await response.json();
 
-                if (data.messages && data.messages.length > 0) {
-                    data.messages.forEach(msg => {
-                        this.messages.push(msg);
-                        this.renderMessage(msg, false);
+                // Support both new "history" key and legacy "messages" key
+                const msgs = data.history || data.messages;
+
+                if (msgs && msgs.length > 0) {
+                    msgs.forEach(msg => {
+                        // Map fields if needed: sender->role, text->content
+                        const role = msg.role || msg.sender;
+                        const content = msg.content || msg.text;
+                        const timestamp = msg.timestamp || new Date().toISOString();
+
+                        const msgObj = {
+                            id: Date.now() + Math.random(),
+                            role: role,
+                            content: content,
+                            timestamp: timestamp
+                        };
+
+                        this.messages.push(msgObj);
+                        this.renderMessage(msgObj, false);
                     });
+                    this.scrollToBottom();
                 }
             } catch (error) {
                 // Silently fail - new session will be created
-                console.log('No previous chat history');
+                console.log('No previous chat history or failed to load');
             }
         }
 
