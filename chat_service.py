@@ -148,7 +148,9 @@ class ChatService:
             if db_client is None:
                 return None
             
+            msg_id = str(uuid.uuid4())
             message = {
+                'id': msg_id,
                 'role': role,
                 'content': content,
                 'timestamp': datetime.utcnow().isoformat(),

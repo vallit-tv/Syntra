@@ -3190,7 +3190,8 @@ def chat_message():
         if not session:
             return jsonify({'error': 'Failed to create session'}), 500
         
-        session_id = session['id']
+        # Use internal ID if available, otherwise session_key
+        session_id = session.get('id') or session.get('session_key')
         
         # Save user message
         user_msg = chat_service.save_message(
