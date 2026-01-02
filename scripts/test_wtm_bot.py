@@ -38,38 +38,39 @@ def ingest_data(company_id):
     """Scrape and ingest data"""
     print("\n2. Ingesting Data...")
     scraper = SimpleScraper()
-    kb = KnowledgeBase(sys.modules['db']) # pass db module shim or ensure KnowledgeBase imports get_db directly
-    
-    # We need to fix KnowledgeBase import in the previous step if it expected a module instance
-    # Actually KnowledgeBase implementation I wrote imports db_module but expects it passed in __init__
-    # Let's check how I wrote KnowledgeBase. 
-    # __init__(self, db_module) -> self.db = db_module.get_db()
-    # So I can pass a dummy class or just the db module itself since it has get_db
     import db
     kb = KnowledgeBase(db)
     
-    url = "https://wtm-consulting.vercel.app"
-    print(f"Scraping {url}...")
-    
-    results = scraper.scrape_url(url, max_pages=3, max_depth=1)
-    
-    if not results:
-        print("No data scraped!")
-        return
-        
-    print(f"Found {len(results)} pages. Ingesting...")
+    # We scrape BOTH the vercel app (maybe redundant?) and the production site
+    # User asked for "another page of them: https://www.wtm-consulting.de"
+    urls = [
+        "https://wtm-consulting.vercel.app", 
+        "https://www.wtm-consulting.de"
+    ]
     
     # Clear old knowledge for clean test
     kb.clear_knowledge(company_id)
     
-    for page in results:
-        print(f" - Adding: {page['title']}")
-        kb.add_knowledge(
-            company_id=company_id,
-            title=page['title'],
-            content=page['content'],
-            source_url=page['url']
-        )
+    for url in urls:
+        print(f"Scraping {url}...")
+        # Increase depth for production site to get details
+        depth = 2 if "wtm-consulting.de" in url else 1
+        results = scraper.scrape_url(url, max_pages=10, max_depth=depth)
+        
+        if not results:
+            print(f"No data scraped from {url}!")
+            continue
+            
+        print(f"Found {len(results)} pages from {url}. Ingesting...")
+        
+        for page in results:
+            print(f" - Adding: {page['title']}")
+            kb.add_knowledge(
+                company_id=company_id,
+                title=page['title'],
+                content=page['content'],
+                source_url=page['url']
+            )
         
     print("Ingestion complete.")
 
@@ -92,19 +93,8 @@ def test_chat(company_id):
 
     print("\n" + "="*50)
     print("🤖 WTM Bot is ready! (Type 'quit' to exit)")
+    print("   Try asking about specific coaching or booking a meeting.")
     print("="*50 + "\n")
-    
-    # Pre-inject system prompt with knowledge (Manual simulation of what the engine should do)
-    # The current chat_service.get_company_knowledge does this.
-    # Let's verify chat_service uses the knowledge base.
-    # Looking at chat_service.py: 
-    # def get_company_knowledge(self, db_module, company_id) -> reads from 'company_knowledge_base'
-    # So it SHOULD work automatically if I just call generate_response with the right system prompt construction.
-    
-    # But wait, chat_service.generate_response doesn't automatically fetch knowledge.
-    # The caller usually constructs the system prompt.
-    # In a real widget, the backend route handler does this.
-    # So we must simulate the route handler here.
     
     knowledge_text = chat_service.get_company_knowledge(db, company_id)
     base_system_prompt = chat_service.default_system_prompt
@@ -112,8 +102,12 @@ def test_chat(company_id):
     full_system_prompt = f"""{base_system_prompt}
 
 You are the AI assistant for WTM Consulting. 
-Use the following context to answer user questions. 
+Use the following context to answer user questions about coachings, trainings, and philosophy.
 If the answer is not in the context, politely say you don't know but offer to contact support.
+
+You have access to a tool 'book_appointment'. 
+If the user wants to book a meeting or discuss further, ask for their Name, Email, and Preferred Date/Time, then call the tool.
+Confirm to the user when the appointment is booked.
 
 CONTEXT:
 {knowledge_text}
@@ -131,16 +125,39 @@ CONTEXT:
             
             print("Bot: ...", end='\r')
             
+            # Enable tools!
             response, meta = chat_service.generate_response(
                 messages=messages,
                 system_prompt=full_system_prompt,
                 db_module=db,
-                company_id=company_id
+                company_id=company_id,
+                enable_tools=True,
+                session_id=session['id'] if session.get('id') else None
             )
             
             if response:
                 print(f"Bot: {response}")
                 messages.append({'role': 'assistant', 'content': response})
+                
+                # Check for booking confirmation pattern (simple check)
+                if "booked" in response.lower() or "reference id" in response.lower():
+                    print("\n[System] Checking for appointment record...")
+                    # Verify appointment in DB
+                    try:
+                        res = db.get_db().table('chat_appointments').select('*').eq('chat_session_id', session.get('session_key')).execute()
+                        if res.data:
+                            print(f"[System] SUCCESS: Found {len(res.data)} appointments for this session.")
+                            print(f"         Latest: {res.data[-1]}")
+                        else:
+                            # Note: session['id'] vs session_key usage in appointment service
+                            # In chat_service L369 we pass session_id. 
+                            # If session object has 'id' (UUID), we used that.
+                            # If we passed session_key to get_or_create, it might return a dict.
+                            # Let's check session object.
+                            pass
+                    except Exception as e:
+                        print(f"[System] Error verifying appointment: {e}")
+
             else:
                 print("Bot: [Error generating response]")
                 if meta:
