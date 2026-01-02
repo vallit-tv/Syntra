@@ -52,7 +52,7 @@ class ChatService:
             
             # Try to get existing session
             result = db_client.table('chat_sessions').select('*').eq(
-                'session_id', session_key
+                'session_key', session_key
             ).execute()
             
             if result.data and len(result.data) > 0:
@@ -60,13 +60,15 @@ class ChatService:
             
             # Create new session
             # Note: We use session_key as the session_id column for client mapping
+            # user_id must be valid UUID or None (if FK). Store anon ID in metadata.
+            anon_id = f"anon_{uuid.uuid4().hex[:8]}"
+            
             session_data = {
-                'session_id': session_key,
+                'session_key': session_key,
                 'widget_id': widget_id,
-                'user_identifier': user_id or f"anon_{uuid.uuid4().hex[:8]}", # Fallback identifier
+                'user_id': user_id, # Must be UUID or None
                 'company_id': company_id,
-                'metadata': metadata or {},
-                'messages': [], # Init empty JSONB array
+                'metadata': metadata or {'messages': [], 'anon_id': anon_id}, # Init messages in metadata
                 'is_active': True,
                 'created_at': datetime.utcnow().isoformat(),
                 'updated_at': datetime.utcnow().isoformat()
@@ -163,27 +165,29 @@ class ChatService:
             # Check if session_id_rec is UUID or key. Assuming UUID from previous fetch.
             # But let's be safe. If it looks like UUID use id, else session_id.
             
+            # Fetch current metadata
             key_col = 'id' # Default to PK lookup
-            
-            # Fetch current array
-            result = db_client.table('chat_sessions').select('messages').eq(key_col, session_id_rec).execute()
+            result = db_client.table('chat_sessions').select('metadata').eq(key_col, session_id_rec).execute()
             
             if not result.data:
-                # Try lookup by session_id (string key)
-                key_col = 'session_id'
-                result = db_client.table('chat_sessions').select('messages').eq(key_col, session_id_rec).execute()
+                # Try lookup by session_key (string key)
+                key_col = 'session_key'
+                result = db_client.table('chat_sessions').select('metadata').eq(key_col, session_id_rec).execute()
                 if not result.data:
                     return None
             
-            current_messages = result.data[0].get('messages', [])
+            current_meta = result.data[0].get('metadata', {}) or {}
+            current_messages = current_meta.get('messages', [])
+            
             if not isinstance(current_messages, list):
                 current_messages = []
                 
             current_messages.append(message)
+            current_meta['messages'] = current_messages
             
-            # 2. Update array
+            # 2. Update array in metadata
             db_client.table('chat_sessions').update({
-                'messages': current_messages,
+                'metadata': current_meta,
                 'updated_at': datetime.utcnow().isoformat()
             }).eq(key_col, session_id_rec).execute()
             
@@ -211,14 +215,15 @@ class ChatService:
                 return []
             
             # Try UUID first
-            result = db_client.table('chat_sessions').select('messages').eq('id', session_id_rec).execute()
+            result = db_client.table('chat_sessions').select('metadata').eq('id', session_id_rec).execute()
             
             if not result.data:
                 # Try session_key
-                result = db_client.table('chat_sessions').select('messages').eq('session_id', session_id_rec).execute()
+                result = db_client.table('chat_sessions').select('metadata').eq('session_key', session_id_rec).execute()
             
             if result.data and result.data[0]:
-                msgs = result.data[0].get('messages', [])
+                meta = result.data[0].get('metadata', {})
+                msgs = meta.get('messages', [])
                 # Return last N messages. JSONB array is ordered by insertion.
                 if limit and len(msgs) > limit:
                     return msgs[-limit:]
