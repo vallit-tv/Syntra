@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,7 +11,11 @@
     {% block extra_css %}{% endblock %}
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Vercel Analytics -->
+    <script defer src="/_vercel/insights/script.js"></script>
 </head>
+
 <body class="dashboard-body">
     {% block body_content %}
     <!-- Sidebar Overlay for Mobile -->
@@ -88,7 +93,7 @@
         }
 
         // Sidebar toggle functionality
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const sidebarToggle = document.getElementById('sidebarToggle');
             const sidebar = document.getElementById('dashboardSidebar');
             const sidebarOverlay = document.getElementById('sidebarOverlay');
@@ -97,12 +102,12 @@
 
             // Sidebar toggle for mobile
             if (sidebarToggle && sidebar && sidebarOverlay) {
-                sidebarToggle.addEventListener('click', function() {
+                sidebarToggle.addEventListener('click', function () {
                     sidebar.classList.toggle('show');
                     sidebarOverlay.classList.toggle('show');
                 });
 
-                sidebarOverlay.addEventListener('click', function() {
+                sidebarOverlay.addEventListener('click', function () {
                     sidebar.classList.remove('show');
                     sidebarOverlay.classList.remove('show');
                 });
@@ -110,7 +115,7 @@
                 // Close sidebar when clicking a nav link on mobile
                 const navLinks = sidebar.querySelectorAll('.nav-item');
                 navLinks.forEach(link => {
-                    link.addEventListener('click', function() {
+                    link.addEventListener('click', function () {
                         if (window.innerWidth <= 768) {
                             sidebar.classList.remove('show');
                             sidebarOverlay.classList.remove('show');
@@ -121,13 +126,13 @@
 
             // User menu dropdown
             if (userMenuButton && userMenuDropdown) {
-                userMenuButton.addEventListener('click', function(e) {
+                userMenuButton.addEventListener('click', function (e) {
                     e.stopPropagation();
                     userMenuDropdown.classList.toggle('show');
                 });
 
                 // Close dropdown when clicking outside
-                document.addEventListener('click', function(e) {
+                document.addEventListener('click', function (e) {
                     if (!userMenuButton.contains(e.target) && !userMenuDropdown.contains(e.target)) {
                         userMenuDropdown.classList.remove('show');
                     }
@@ -142,5 +147,5 @@
     </script>
     {% block scripts %}{% endblock %}
 </body>
-</html>
 
+</html>
