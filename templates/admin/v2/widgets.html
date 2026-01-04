@@ -1,0 +1,58 @@
+{% extends "admin/v2/base.html" %}
+
+{% block title %}Widgets – Syntra{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumb-item">
+    <i data-lucide="shield" width="14" height="14"></i>
+    <a href="{{ url_for('admin_dashboard') }}" class="breadcrumb-link">Admin</a>
+</div>
+<span class="breadcrumb-separator">/</span>
+<div class="breadcrumb-item">
+    <span>Widgets</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Chat Widgets</h1>
+        <p class="page-subtitle">Manage deployed chat widgets</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="table-wrapper border-0 radius-lg">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Widget ID</th>
+                    <th>Company</th>
+                    <th>Allowed Domains</th>
+                    <th>Theme</th>
+                    <th class="text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if widgets %}
+                {% for w in widgets %}
+                <tr>
+                    <td class="font-mono text-secondary">{{ w.id }}</td>
+                    <td>{{ w.company_name }}</td>
+                    <td>{{ w.domains }}</td>
+                    <td>{{ w.theme }}</td>
+                    <td class="text-right">
+                        <button class="btn btn-secondary btn-sm">Configure</button>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center p-8 text-secondary">No widgets found.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

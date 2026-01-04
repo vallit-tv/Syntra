@@ -1,0 +1,143 @@
+{% extends "dashboard/v2/base.html" %}
+
+{% block title %}Analytics – Syntra{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumb-item">
+    <i data-lucide="layout-dashboard" width="14" height="14"></i>
+    <a href="{{ url_for('dashboard_overview') }}" class="breadcrumb-link">Overview</a>
+</div>
+<span class="breadcrumb-separator">/</span>
+<div class="breadcrumb-item">
+    <span>Analytics</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Analytics</h1>
+        <p class="page-subtitle">Performance metrics and execution history</p>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <span class="stat-label">Total Executions</span>
+        <div class="stat-value">{{ total_executions|default(0) }}</div>
+    </div>
+    <div class="stat-card">
+        <span class="stat-label">Success Rate</span>
+        <div class="stat-value">{{ success_rate|default(0) }}%</div>
+        <div class="w-full bg-gray-200 rounded-full h-1.5 mt-2 dark:bg-gray-700"
+            style="background: var(--color-bg-quart); height: 4px; border-radius: 2px;">
+            <div class="bg-green-600 h-1.5 rounded-full"
+                style="width: {{ success_rate|default(0) }}%; background: var(--color-success); height: 100%;"></div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <span class="stat-label">Avg. Duration</span>
+        <div class="stat-value">{{ avg_duration|default('0ms') }}</div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h3 class="card-title">Execution Trend</h3>
+    </div>
+    <div class="card-body">
+        <div style="height: 300px; width: 100%;">
+            <canvas id="executionsChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Recent Logs</h3>
+    </div>
+    <div class="table-wrapper" style="border: none; border-radius: 0;">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Workflow</th>
+                    <th>Status</th>
+                    <th>Duration</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if executions %}
+                {% for exec in executions[:10] %}
+                <tr>
+                    <td style="font-weight: 500;">{{ exec.workflow_name }}</td>
+                    <td>
+                        {% if exec.status == 'success' %}
+                        <span class="badge badge-success">Success</span>
+                        {% else %}
+                        <span class="badge badge-danger">Failed</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-secondary">{{ exec.duration }}ms</td>
+                    <td class="text-secondary">{{ exec.started_at|format_datetime('short') }}</td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-secondary text-center" style="padding: 2rem;">No executions recorded
+                    </td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const ctx = document.getElementById('executionsChart');
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], // Placeholder
+                    datasets: [{
+                        label: 'Executions',
+                        data: [12, 19, 3, 5, 2, 3, 10], // Placeholder
+                        borderColor: '#22c55e',
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        displayColors: false,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

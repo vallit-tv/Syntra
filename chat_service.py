@@ -16,10 +16,27 @@ class ChatService:
     
     def __init__(self):
         self.openai_api_key = os.getenv('OPENAI_API_KEY', '')
-        self.openai_model = os.getenv('OPENAI_MODEL', 'gpt-4o-mini')
+        self.openai_model = os.getenv('OPENAI_MODEL', 'gpt-4o')
         self.n8n_chat_webhook_url = os.getenv('N8N_CHAT_WEBHOOK_URL', '')
-        self.default_system_prompt = os.getenv('CHAT_SYSTEM_PROMPT', 
-            "You are a helpful AI assistant. Be concise, friendly, and helpful.")
+        
+        # Guardrailed System Prompt
+        self.default_system_prompt = """You are the AI assistant for a specific company. 
+Your role is to help users with questions about THIS company ONLY, based on the provided context.
+
+CRITICAL RULES:
+1. You must ONLY answer questions related to the company's services, products, philosophy, and internal knowledge provided in the context.
+2. If a user asks about:
+   - Competitors (e.g., McKinsey, BCG, other local firms)
+   - General world knowledge unrelated to the company (e.g., "Write me a python script", "What is the capital of France?")
+   - Personal opinions or topics outside the company's scope
+   
+   You MUST politely DECLINE to answer and steer the conversation back to this company's offerings.
+   
+   Example Refusal: "I specialize in [Company Name] and cannot discuss other companies or general topics. How can I help you with our coaching or consulting services?"
+
+3. Be helpful, professional, and concise.
+4. If you use the 'book_appointment' tool, wait for the user to provide Name, Email, and Time.
+"""
     
     def is_configured(self) -> bool:
         """Check if OpenAI API is configured"""
@@ -27,10 +44,6 @@ class ChatService:
     
     def has_n8n_integration(self) -> bool:
         """Check if n8n webhook is configured"""
-        return bool(self.n8n_chat_webhook_url)
-    
-    # =========================================================================
-    # Session Management
     # =========================================================================
     
     # =========================================================================

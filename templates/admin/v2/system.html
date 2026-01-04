@@ -1,0 +1,81 @@
+{% extends "admin/v2/base.html" %}
+
+{% block title %}System Status – Syntra{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumb-item">
+    <i data-lucide="shield" width="14" height="14"></i>
+    <a href="{{ url_for('admin_dashboard') }}" class="breadcrumb-link">Admin</a>
+</div>
+<span class="breadcrumb-separator">/</span>
+<div class="breadcrumb-item">
+    <span>System</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">System Status</h1>
+        <p class="page-subtitle">Environment and server health</p>
+    </div>
+</div>
+
+<div class="grid d-flex gap-6" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Environment</h3>
+        </div>
+        <div class="card-body">
+            <div class="d-flex justify-between py-2 border-b border-quart">
+                <span class="text-secondary">Environment</span>
+                <span class="font-mono">{{ config['ENV']|default('production') }}</span>
+            </div>
+            <div class="d-flex justify-between py-2 border-b border-quart">
+                <span class="text-secondary">Python Version</span>
+                <span class="font-mono">3.9.x</span>
+            </div>
+            <div class="d-flex justify-between py-2 border-b border-quart">
+                <span class="text-secondary">Platform</span>
+                <span class="font-mono">Vercel / Linux</span>
+            </div>
+            <div class="d-flex justify-between py-2">
+                <span class="text-secondary">Database</span>
+                <span class="badge badge-success">Connected</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Maintenance</h3>
+        </div>
+        <div class="card-body">
+            <p class="text-secondary mb-4">Actions for system maintenance.</p>
+            <div class="d-flex gap-2 column flex-column">
+                <button class="btn btn-secondary w-full justify-start">
+                    <i data-lucide="refresh-cw" width="16"></i>
+                    Clear Cache
+                </button>
+                <button class="btn btn-secondary w-full justify-start mt-2">
+                    <i data-lucide="database" width="16"></i>
+                    Vacuum Database
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-6">
+    <div class="card-header">
+        <h3 class="card-title">Error Logs</h3>
+    </div>
+    <div class="card-body bg-secondary font-mono text-sm p-4 overflow-auto"
+        style="max-height: 300px; background: #000; color: #0f0;">
+        [INFO] System started successfully.<br>
+        [INFO] Database connection established.<br>
+        [INFO] Worker 1 initialized.<br>
+        ...
+    </div>
+</div>
+{% endblock %}

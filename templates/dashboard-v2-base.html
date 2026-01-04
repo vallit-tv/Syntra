@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard – Syntra{% endblock %}</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+
+    <!-- Dashboard V2 Design System -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard-v2.css') }}?v=1">
+    {% block extra_css %}{% endblock %}
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Vercel Analytics -->
+    <script defer src="/_vercel/insights/script.js"></script>
+</head>
+
+<body>
+    <div class="layout-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="{% block sidebar_home_url %}/dashboard{% endblock %}" class="brand-link">
+                    <div class="brand-logo">
+                        {% block logo_icon %}
+                        <!-- Default Logo Icon -->
+                        <svg viewBox="0 0 24 24" fill="none" class="w-full h-full" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                        {% endblock %}
+                    </div>
+                    <span>{% block logo_text %}Syntra{% endblock %}</span>
+                </a>
+            </div>
+
+            <div class="sidebar-content">
+                {% block sidebar_nav %}{% endblock %}
+            </div>
+
+            <div class="sidebar-footer">
+                {% block sidebar_footer %}{% endblock %}
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="topbar">
+                <div class="d-flex items-center gap-4">
+                    <button class="btn btn-ghost btn-sm md:hidden" id="sidebarToggle" aria-label="Toggle Sidebar">
+                        <i data-lucide="menu"></i>
+                    </button>
+
+                    <nav class="breadcrumbs">
+                        {% block breadcrumbs %}{% endblock %}
+                    </nav>
+                </div>
+
+                <div class="d-flex items-center gap-4">
+                    {% block topbar_actions %}{% endblock %}
+
+                    <div class="user-menu-container relative">
+                        <button class="btn btn-ghost btn-sm gap-2" id="userMenuBtn">
+                            <div class="avatar"
+                                style="width: 24px; height: 24px; background: var(--color-accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600; font-size: 12px;">
+                                {{ user.name[0].upper() if user else 'U' }}
+                            </div>
+                            <span class="d-none d-md-block">{{ user.name if user else 'User' }}</span>
+                            <i data-lucide="chevron-down" width="14" height="14"></i>
+                        </button>
+
+                        <!-- User Dropdown (Hidden via JS initially) -->
+                        <div class="dropdown-menu hidden" id="userMenuDropdown"
+                            style="position: absolute; right: 0; top: 100%; margin-top: 8px; background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: var(--radius-md); width: 200px; padding: 4px; box-shadow: var(--shadow-lg);">
+                            {% block user_menu_items %}
+                            <a href="{{ url_for('logout') }}" class="nav-link" style="color: var(--color-danger);">
+                                <i data-lucide="log-out" width="16" height="16"></i>
+                                Logout
+                            </a>
+                            {% endblock %}
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="page-content">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/dashboard-v2.js') }}"></script>
+    <script>
+        // Init Icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>

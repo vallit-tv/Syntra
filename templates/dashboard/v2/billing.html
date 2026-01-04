@@ -1,0 +1,101 @@
+{% extends "dashboard/v2/base.html" %}
+
+{% block title %}Billing – Syntra{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumb-item">
+    <i data-lucide="layout-dashboard" width="14" height="14"></i>
+    <a href="{{ url_for('dashboard_overview') }}" class="breadcrumb-link">Overview</a>
+</div>
+<span class="breadcrumb-separator">/</span>
+<div class="breadcrumb-item">
+    <span>Billing</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Billing & Subscription</h1>
+        <p class="page-subtitle">Manage your plan and invoices</p>
+    </div>
+</div>
+
+<div class="card mb-8"
+    style="background: linear-gradient(135deg, var(--color-bg-secondary) 0%, var(--color-bg-tertiary) 100%);">
+    <div class="card-body d-flex justify-between items-center">
+        <div>
+            <div class="text-secondary mb-1">Current Plan</div>
+            <div style="font-size: 24px; font-weight: 700; color: var(--color-text-primary);">Free Tier</div>
+            <div class="text-secondary mt-1">Usage: 0 / 100 executions per month</div>
+        </div>
+        <button class="btn btn-primary">Upgrade Plan</button>
+    </div>
+</div>
+
+<h2 class="page-title mb-4" style="font-size: 18px;">Available Plans</h2>
+<div class="stats-grid">
+    <!-- Pro Plan -->
+    <div class="card">
+        <div class="card-header border-0 pb-0">
+            <h3 class="card-title">Pro</h3>
+            <span style="font-size: 20px; font-weight: 700;">$20<span class="text-secondary text-sm">/mo</span></span>
+        </div>
+        <div class="card-body">
+            <p class="text-secondary mb-4">For power users and freelancers.</p>
+            <ul class="text-secondary gap-2 d-flex flex-column mb-4" style="list-style: none; padding: 0;">
+                <li class="d-flex gap-2"><i data-lucide="check" width="16" class="text-success"></i> 10,000 Executions
+                </li>
+                <li class="d-flex gap-2"><i data-lucide="check" width="16" class="text-success"></i> Priority Support
+                </li>
+                <li class="d-flex gap-2"><i data-lucide="check" width="16" class="text-success"></i> 5 Integrations</li>
+            </ul>
+            <button class="btn btn-secondary w-full">Upgrade to Pro</button>
+        </div>
+    </div>
+
+    <!-- Pro+ Plan -->
+    <div class="card" style="border-color: var(--color-accent);">
+        <div class="card-header border-0 pb-0">
+            <h3 class="card-title text-accent">Pro+</h3>
+            <span style="font-size: 20px; font-weight: 700;">$60<span class="text-secondary text-sm">/mo</span></span>
+        </div>
+        <div class="card-body">
+            <p class="text-secondary mb-4">For growing teams and businesses.</p>
+            <ul class="text-secondary gap-2 d-flex flex-column mb-4" style="list-style: none; padding: 0;">
+                <li class="d-flex gap-2"><i data-lucide="check" width="16" class="text-success"></i> 50,000 Executions
+                </li>
+                <li class="d-flex gap-2"><i data-lucide="check" width="16" class="text-success"></i> 24/7 Support</li>
+                <li class="d-flex gap-2"><i data-lucide="check" width="16" class="text-success"></i> Unlimited
+                    Integrations</li>
+            </ul>
+            <button class="btn btn-accent w-full">Upgrade to Pro+</button>
+        </div>
+    </div>
+
+    <!-- Ultra Plan -->
+    <div class="card">
+        <div class="card-header border-0 pb-0">
+            <h3 class="card-title">Ultra</h3>
+            <span style="font-size: 20px; font-weight: 700;">$200<span class="text-secondary text-sm">/mo</span></span>
+        </div>
+        <div class="card-body">
+            <p class="text-secondary mb-4">For large scale enterprises.</p>
+            <ul class="text-secondary gap-2 d-flex flex-column mb-4" style="list-style: none; padding: 0;">
+                <li class="d-flex gap-2"><i data-lucide="check" width="16" class="text-success"></i> 1M+ Executions</li>
+                <li class="d-flex gap-2"><i data-lucide="check" width="16" class="text-success"></i> Dedicated Account
+                    Manager</li>
+                <li class="d-flex gap-2"><i data-lucide="check" width="16" class="text-success"></i> SLA Guarantee</li>
+            </ul>
+            <button class="btn btn-secondary w-full">Contact Sales</button>
+        </div>
+    </div>
+</div>
+
+<h2 class="page-title mt-8 mb-4" style="font-size: 18px;">Invoices</h2>
+<div class="card">
+    <div class="card-body">
+        <p class="text-secondary text-center">No invoices yet.</p>
+    </div>
+</div>
+{% endblock %}

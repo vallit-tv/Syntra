@@ -1,0 +1,60 @@
+{% extends "admin/v2/base.html" %}
+
+{% block title %}N8N Management – Syntra{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumb-item">
+    <i data-lucide="shield" width="14" height="14"></i>
+    <a href="{{ url_for('admin_dashboard') }}" class="breadcrumb-link">Admin</a>
+</div>
+<span class="breadcrumb-separator">/</span>
+<div class="breadcrumb-item">
+    <span>N8N</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">N8N Management</h1>
+        <p class="page-subtitle">Configure master n8n instance</p>
+    </div>
+</div>
+
+<div class="card mb-6">
+    <div class="card-header">
+        <h3 class="card-title">Instance Configuration</h3>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            <div class="form-group">
+                <label class="form-label">N8N Main URL</label>
+                <input type="text" name="n8n_url" value="{{ n8n_url }}" class="form-input">
+            </div>
+            <div class="form-group">
+                <label class="form-label">API Key</label>
+                <input type="password" name="n8n_api_key" value="{{ n8n_api_key }}" class="form-input"
+                    placeholder="Valid API Key">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Webhook Base URL</label>
+                <input type="text" name="n8n_webhook_url" value="{{ n8n_webhook_url }}" class="form-input">
+            </div>
+            <button type="submit" class="btn btn-primary">Save Configuration</button>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Synchronization</h3>
+    </div>
+    <div class="card-body">
+        <p class="text-secondary mb-4">Sync local workflows with N8N instance.</p>
+        <button class="btn btn-secondary">
+            <i data-lucide="refresh-cw" width="16"></i>
+            Sync All Workflows
+        </button>
+    </div>
+</div>
+{% endblock %}

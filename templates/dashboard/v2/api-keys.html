@@ -1,0 +1,107 @@
+{% extends "dashboard/v2/base.html" %}
+
+{% block title %}API Keys – Syntra{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumb-item">
+    <i data-lucide="layout-dashboard" width="14" height="14"></i>
+    <a href="{{ url_for('dashboard_overview') }}" class="breadcrumb-link">Overview</a>
+</div>
+<span class="breadcrumb-separator">/</span>
+<div class="breadcrumb-item">
+    <span>API Keys</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">API Keys</h1>
+        <p class="page-subtitle">Manage access keys for external applications</p>
+    </div>
+    <button class="btn btn-primary" onclick="document.getElementById('addKeyForm').classList.toggle('hidden')">
+        <i data-lucide="plus" width="16" height="16"></i>
+        Generate New Key
+    </button>
+</div>
+
+<!-- Add Key Form (Hidden by default) -->
+<div id="addKeyForm" class="card mb-4 hidden">
+    <div class="card-header">
+        <h3 class="card-title">Generate New API Key</h3>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('dashboard_api_keys') }}">
+            <input type="hidden" name="action" value="create">
+            <div class="form-group">
+                <label class="form-label">Key Name</label>
+                <input type="text" name="name" class="form-input" placeholder="e.g. Production App" required>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Generate Key</button>
+                <button type="button" class="btn btn-ghost"
+                    onclick="document.getElementById('addKeyForm').classList.add('hidden')">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Keys List -->
+<div class="card">
+    <div class="table-wrapper" style="border: none; border-radius: var(--radius-lg);">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Key Prefix</th>
+                    <th>Created</th>
+                    <th>Last Used</th>
+                    <th style="text-align: right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if api_keys %}
+                {% for key in api_keys %}
+                <tr>
+                    <td style="font-weight: 500;">{{ key.name }}</td>
+                    <td class="text-mono text-secondary">
+                        sk_live_...{{ key.key[-4:] }}
+                    </td>
+                    <td class="text-secondary">{{ key.created_at|format_datetime('short') }}</td>
+                    <td class="text-secondary">{{ key.last_used|format_datetime('relative') if key.last_used else
+                        'Never' }}</td>
+                    <td style="text-align: right;">
+                        <form method="POST" action="{{ url_for('dashboard_api_keys') }}" style="display: inline;"
+                            onsubmit="return confirm('Revoke this key? This action cannot be undone.');">
+                            <input type="hidden" name="action" value="revoke">
+                            <input type="hidden" name="key_id" value="{{ key.id }}">
+                            <button type="submit" class="btn btn-danger btn-sm">Revoke</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 3rem;">
+                        <div class="text-secondary">No API keys found</div>
+                    </td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if new_key %}
+<script>
+    // Alert logic or modal to show the new key one time
+    alert('Your new API Key is: {{ new_key }}\n\nPlease copy it now. You won\'t be able to see it again.');
+</script>
+{% endif %}
+
+<style>
+    .hidden {
+        display: none;
+    }
+</style>
+{% endblock %}

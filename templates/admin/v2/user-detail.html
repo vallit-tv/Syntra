@@ -1,0 +1,95 @@
+{% extends "admin/v2/base.html" %}
+
+{% block title %}User Detail – Syntra{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumb-item">
+    <i data-lucide="shield" width="14" height="14"></i>
+    <a href="{{ url_for('admin_dashboard') }}" class="breadcrumb-link">Admin</a>
+</div>
+<span class="breadcrumb-separator">/</span>
+<div class="breadcrumb-item">
+    <a href="{{ url_for('admin_users') }}" class="breadcrumb-link">Users</a>
+</div>
+<span class="breadcrumb-separator">/</span>
+<div class="breadcrumb-item">
+    <span>{{ target_user.name }}</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">{{ target_user.name }}</h1>
+        <p class="page-subtitle">{{ target_user.email }}</p>
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-secondary">Reset Password</button>
+        <button class="btn btn-danger">Suspend User</button>
+    </div>
+</div>
+
+<div class="card mb-6">
+    <div class="card-header">
+        <h3 class="card-title">Profile Details</h3>
+    </div>
+    <div class="card-body">
+        <div class="grid d-flex gap-4" style="display: grid; grid-template-columns: 1fr 1fr;">
+            <div>
+                <label class="text-secondary text-sm">Role</label>
+                <div class="font-medium mt-1">{{ target_user.role|capitalize }}</div>
+            </div>
+            <div>
+                <label class="text-secondary text-sm">Company</label>
+                <div class="font-medium mt-1">{{ target_user.company_name|default('None') }}</div>
+            </div>
+            <div>
+                <label class="text-secondary text-sm">User ID</label>
+                <div class="font-mono text-sm mt-1">{{ target_user.id }}</div>
+            </div>
+            <div>
+                <label class="text-secondary text-sm">Joined</label>
+                <div class="font-medium mt-1">{{ target_user.created_at|format_datetime('short') }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Workflow Activations</h3>
+    </div>
+    <div class="table-wrapper border-0 radius-lg">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Workflow</th>
+                    <th>Status</th>
+                    <th>Activated At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if activations %}
+                {% for act in activations %}
+                <tr>
+                    <td>{{ act.workflow_name|default(act.workflow_id) }}</td>
+                    <td>
+                        {% if act.is_active %}
+                        <span class="badge badge-success">Active</span>
+                        {% else %}
+                        <span class="badge badge-neutral">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-secondary">{{ act.created_at|format_datetime('short') }}</td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="3" class="text-center p-4 text-secondary">No workflows activated</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

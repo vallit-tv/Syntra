@@ -1,0 +1,82 @@
+{% extends "admin/v2/base.html" %}
+
+{% block title %}Companies (Admin) – Syntra{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumb-item">
+    <i data-lucide="shield" width="14" height="14"></i>
+    <a href="{{ url_for('admin_dashboard') }}" class="breadcrumb-link">Admin</a>
+</div>
+<span class="breadcrumb-separator">/</span>
+<div class="breadcrumb-item">
+    <span>Companies</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Companies</h1>
+        <p class="page-subtitle">Manage client organizations</p>
+    </div>
+    <div class="d-flex gap-2">
+        <div class="search-box relative">
+            <i data-lucide="search" width="14" class="absolute left-3 top-1/2 -translate-y-1/2 text-secondary"></i>
+            <input type="text" id="companySearch" class="form-input pl-8" placeholder="Search companies..."
+                style="padding-left: 32px;">
+        </div>
+        <button class="btn btn-primary">
+            <i data-lucide="plus" width="16"></i>
+            Add Company
+        </button>
+    </div>
+</div>
+
+<div class="card">
+    <div class="table-wrapper border-0 radius-lg">
+        <table class="table" id="companiesTable">
+            <thead>
+                <tr>
+                    <th>Company</th>
+                    <th>Slug</th>
+                    <th>Members</th>
+                    <th>Workflows</th>
+                    <th>Created</th>
+                    <th class="text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if companies %}
+                {% for company in companies %}
+                <tr class="company-row" data-name="{{ company.name|lower }}" data-slug="{{ company.slug|lower }}">
+                    <td>
+                        <div class="d-flex items-center gap-2">
+                            <div class="bg-tertiary rounded-md p-1 flex-center w-8 h-8 font-bold">
+                                {{ company.name[0]|upper }}
+                            </div>
+                            <span class="font-medium">{{ company.name }}</span>
+                        </div>
+                    </td>
+                    <td class="text-mono text-secondary">{{ company.slug }}</td>
+                    <td>{{ company.member_count|default(0) }}</td>
+                    <td>{{ company.workflow_count|default(0) }}</td>
+                    <td class="text-secondary">{{ company.created_at|format_datetime('short') }}</td>
+                    <td class="text-right">
+                        <div class="d-flex justify-end gap-2">
+                            <button class="btn btn-ghost btn-sm"><i data-lucide="edit-3" width="14"></i></button>
+                            <button class="btn btn-ghost btn-sm text-danger"><i data-lucide="trash-2"
+                                    width="14"></i></button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center p-8 text-secondary">No companies found.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

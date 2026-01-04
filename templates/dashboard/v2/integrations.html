@@ -1,0 +1,100 @@
+{% extends "dashboard/v2/base.html" %}
+
+{% block title %}Integrations – Syntra{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumb-item">
+    <i data-lucide="layout-dashboard" width="14" height="14"></i>
+    <a href="{{ url_for('dashboard_overview') }}" class="breadcrumb-link">Overview</a>
+</div>
+<span class="breadcrumb-separator">/</span>
+<div class="breadcrumb-item">
+    <span>Integrations</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Integrations</h1>
+        <p class="page-subtitle">Connect Syntra with your favorite tools</p>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <!-- N8N Integration Card -->
+    <div class="card" style="grid-column: span 2;">
+        <div class="card-header">
+            <div class="d-flex items-center gap-4">
+                <div
+                    style="width: 40px; height: 40px; background: #FF6B6B; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700;">
+                    n8n</div>
+                <div>
+                    <h3 class="card-title">n8n Workflow Automation</h3>
+                    <p class="text-secondary" style="font-size: 13px; margin: 0;">Connect your n8n instance to sync
+                        workflows</p>
+                </div>
+            </div>
+            <div>
+                {% if n8n_status.connected %}
+                <span class="badge badge-success">Connected</span>
+                {% else %}
+                <span class="badge badge-neutral">Not Connected</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card-body">
+            {% if n8n_status.connected %}
+            <div class="form-group">
+                <label class="form-label">Instance URL</label>
+                <div class="d-flex gap-2">
+                    <input type="text" value="{{ n8n_config.url }}" class="form-input" readonly disabled>
+                    <a href="{{ n8n_config.url }}" target="_blank" class="btn btn-secondary">Open</a>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Webhook URL</label>
+                <div class="d-flex gap-2">
+                    <input type="text" value="{{ webhook_url }}" class="form-input" readonly>
+                    <!-- Add Copy button logic later -->
+                </div>
+            </div>
+            <div class="d-flex gap-2 mt-4">
+                <form method="POST" action="{{ url_for('sync_workflows') }}">
+                    <button type="submit" class="btn btn-primary">
+                        <i data-lucide="refresh-cw" width="16" height="16"></i>
+                        Sync Workflows
+                    </button>
+                </form>
+                <a href="{{ url_for('dashboard_settings') }}" class="btn btn-secondary">Configure</a>
+            </div>
+            {% else %}
+            <p class="text-secondary mb-4">
+                To enable automation features, you need to connect a self-hosted or cloud n8n instance.
+                You'll need your instance URL and an API key.
+            </p>
+            <a href="{{ url_for('dashboard_settings') }}" class="btn btn-primary">Connect n8n</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Placeholder for other integrations -->
+    <div class="card opacity-50">
+        <div class="card-header">
+            <div class="d-flex items-center gap-4">
+                <div
+                    style="width: 40px; height: 40px; background: #10a37f; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white;">
+                    <i data-lucide="bot" width="24" height="24"></i>
+                </div>
+                <div>
+                    <h3 class="card-title">OpenAI</h3>
+                    <p class="text-secondary" style="font-size: 13px; margin: 0;">Coming Soon</p>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <p class="text-secondary">Native integration for AI model configuration.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

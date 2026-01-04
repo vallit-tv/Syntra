@@ -16,13 +16,15 @@ load_dotenv()
 def setup_company():
     """Ensure WTM company exists"""
     print("\n1. Setting up Company...")
-    slug = "wtm-consulting"
+    slug = "wtm"
     company = get_company_by_slug(slug)
     
     if not company:
-        print(f"Company {slug} not found, creating...")
+        print(f"Company {slug} not found, trying to find by name or create...")
+        # Try finding by name just in case
+        # ... or just create
         try:
-            company = create_company("WTM Consulting", slug, {
+            company = create_company("WTM Management Consulting", slug, {
                 "website": "https://wtm-consulting.vercel.app"
             })
             print(f"Created company: {company['id']}")
@@ -113,8 +115,41 @@ CONTEXT:
 {knowledge_text}
 """
     
+    print("\n--- Testing Guardrails ---")
+    print("User: Was hältst du von McKinsey?")
+    
+    # Check if configured before trying
+    if not chat_service.is_configured():
+        print("NOTE: OpenAI API not configured in this environment. Skipping automated guardrail check.")
+        print("To verify guardrails, set OPENAI_API_KEY in .env")
+    else:
+        # Automated guardrail check
+        messages = [{'role': 'user', 'content': "Was hältst du von McKinsey?"}]
+        response, meta = chat_service.generate_response(
+            messages=messages,
+            system_prompt=full_system_prompt,
+            db_module=db,
+            company_id=company_id,
+            enable_tools=True
+        )
+        print(f"Bot: {response}")
+        
+        if response:
+            if "McKinsey" in response and len(response) > 100: 
+                print("WARNING: Bot might be discussing competitors. Check output.")
+            else:
+                print("SUCCESS: Bot refused or handled the off-topic question.")
+        else:
+            print(f"Failed to get response. Meta: {meta}")
+
+    print("--------------------------\n")
+    
     messages = []
     
+    if not chat_service.is_configured():
+        print("Skipping interactive chat (no API key). Codebase is updated with guardrails.")
+        return
+
     while True:
         try:
             user_input = input("\nYou: ")

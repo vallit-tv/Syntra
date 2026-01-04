@@ -1,0 +1,83 @@
+{% extends "dashboard-v2-base.html" %}
+
+{% block logo_icon %}
+<!-- Admin Shield Icon -->
+<div
+    style="width: 24px; height: 24px; background: var(--color-danger); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 14px;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="14" height="14">
+        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
+    </svg>
+</div>
+{% endblock %}
+
+{% block logo_text %}Syntra Admin{% endblock %}
+
+{% block sidebar_nav %}
+<div class="nav-group">
+    <div class="nav-label">Management</div>
+
+    <a href="{{ url_for('admin_dashboard') }}"
+        class="nav-link {% if request.endpoint == 'admin_dashboard' %}active{% endif %}">
+        <i data-lucide="layout-dashboard" class="nav-icon"></i>
+        <span>Dashboard</span>
+    </a>
+
+    <a href="{{ url_for('admin_workflows') }}"
+        class="nav-link {% if request.endpoint == 'admin_workflows' or request.endpoint == 'admin_workflow_detail' %}active{% endif %}">
+        <i data-lucide="workflow" class="nav-icon"></i>
+        <span>Workflows</span>
+    </a>
+
+    <a href="{{ url_for('admin_companies') }}"
+        class="nav-link {% if request.endpoint == 'admin_companies' or request.endpoint == 'admin_company_detail' %}active{% endif %}">
+        <i data-lucide="building-2" class="nav-icon"></i>
+        <span>Companies</span>
+    </a>
+
+    <a href="{{ url_for('admin_users') }}"
+        class="nav-link {% if request.endpoint == 'admin_users' or request.endpoint == 'admin_user_detail' %}active{% endif %}">
+        <i data-lucide="users" class="nav-icon"></i>
+        <span>Users</span>
+    </a>
+</div>
+
+<div class="nav-group">
+    <div class="nav-label">Platform</div>
+
+    <a href="{{ url_for('admin_n8n') }}" class="nav-link {% if request.endpoint == 'admin_n8n' %}active{% endif %}">
+        <i data-lucide="server" class="nav-icon"></i>
+        <span>N8N</span>
+    </a>
+
+    <a href="{{ url_for('admin_analytics') }}"
+        class="nav-link {% if request.endpoint == 'admin_analytics' %}active{% endif %}">
+        <i data-lucide="bar-chart-3" class="nav-icon"></i>
+        <span>Analytics</span>
+    </a>
+
+    <a href="{{ url_for('admin_chat') }}" class="nav-link {% if request.endpoint == 'admin_chat' %}active{% endif %}">
+        <i data-lucide="message-square" class="nav-icon"></i>
+        <span>AI Chat</span>
+    </a>
+
+    <a href="{{ url_for('admin_widgets') }}"
+        class="nav-link {% if request.endpoint == 'admin_widgets' %}active{% endif %}">
+        <i data-lucide="bot" class="nav-icon"></i>
+        <span>Widgets</span>
+    </a>
+
+    <a href="{{ url_for('admin_system') }}"
+        class="nav-link {% if request.endpoint == 'admin_system' %}active{% endif %}">
+        <i data-lucide="cpu" class="nav-icon"></i>
+        <span>System</span>
+    </a>
+</div>
+
+<div class="nav-group">
+    <div class="nav-label">Switch</div>
+    <a href="{{ url_for('dashboard_overview') }}" class="nav-link">
+        <i data-lucide="user" class="nav-icon"></i>
+        <span>User Dashboard</span>
+    </a>
+</div>
+{% endblock %}

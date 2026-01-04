@@ -1,0 +1,105 @@
+{% extends "admin/v2/base.html" %}
+
+{% block title %}Workflows (Admin) – Syntra{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumb-item">
+    <i data-lucide="shield" width="14" height="14"></i>
+    <a href="{{ url_for('admin_dashboard') }}" class="breadcrumb-link">Admin</a>
+</div>
+<span class="breadcrumb-separator">/</span>
+<div class="breadcrumb-item">
+    <span>Workflows</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Global Workflows</h1>
+        <p class="page-subtitle">Manage workflows across all companies</p>
+    </div>
+    <div class="search-box relative">
+        <i data-lucide="search" width="14" class="absolute left-3 top-1/2 -translate-y-1/2 text-secondary"></i>
+        <input type="text" id="workflowSearch" class="form-input pl-8" placeholder="Search global workflows..."
+            style="padding-left: 32px;">
+    </div>
+</div>
+
+<div class="card">
+    <div class="table-wrapper border-0 radius-lg">
+        <table class="table" id="workflowsTable">
+            <thead>
+                <tr>
+                    <th>Workflow</th>
+                    <th>Company</th>
+                    <th>Status</th>
+                    <th>Last Run</th>
+                    <th>Created</th>
+                    <th class="text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if workflows %}
+                {% for workflow in workflows %}
+                <tr class="workflow-row" data-name="{{ workflow.name|lower }}"
+                    data-company="{{ workflow.company_name|lower }}">
+                    <td>
+                        <div class="d-flex items-center gap-2">
+                            <div class="bg-tertiary rounded-md p-1 flex-center w-8 h-8">
+                                <i data-lucide="workflow" width="16" class="text-muted"></i>
+                            </div>
+                            <span class="font-medium">{{ workflow.name }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge badge-neutral">{{ workflow.company_name|default('No Company') }}</span>
+                    </td>
+                    <td>
+                        {% if workflow.status == 'active' %}
+                        <span class="badge badge-success">Active</span>
+                        {% else %}
+                        <span class="badge badge-neutral">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-secondary">{{ workflow.last_run|default('Never') }}</td>
+                    <td class="text-secondary">{{ workflow.created_at|format_datetime('short') }}</td>
+                    <td class="text-right">
+                        <a href="#" class="btn btn-ghost btn-sm">
+                            <i data-lucide="more-horizontal" width="14"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center p-8 text-secondary">No workflows found in system.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const searchInput = document.getElementById('workflowSearch');
+        const table = document.getElementById('workflowsTable');
+        if (searchInput && table) {
+            searchInput.addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase();
+                const rows = table.querySelectorAll('.workflow-row');
+                rows.forEach(row => {
+                    const name = row.dataset.name;
+                    const company = row.dataset.company;
+                    if (name.includes(term) || company.includes(term)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}
