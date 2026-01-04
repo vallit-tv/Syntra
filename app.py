@@ -1845,57 +1845,7 @@ def admin_n8n():
             traceback.print_exc()
             return f"<h1>Error loading n8n page</h1><p>{error_msg}</p><p>Template error: {template_error}</p>", 500
 
-@app.route('/dashboard/analytics')
-@auth.login_required
-def dashboard_analytics():
-    """Analytics page (placeholder)"""
-    try:
-        user = auth.current_user()
-        return render_template('dashboard/analytics.html', user=user)
-    except Exception as e:
-        print(f"Dashboard analytics error: {str(e)}")
-        return redirect(url_for('login'))
 
-
-@app.route('/dashboard/billing')
-@auth.login_required
-def dashboard_billing():
-    """Billing and subscription page"""
-    try:
-        user = auth.current_user()
-        # Placeholder - to be replaced with actual billing data
-        current_plan = {
-            'name': 'Free',
-            'status': 'active',
-            'price': 0,
-            'billing_cycle': 'month'
-        }
-        usage = {
-            'workflow_runs': 0,
-            'api_calls': 0,
-            'team_members': 1
-        }
-        limits = {
-            'workflow_runs': 100,
-            'api_calls': 1000,
-            'team_members': 3
-        }
-        usage_percentage = {
-            'workflow_runs': 0,
-            'api_calls': 0,
-            'team_members': 33
-        }
-        return render_template('dashboard/billing.html', 
-                             user=user,
-                             current_plan=current_plan,
-                             usage=usage,
-                             limits=limits,
-                             usage_percentage=usage_percentage,
-                             payment_method=None,
-                             invoices=[])
-    except Exception as e:
-        print(f"Dashboard billing error: {str(e)}")
-        return redirect(url_for('login'))
 
 @app.route('/logout')
 def logout():
