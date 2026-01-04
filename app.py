@@ -815,7 +815,7 @@ def dashboard_overview():
         recent_executions.sort(key=lambda x: x.get('started_at', ''), reverse=True)
         recent_executions = recent_executions[:10]
         
-        return render_template('dashboard/v2/overview.html', 
+        return render_template('dashboard/overview.html', 
                              user=user,
                              active_workflows_count=len(active_workflows),
                              api_keys_count=len(api_keys),
@@ -847,7 +847,7 @@ def dashboard_workflows():
             if workflow['is_activated']:
                 workflow['activation'] = activation_map[workflow['id']]
         
-        return render_template('dashboard/v2/workflows.html', 
+        return render_template('dashboard/workflows.html', 
                              user=user, 
                              workflows=workflows,
                              activations=activations)
@@ -941,7 +941,7 @@ def dashboard_workflow_detail(workflow_id):
             import json
             required_services = json.loads(required_services) if required_services else []
         
-        return render_template('dashboard/v2/workflow-detail.html', 
+        return render_template('dashboard/workflow-detail.html', 
                              user=user, 
                              workflow=workflow,
                              activation=activation,
@@ -961,7 +961,7 @@ def dashboard_api_keys():
     try:
         user = auth.current_user()
         api_keys = db.get_api_keys(user['id'])
-        return render_template('dashboard/v2/api-keys.html', user=user, api_keys=api_keys)
+        return render_template('dashboard/api-keys.html', user=user, api_keys=api_keys)
     except Exception as e:
         print(f"Dashboard API keys error: {str(e)}")
         return redirect(url_for('login'))
@@ -980,7 +980,7 @@ def dashboard_integrations():
         openai_keys = [k for k in db.get_api_keys(user['id']) if k.get('type', '').lower() == 'openai']
         openai_connected = len(openai_keys) > 0
         
-        return render_template('dashboard/v2/integrations.html', 
+        return render_template('dashboard/integrations.html', 
                              user=user,
                              n8n_connected=False,  # Always False for users
                              n8n_instance_url=None,
@@ -998,54 +998,10 @@ def dashboard_settings():
         user = auth.current_user()
         # Placeholder - to be replaced with actual workflow defaults from database
         workflow_defaults = {}
-        return render_template('dashboard/v2/settings.html', user=user, workflow_defaults=workflow_defaults)
+        return render_template('dashboard/settings.html', user=user, workflow_defaults=workflow_defaults)
     except Exception as e:
         print(f"Dashboard settings error: {str(e)}")
         return redirect(url_for('login'))
-
-@app.route('/dashboard/analytics')
-@auth.login_required
-def dashboard_analytics():
-    """Metrics and logs page"""
-    try:
-        user = auth.current_user()
-        # Fetch user's activations
-        activations = db.get_user_workflow_activations(user['id'])
-        executions = []
-        for act in activations:
-            execs = db.get_workflow_executions(act['id'], limit=50)
-            executions.extend(execs)
-        
-        executions.sort(key=lambda x: x.get('started_at', ''), reverse=True)
-        
-        total = len(executions)
-        success = sum(1 for e in executions if e.get('status') == 'success')
-        success_rate = int((success / total * 100) if total else 0)
-        
-        # Avg duration
-        durations = [e.get('duration_ms', 0) for e in executions if e.get('duration_ms') is not None]
-        avg_dur = int(sum(durations) / len(durations)) if durations else 0
-        
-        return render_template('dashboard/v2/analytics.html',
-                             user=user,
-                             total_executions=total,
-                             success_rate=success_rate,
-                             avg_duration=f"{avg_dur}ms",
-                             executions=executions)
-    except Exception as e:
-        print(f"Dashboard analytics error: {str(e)}")
-        return redirect(url_for('dashboard_overview'))
-
-@app.route('/dashboard/billing')
-@auth.login_required
-def dashboard_billing():
-    """Billing page"""
-    try:
-        user = auth.current_user()
-        return render_template('dashboard/v2/billing.html', user=user)
-    except Exception as e:
-        print(f"Dashboard billing error: {str(e)}")
-        return redirect(url_for('dashboard_overview'))
 
 # ============================================================================
 # ADMIN PANEL ROUTES
@@ -1054,23 +1010,8 @@ def dashboard_billing():
 @app.route('/admin')
 @auth.admin_required
 def admin_dashboard():
-    """Admin dashboard overview"""
-    try:
-        user = auth.current_user()
-        users = db.get_all_users()
-        companies = db.get_companies()
-        workflows = db.get_workflows(public_only=False)
-        executions = db.get_all_workflow_executions(limit=100)
-        
-        return render_template('admin/v2/dashboard.html',
-                             user=user,
-                             total_users=len(users),
-                             total_companies=len(companies),
-                             active_workflows_count=sum(1 for w in workflows if w.get('is_active')),
-                             total_executions=len(executions))
-    except Exception as e:
-        print(f"Admin dashboard error: {str(e)}")
-        return redirect(url_for('login'))
+    """Admin dashboard - redirect to workflows"""
+    return redirect(url_for('admin_workflows'))
 
 @app.route('/admin/workflows')
 @auth.admin_required
@@ -1132,7 +1073,7 @@ def admin_workflows():
             'synced_workflows': synced_workflows
         }
 
-        return render_template('admin/v2/workflows.html',
+        return render_template('admin/workflows.html',
                              user=user,
                              workflows=workflows,
                              n8n_configured=n8n_configured,
@@ -1156,7 +1097,7 @@ def admin_workflow_detail(workflow_id):
         # Get all executions for this workflow
         executions = db.get_all_workflow_executions(workflow_id=workflow_id, limit=100)
         
-        return render_template('admin/v2/workflow-detail.html',
+        return render_template('admin/workflow-detail.html',
                              user=user,
                              workflow=workflow,
                              executions=executions)
@@ -1206,7 +1147,7 @@ def admin_users():
             'last_created': last_created_at
         }
 
-        return render_template('admin/v2/users.html',
+        return render_template('admin/users.html',
                              user=user,
                              users=enriched_users,
                              user_stats=user_stats,
@@ -1228,7 +1169,7 @@ def admin_user_detail(user_id):
         # Get user's workflow activations
         activations = db.get_user_workflow_activations(user_id)
         
-        return render_template('admin/v2/user-detail.html',
+        return render_template('admin/user-detail.html',
                              user=user,
                              target_user=target_user,
                              activations=activations)
@@ -1281,7 +1222,7 @@ def admin_system():
             'last_execution_at': last_execution_started_at
         }
         
-        return render_template('admin/v2/system.html',
+        return render_template('admin/system.html',
                              user=user,
                              n8n_configured=n8n_configured,
                              n8n_status=n8n_status,
@@ -1312,7 +1253,7 @@ def admin_widgets():
                 if config_result.data and len(config_result.data) > 0:
                     widget_configs[company['company_id']] = config_result.data[0]
         
-        return render_template('admin/v2/widgets.html',
+        return render_template('admin/widgets.html',
                              user=user,
                              companies=companies_summaries,
                              widget_configs=widget_configs)
@@ -1514,7 +1455,7 @@ def admin_chat():
         except Exception as e:
             print(f"Error getting chat stats: {e}")
         
-        return render_template('admin/v2/chat.html',
+        return render_template('admin/chat.html',
                              user=user,
                              openai_configured=openai_configured,
                              openai_model=openai_model,
@@ -1591,7 +1532,7 @@ def admin_analytics():
             'failure_rate': failure_rate
         }
         
-        return render_template('admin/v2/analytics.html',
+        return render_template('admin/analytics.html',
                              user=user,
                              executions=all_executions,
                              execution_stats=execution_stats,
@@ -1661,7 +1602,7 @@ def admin_companies():
             'without_ceo': total_companies - companies_with_ceo
         }
 
-        return render_template('admin/v2/companies.html',
+        return render_template('admin/companies.html',
                              user=user,
                              companies=enriched_companies,
                              company_stats=company_stats)
@@ -1714,7 +1655,7 @@ def admin_company_detail(company_id):
             'last_execution': last_execution_at
         }
         
-        return render_template('admin/v2/company-detail.html',
+        return render_template('admin/company-detail.html',
                              user=user,
                              company=company,
                              members=company_users,
@@ -1810,7 +1751,7 @@ def admin_n8n():
             connected, message = n8n_service.test_connection()
             n8n_status = {'connected': connected, 'message': message}
         
-        return render_template('admin/v2/n8n.html',
+        return render_template('admin/n8n.html',
                              user=user,
                              n8n_configured=n8n_configured,
                              n8n_url=n8n_url,
@@ -1830,7 +1771,7 @@ def admin_n8n():
                 pass
         # Return page with error message instead of redirect
         try:
-            return render_template('admin/v2/n8n.html',
+            return render_template('admin/n8n.html',
                                  user=user,
                                  n8n_configured=n8n_configured,
                                  n8n_url=n8n_url,
@@ -1845,7 +1786,57 @@ def admin_n8n():
             traceback.print_exc()
             return f"<h1>Error loading n8n page</h1><p>{error_msg}</p><p>Template error: {template_error}</p>", 500
 
+@app.route('/dashboard/analytics')
+@auth.login_required
+def dashboard_analytics():
+    """Analytics page (placeholder)"""
+    try:
+        user = auth.current_user()
+        return render_template('dashboard/analytics.html', user=user)
+    except Exception as e:
+        print(f"Dashboard analytics error: {str(e)}")
+        return redirect(url_for('login'))
 
+
+@app.route('/dashboard/billing')
+@auth.login_required
+def dashboard_billing():
+    """Billing and subscription page"""
+    try:
+        user = auth.current_user()
+        # Placeholder - to be replaced with actual billing data
+        current_plan = {
+            'name': 'Free',
+            'status': 'active',
+            'price': 0,
+            'billing_cycle': 'month'
+        }
+        usage = {
+            'workflow_runs': 0,
+            'api_calls': 0,
+            'team_members': 1
+        }
+        limits = {
+            'workflow_runs': 100,
+            'api_calls': 1000,
+            'team_members': 3
+        }
+        usage_percentage = {
+            'workflow_runs': 0,
+            'api_calls': 0,
+            'team_members': 33
+        }
+        return render_template('dashboard/billing.html', 
+                             user=user,
+                             current_plan=current_plan,
+                             usage=usage,
+                             limits=limits,
+                             usage_percentage=usage_percentage,
+                             payment_method=None,
+                             invoices=[])
+    except Exception as e:
+        print(f"Dashboard billing error: {str(e)}")
+        return redirect(url_for('login'))
 
 @app.route('/logout')
 def logout():
