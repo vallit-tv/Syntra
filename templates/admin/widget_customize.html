@@ -104,6 +104,85 @@
             </div>
         </div>
 
+        <!-- Knowledge Base Manager Card -->
+        <div class="dashboard-card">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <h2 class="card-title">📚 Knowledge Base</h2>
+                <button type="button" onclick="toggleAddKnowledgeForm()" class="btn btn-sm btn-secondary"
+                    style="font-size: 0.8rem;">+ Add Entry</button>
+            </div>
+            <div class="card-body">
+                <p style="color: #6b7280; font-size: 0.875rem; margin-bottom: 1rem;">
+                    Manage the explicit knowledge available to your bot.
+                </p>
+
+                <!-- Add New Entry Form -->
+                <div id="addKnowledgeForm"
+                    style="display: none; background: #f9fafb; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #e5e7eb;">
+                    <h3 style="font-size: 0.95rem; font-weight: 600; margin-bottom: 1rem; color: #374151;">New Knowledge
+                        Entry</h3>
+
+                    <div class="form-group">
+                        <label class="form-label" style="font-size: 0.8rem;">Title / Question</label>
+                        <input type="text" id="kbTitle" placeholder="e.g., What are your opening hours?"
+                            class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" style="font-size: 0.8rem;">Content / Answer</label>
+                        <textarea id="kbContent" rows="3" placeholder="The detailed answer or information..."
+                            class="form-textarea"></textarea>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label" style="font-size: 0.8rem;">Category</label>
+                            <input type="text" id="kbCategory" placeholder="e.g., General" class="form-input"
+                                list="categoryList">
+                            <datalist id="categoryList"></datalist>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" style="font-size: 0.8rem;">Type</label>
+                            <select id="kbType" class="form-select">
+                                <option value="text">General Text</option>
+                                <option value="faq">FAQ</option>
+                                <option value="instruction">Instruction</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" style="font-size: 0.8rem;">Tags (comma separated)</label>
+                        <input type="text" id="kbTags" placeholder="e.g., hours, contact, support" class="form-input">
+                    </div>
+
+                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem;">
+                        <button type="button" onclick="toggleAddKnowledgeForm()"
+                            class="btn btn-sm btn-outline">Cancel</button>
+                        <button type="button" onclick="saveKnowledgeEntry()" class="btn btn-sm btn-primary">Save
+                            Entry</button>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                    <input type="text" id="kbSearch" placeholder="Search knowledge..." class="form-input"
+                        style="padding: 0.4rem 0.8rem; font-size: 0.875rem;" onkeyup="filterKnowledgeList()">
+                    <select id="kbCategoryFilter" class="form-select"
+                        style="width: auto; padding: 0.4rem 2rem 0.4rem 0.8rem; font-size: 0.875rem;"
+                        onchange="filterKnowledgeList()">
+                        <option value="">All Categories</option>
+                    </select>
+                </div>
+
+                <!-- Knowledge List -->
+                <div id="knowledgeList"
+                    style="max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem;">
+                    <div style="text-align: center; color: #6b7280; padding: 2rem;">Loading knowledge entries...</div>
+                </div>
+            </div>
+        </div>
+
         <!-- Branding Card -->
         <div class="dashboard-card">
             <div class="card-header">
@@ -378,6 +457,180 @@
 
     // Character counter for bot instructions
     document.getElementById('botInstructions').addEventListener('input', updateCharCount);
+
+
+    // Knowledge Base Management
+    let allKnowledge = [];
+
+    function toggleAddKnowledgeForm() {
+        const form = document.getElementById('addKnowledgeForm');
+        form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        if (form.style.display === 'block') {
+            document.getElementById('kbTitle').focus();
+        }
+    }
+
+    async function loadKnowledge() {
+        const listContainer = document.getElementById('knowledgeList');
+        const categoryFilter = document.getElementById('kbCategoryFilter');
+        const categoryList = document.getElementById('categoryList');
+
+        try {
+            const response = await fetch(`/api/admin/companies/{{ company.id }}/knowledge`);
+            const data = await response.json();
+
+            if (data.entries) {
+                allKnowledge = data.entries;
+
+                // Update Categories
+                const categories = new Set(data.categories || []);
+                allKnowledge.forEach(k => { if (k.category) categories.add(k.category); });
+
+                categoryFilter.innerHTML = '<option value="">All Categories</option>';
+                categoryList.innerHTML = '';
+
+                categories.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat;
+                    option.textContent = cat;
+                    categoryFilter.appendChild(option);
+
+                    const dlOption = document.createElement('option');
+                    dlOption.value = cat;
+                    categoryList.appendChild(dlOption);
+                });
+
+                renderKnowledgeList(allKnowledge);
+            }
+        } catch (error) {
+            console.error('Error loading knowledge:', error);
+            listContainer.innerHTML = '<div style="text-align: center; color: #ef4444; padding: 1rem;">Failed to load knowledge</div>';
+        }
+    }
+
+    function renderKnowledgeList(entries) {
+        const listContainer = document.getElementById('knowledgeList');
+        listContainer.innerHTML = '';
+
+        if (entries.length === 0) {
+            listContainer.innerHTML = '<div style="text-align: center; color: #9ca3af; padding: 1rem;">No knowledge entries found.</div>';
+            return;
+        }
+
+        entries.forEach(entry => {
+            const item = document.createElement('div');
+            item.style.cssText = 'background: #fff; padding: 1rem; border-radius: 6px; border: 1px solid #e5e7eb; transition: all 0.2s;';
+            item.className = 'kb-item';
+
+            const tagsHtml = (entry.tags || []).map(tag =>
+                `<span style="background: #f3f4f6; color: #374151; padding: 0.1rem 0.4rem; border-radius: 4px; font-size: 0.75rem; margin-right: 0.25rem;">#${tag}</span>`
+            ).join('');
+
+            item.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                    <div>
+                        <div style="font-weight: 600; font-size: 0.95rem; color: #111827;">${entry.title}</div>
+                        <div style="font-size: 0.75rem; color: #6b7280; margin-top: 0.1rem;">
+                            ${entry.category ? `<span style="color: #4f46e5; font-weight: 500;">${entry.category}</span> • ` : ''}
+                            ${entry.type || 'text'}
+                        </div>
+                    </div>
+                    <button onclick="deleteKnowledgeEntry('${entry.id}')" style="background: none; border: none; cursor: pointer; color: #9ca3af; font-size: 1.1rem; padding: 0.2rem;" title="Delete">
+                        ✕
+                    </button>
+                </div>
+                <div style="font-size: 0.875rem; color: #4b5563; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+                    ${entry.content}
+                </div>
+                <div style="margin-top: 0.5rem;">
+                    ${tagsHtml}
+                </div>
+            `;
+            listContainer.appendChild(item);
+        });
+    }
+
+    function filterKnowledgeList() {
+        const query = document.getElementById('kbSearch').value.toLowerCase();
+        const category = document.getElementById('kbCategoryFilter').value;
+
+        const filtered = allKnowledge.filter(entry => {
+            const matchesQuery = !query ||
+                (entry.title && entry.title.toLowerCase().includes(query)) ||
+                (entry.content && entry.content.toLowerCase().includes(query)) ||
+                (entry.tags && entry.tags.some(t => t.toLowerCase().includes(query)));
+
+            const matchesCategory = !category || entry.category === category;
+
+            return matchesQuery && matchesCategory;
+        });
+
+        renderKnowledgeList(filtered);
+    }
+
+    async function saveKnowledgeEntry() {
+        const title = document.getElementById('kbTitle').value;
+        const content = document.getElementById('kbContent').value;
+        const category = document.getElementById('kbCategory').value;
+        const type = document.getElementById('kbType').value;
+        const tagsStr = document.getElementById('kbTags').value;
+
+        if (!title || !content) {
+            alert('Title and Content are required');
+            return;
+        }
+
+        const tags = tagsStr.split(',').map(t => t.trim()).filter(t => t);
+
+        try {
+            const response = await fetch(`/api/admin/companies/{{ company.id }}/knowledge`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title, content, category, type, tags
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Reset form
+                document.getElementById('kbTitle').value = '';
+                document.getElementById('kbContent').value = '';
+                document.getElementById('kbTags').value = '';
+                toggleAddKnowledgeForm();
+
+                // Reload list
+                loadKnowledge();
+            } else {
+                alert('Error: ' + (result.error || 'Failed to save'));
+            }
+        } catch (error) {
+            console.error('Error saving:', error);
+            alert('Failed to save entry');
+        }
+    }
+
+    async function deleteKnowledgeEntry(id) {
+        if (!confirm('Are you sure you want to delete this knowledge entry?')) return;
+
+        try {
+            const response = await fetch(`/api/admin/companies/{{ company.id }}/knowledge/${id}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                loadKnowledge();
+            } else {
+                alert('Failed to delete entry');
+            }
+        } catch (error) {
+            alert('Error deleting entry');
+        }
+    }
+
+    // Initial Load
+    loadKnowledge();
 
     loadSettings();
 </script>

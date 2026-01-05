@@ -1413,6 +1413,125 @@ def admin_update_widget_config(company_id):
         print(f"Update widget config error: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
+
+# Knowledge Base API Routes
+from bot.knowledge import KnowledgeBase
+kb_manager = KnowledgeBase(db)
+
+@app.route('/api/admin/companies/<company_id>/knowledge', methods=['GET'])
+@auth.admin_required
+def api_get_company_knowledge(company_id):
+    """Get knowledge entries for a company"""
+    try:
+        category = request.args.get('category')
+        tags = request.args.getlist('tags')
+        query = request.args.get('q')
+        
+        entries = kb_manager.get_knowledge(company_id, limit=100, category=category, tags=tags, query=query)
+        categories = kb_manager.get_categories(company_id)
+        
+        return jsonify({
+            'entries': entries,
+            'categories': categories
+        })
+    except Exception as e:
+        print(f"Get knowledge error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/admin/companies/<company_id>/knowledge', methods=['POST'])
+@auth.admin_required
+def api_add_company_knowledge(company_id):
+    """Add knowledge entry"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+            
+        entry = kb_manager.add_knowledge(
+            company_id=company_id,
+            title=data.get('title'),
+            content=data.get('content'),
+            source_url=data.get('source_url'),
+            category=data.get('category'),
+            tags=data.get('tags'), # Expecting list
+            type=data.get('type', 'text'),
+            metadata=data.get('metadata')
+        )
+        
+        if entry:
+            return jsonify({'success': True, 'entry': entry})
+        return jsonify({'error': 'Failed to add entry'}), 500
+    except Exception as e:
+        print(f"Add knowledge error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/admin/companies/<company_id>/knowledge/<entry_id>', methods=['PUT'])
+@auth.admin_required
+def api_update_company_knowledge(company_id, entry_id):
+    """Update knowledge entry"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+            
+        # Clean up data to only include valid fields if necessary, or trust kb_manager to handle (it does generic update)
+        allowed_fields = ['title', 'content', 'source_url', 'category', 'tags', 'type', 'metadata', 'is_active']
+        updates = {k: v for k, v in data.items() if k in allowed_fields}
+        
+        entry = kb_manager.update_knowledge(entry_id, updates)
+        
+        if entry:
+            return jsonify({'success': True, 'entry': entry})
+        return jsonify({'error': 'Failed to update entry'}), 500
+    except Exception as e:
+        print(f"Update knowledge error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/admin/companies/<company_id>/knowledge/<entry_id>', methods=['DELETE'])
+@auth.admin_required
+def api_delete_company_knowledge(company_id, entry_id):
+    """Delete knowledge entry"""
+    try:
+        success = kb_manager.delete_knowledge(entry_id)
+        if success:
+            return jsonify({'success': True})
+        return jsonify({'error': 'Failed to delete entry'}), 500
+    except Exception as e:
+        print(f"Delete knowledge error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/admin/companies/<company_id>/scrape', methods=['POST'])
+@auth.admin_required
+def api_scrape_company_website(company_id):
+    """Scrape website and add to knowledge base"""
+    try:
+        data = request.get_json()
+        url = data.get('url')
+        if not url:
+            return jsonify({'error': 'URL is required'}), 400
+            
+        scraper = SimpleScraper()
+        results = scraper.scrape_url(url, max_pages=10, max_depth=1)
+        
+        count = 0
+        for result in results:
+            if result.get('status') == 'success':
+                kb_manager.add_knowledge(
+                    company_id=company_id,
+                    title=result.get('title', url),
+                    content=result.get('content', ''),
+                    source_url=result.get('url'),
+                    category='Website',
+                    tags=['scraped'],
+                    type='webpage'
+                )
+                count += 1
+                
+        return jsonify({'success': True, 'pages_count': count, 'results': results})
+    except Exception as e:
+        print(f"Scrape error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/admin/chat')
 @auth.admin_required
 def admin_chat():
