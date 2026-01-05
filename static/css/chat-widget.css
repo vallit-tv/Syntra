@@ -523,6 +523,58 @@
 }
 
 /* ============================================================================
+   History View
+   ============================================================================ */
+
+.syntra-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px 16px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.syntra-history-item {
+    padding: 12px;
+    border-radius: var(--syntra-radius-sm);
+    background: var(--syntra-bg-secondary);
+    border: 1px solid var(--syntra-border);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.syntra-history-item:hover {
+    background: var(--syntra-bg);
+    border-color: var(--syntra-primary);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.syntra-history-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--syntra-text-secondary);
+    margin-bottom: 4px;
+}
+
+.syntra-history-preview {
+    font-size: 13px;
+    color: var(--syntra-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.syntra-empty-history {
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--syntra-text-secondary);
+    font-size: 13px;
+}
+
+/* ============================================================================
    THEME: Minimal
    ============================================================================ */
 
@@ -568,6 +620,15 @@
 }
 
 .syntra-theme-minimal .syntra-close-btn:hover {
+    background: #f4f4f5;
+}
+
+.syntra-theme-minimal .syntra-reset-btn {
+    background: transparent;
+    color: var(--syntra-text-secondary);
+}
+
+.syntra-theme-minimal .syntra-reset-btn:hover {
     background: #f4f4f5;
 }
 

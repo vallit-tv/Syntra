@@ -209,6 +209,21 @@
                         <div class="syntra-messages-container"></div>
                     </div>
 
+                    <!-- History Area (Hidden by default) -->
+                    <div class="syntra-history-view" style="display: none;">
+                        <div class="syntra-history-header">
+                            <h3>Chat History</h3>
+                            <button class="syntra-close-history-btn" aria-label="Close history">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"/>
+                                    <line x1="6" y1="6" x2="18" y2="18"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="syntra-history-list"></div>
+                        <div class="syntra-empty-history" style="display: none;">No previous chats found.</div>
+                    </div>
+
                     <!-- Input Area -->
                     <div class="syntra-input-area">
                         <form class="syntra-input-form">
@@ -251,13 +266,12 @@
                                 </svg>
                                 Start New Chat
                             </div>
-                            <!-- Future: View History Item -->
                             <div class="syntra-menu-item" data-action="view-history">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <circle cx="12" cy="12" r="10"/>
                                     <polyline points="12 6 12 12 16 14"/>
                                 </svg>
-                                History (Coming Soon)
+                                History
                             </div>
                         </div>
                     </div>
@@ -288,13 +302,17 @@
             this.closeBtn = this.container.querySelector('.syntra-close-btn');
             this.resetBtn = this.container.querySelector('.syntra-reset-btn');
 
-            // Overlays
             this.menuOverlay = this.container.querySelector('.syntra-overlay-menu');
             this.modalBackdrop = this.container.querySelector('.syntra-modal-backdrop');
             this.modalTitle = this.container.querySelector('.syntra-modal-title');
             this.modalText = this.container.querySelector('.syntra-modal-text');
             this.modalConfirmBtn = this.container.querySelector('[data-action="confirm"]');
             this.modalCancelBtn = this.container.querySelector('[data-action="cancel"]');
+
+            // History elements
+            this.historyView = this.container.querySelector('.syntra-history-view');
+            this.historyList = this.container.querySelector('.syntra-history-list');
+            this.closeHistoryBtn = this.container.querySelector('.syntra-close-history-btn');
 
             this.currentModalResolve = null;
         }
@@ -334,8 +352,14 @@
             const historyBtn = this.container.querySelector('[data-action="view-history"]');
             if (historyBtn) {
                 historyBtn.addEventListener('click', () => {
-                    // Todo: Implement history view
-                    alert('History feature coming soon!');
+                    this.closeMenu();
+                    this.toggleHistory(true);
+                });
+            }
+
+            if (this.closeHistoryBtn) {
+                this.closeHistoryBtn.addEventListener('click', () => {
+                    this.toggleHistory(false);
                 });
             }
 
@@ -471,7 +495,10 @@
                 this.messages = [];
                 // Add loading indicator? No, just clear.
 
-                // Call API to reset/close old session
+                // Save current session to history before reset
+                this.saveHistory();
+
+                // Call API to reset/close old sessoion
                 const response = await fetch(`${this.config.apiUrl}/api/chat/reset`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -479,6 +506,10 @@
                 });
 
                 const data = await response.json();
+
+                // Clear current messages
+                this.messagesContainer.innerHTML = '';
+                this.messages = [];
 
                 if (data.status === 'success' && data.new_session_id) {
                     this.sessionId = data.new_session_id;
@@ -497,7 +528,11 @@
             } catch (e) {
                 console.error('Error resetting chat:', e);
                 // Fallback local reset
-                this.clearHistory();
+
+                // Save first
+                this.saveHistory();
+
+                this.clearHistory(); // This clears current session not storage
                 if (this.config.welcomeMessage) {
                     this.addMessage('assistant', this.config.welcomeMessage, true);
                 }
@@ -600,6 +635,9 @@
 
             this.messages.push(message);
             this.renderMessage(message, animate);
+
+            // Auto-save history on message
+            this.saveHistory();
         }
 
         renderMessage(message, animate = true) {
@@ -674,6 +712,145 @@
                 }
             } catch (error) {
                 console.log('No previous chat history or failed to load');
+            }
+        }
+
+        // =====================================================================
+        // History Management
+        // =====================================================================
+
+        saveHistory() {
+            if (this.messages.length === 0) return;
+
+            const history = this.getHistory();
+            const existingIndex = history.findIndex(h => h.id === this.sessionId);
+
+            // Get last message preview
+            const lastMsg = this.messages[this.messages.length - 1];
+            let preview = 'No messages';
+            if (lastMsg) {
+                preview = lastMsg.content.substring(0, 60) + (lastMsg.content.length > 60 ? '...' : '');
+            }
+
+            const sessionData = {
+                id: this.sessionId,
+                timestamp: new Date().toISOString(),
+                preview: preview,
+                messages: this.messages,
+                widgetId: this.config.widgetId
+            };
+
+            if (existingIndex >= 0) {
+                history[existingIndex] = sessionData;
+            } else {
+                history.unshift(sessionData); // Add to top
+            }
+
+            // Limit history size (e.g., 20 sessions)
+            if (history.length > 20) {
+                history.pop();
+            }
+
+            try {
+                localStorage.setItem('syntra_chat_history', JSON.stringify(history));
+            } catch (e) {
+                console.warn('Failed to save history to localStorage', e);
+            }
+        }
+
+        getHistory() {
+            try {
+                const stored = localStorage.getItem('syntra_chat_history');
+                return stored ? JSON.parse(stored) : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        renderHistory() {
+            const history = this.getHistory();
+            this.historyList.innerHTML = '';
+
+            if (history.length === 0) {
+                this.container.querySelector('.syntra-empty-history').style.display = 'block';
+                return;
+            }
+
+            this.container.querySelector('.syntra-empty-history').style.display = 'none';
+
+            history.forEach(session => {
+                const item = document.createElement('div');
+                item.className = 'syntra-history-item';
+
+                // Check if active
+                if (session.id === this.sessionId) {
+                    item.style.borderColor = 'var(--syntra-primary)';
+                    item.style.background = 'var(--syntra-bg)';
+                }
+
+                const date = new Date(session.timestamp).toLocaleDateString() + ' ' +
+                    new Date(session.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                item.innerHTML = `
+                    <div class="syntra-history-meta">
+                        <span>${date}</span>
+                    </div>
+                    <div class="syntra-history-preview">
+                        ${escapeHtml(session.preview)}
+                    </div>
+                `;
+
+                item.addEventListener('click', () => {
+                    this.loadSession(session);
+                });
+
+                this.historyList.appendChild(item);
+            });
+        }
+
+        loadSession(session) {
+            // Save current before switching if it's different and has messages
+            if (this.sessionId !== session.id && this.messages.length > 0) {
+                this.saveHistory();
+            }
+
+            this.sessionId = session.id;
+            storeSessionId(this.sessionId);
+
+            // Clear current view
+            this.messagesContainer.innerHTML = '';
+            this.messages = []; // Will refill from session.messages
+
+            // Restore messages
+            if (session.messages && session.messages.length > 0) {
+                session.messages.forEach(msg => {
+                    this.messages.push(msg);
+                    this.renderMessage(msg, false);
+                });
+                this.scrollToBottom();
+            }
+
+            // Go back to chat view
+            this.toggleHistory(false);
+        }
+
+        toggleHistory(show) {
+            if (show) {
+                this.renderHistory();
+                this.historyView.style.display = 'flex';
+                this.historyView.style.flexDirection = 'column'; // Ensure flex
+                this.historyView.style.height = '100%';
+
+                // Hide other areas
+                this.messagesContainer.parentElement.style.display = 'none';
+                this.inputForm.parentElement.style.display = 'none';
+            } else {
+                this.historyView.style.display = 'none';
+
+                // Show chat areas
+                this.messagesContainer.parentElement.style.display = 'block';
+                this.inputForm.parentElement.style.display = 'block';
+                this.scrollToBottom();
             }
         }
 
