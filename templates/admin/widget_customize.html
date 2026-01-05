@@ -9,456 +9,95 @@
             <a href="{{ url_for('admin_widget_detail', company_id=company.id) }}"
                 style="display: inline-block; margin-bottom: 0.5rem; color: #6b7280; text-decoration: none; font-size: 0.875rem;">←
                 Back to Widget Details</a>
-            <h1 class="page-title">Customize Widget</h1>
+            <h1 class="page-title">Manage Knowledge</h1>
             <p class="page-description">{{ company.name }}</p>
         </div>
-        <button id="saveSettings" class="btn btn-primary">Save Changes</button>
     </div>
 </div>
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-    <!-- Left Column: Settings -->
-    <div>
-        <!-- Appearance Card -->
-        <div class="dashboard-card">
-            <div class="card-header">
-                <h2 class="card-title">🎨 Theme</h2>
-            </div>
-            <div class="card-body">
-                <div class="form-group">
-                    <label class="form-label">Widget Theme</label>
-                    <select id="theme" class="form-select">
-                        <option value="glassmorphism">Glassmorphism (Recommended)</option>
-                        <option value="minimal">Minimal</option>
-                        <option value="corporate">Corporate</option>
-                        <option value="playful">Playful</option>
-                    </select>
-                    <small style="display: block; margin-top: 0.5rem; color: #6b7280;">
-                        Each theme comes with predefined colors and styling. The widget will appear in the bottom-right
-                        corner.
-                    </small>
-                </div>
+<div style="max-width: 1000px; margin: 0 auto;">
+    <!-- Customization UI removed per user request (code-based configuration preferred) -->
 
-            </div>
-        </div>
-
-        <!-- Content Card -->
-        <div class="dashboard-card">
-            <div class="card-header">
-                <h2 class="card-title">✏️ Content</h2>
-            </div>
-            <div class="card-body">
-                <div class="form-group">
-                    <label class="form-label">Header Title</label>
-                    <input type="text" id="headerTitle" value="AI Assistant" class="form-input">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Welcome Message</label>
-                    <textarea id="welcomeMessage" rows="3"
-                        class="form-textarea">Hi! 👋 I'm your AI assistant. How can I help you today?</textarea>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Placeholder Text</label>
-                    <input type="text" id="placeholderText" value="Type your message..." class="form-input">
-                </div>
-            </div>
-        </div>
-
-        <!-- Bot Knowledge & Instructions Card -->
-        <div class="dashboard-card">
-            <div class="card-header">
-                <h2 class="card-title">🤖 Bot Knowledge & Instructions</h2>
-            </div>
-            <div class="card-body">
-                <div class="form-group">
-                    <label class="form-label">Company Homepage URL</label>
-                    <div style="display: flex; gap: 0.5rem;">
-                        <input type="url" id="companyHomepage" placeholder="https://www.example.com" class="form-input"
-                            style="flex: 1;">
-                        <button id="scrapeButton" class="btn btn-secondary" style="white-space: nowrap;">
-                            🔄 Scrape & Index
-                        </button>
-                    </div>
-                    <small style="display: block; margin-top: 0.5rem; color: #6b7280;">
-                        Enter your main website URL. Any content found will be indexed to help the AI answer questions
-                        accurately.
-                    </small>
-                    <div id="scrapeStatus" style="margin-top: 0.5rem; font-size: 0.875rem; display: none;"></div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Custom AI Instructions</label>
-                    <textarea id="botInstructions" rows="8" maxlength="5000" class="form-textarea"
-                        placeholder="Enter custom instructions for the AI assistant (e.g., company info, FAQs, tone guidelines, specific expertise...)"></textarea>
-                    <small style="display: block; margin-top: 0.5rem; color: #6b7280;">
-                        These instructions will be used to customize the AI's behavior and knowledge for your specific
-                        company.
-                        For example: "You are Kian, a friendly AI assistant for WTM-Consulting. You specialize in
-                        leadership development and management consulting."
-                    </small>
-                    <small id="charCount" style="display: block; margin-top: 0.25rem; color: #9ca3af;">0 / 5000
-                        characters</small>
-                </div>
-            </div>
-        </div>
-
-        <!-- Knowledge Base Manager Card -->
-        <div class="dashboard-card">
-            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                <h2 class="card-title">📚 Knowledge Base</h2>
-                <button type="button" onclick="toggleAddKnowledgeForm()" class="btn btn-sm btn-secondary"
-                    style="font-size: 0.8rem;">+ Add Entry</button>
-            </div>
-            <div class="card-body">
-                <p style="color: #6b7280; font-size: 0.875rem; margin-bottom: 1rem;">
-                    Manage the explicit knowledge available to your bot.
-                </p>
-
-                <!-- Add New Entry Form -->
-                <div id="addKnowledgeForm"
-                    style="display: none; background: #f9fafb; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #e5e7eb;">
-                    <h3 style="font-size: 0.95rem; font-weight: 600; margin-bottom: 1rem; color: #374151;">New Knowledge
-                        Entry</h3>
-
-                    <div class="form-group">
-                        <label class="form-label" style="font-size: 0.8rem;">Title / Question</label>
-                        <input type="text" id="kbTitle" placeholder="e.g., What are your opening hours?"
-                            class="form-input">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label" style="font-size: 0.8rem;">Content / Answer</label>
-                        <textarea id="kbContent" rows="3" placeholder="The detailed answer or information..."
-                            class="form-textarea"></textarea>
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-                        <div class="form-group">
-                            <label class="form-label" style="font-size: 0.8rem;">Category</label>
-                            <input type="text" id="kbCategory" placeholder="e.g., General" class="form-input"
-                                list="categoryList">
-                            <datalist id="categoryList"></datalist>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" style="font-size: 0.8rem;">Type</label>
-                            <select id="kbType" class="form-select">
-                                <option value="text">General Text</option>
-                                <option value="faq">FAQ</option>
-                                <option value="instruction">Instruction</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label" style="font-size: 0.8rem;">Tags (comma separated)</label>
-                        <input type="text" id="kbTags" placeholder="e.g., hours, contact, support" class="form-input">
-                    </div>
-
-                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem;">
-                        <button type="button" onclick="toggleAddKnowledgeForm()"
-                            class="btn btn-sm btn-outline">Cancel</button>
-                        <button type="button" onclick="saveKnowledgeEntry()" class="btn btn-sm btn-primary">Save
-                            Entry</button>
-                    </div>
-                </div>
-
-                <!-- Filters -->
-                <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-                    <input type="text" id="kbSearch" placeholder="Search knowledge..." class="form-input"
-                        style="padding: 0.4rem 0.8rem; font-size: 0.875rem;" onkeyup="filterKnowledgeList()">
-                    <select id="kbCategoryFilter" class="form-select"
-                        style="width: auto; padding: 0.4rem 2rem 0.4rem 0.8rem; font-size: 0.875rem;"
-                        onchange="filterKnowledgeList()">
-                        <option value="">All Categories</option>
-                    </select>
-                </div>
-
-                <!-- Knowledge List -->
-                <div id="knowledgeList"
-                    style="max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem;">
-                    <div style="text-align: center; color: #6b7280; padding: 2rem;">Loading knowledge entries...</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Branding Card -->
-        <div class="dashboard-card">
-            <div class="card-header">
-                <h2 class="card-title">🏷️ Branding</h2>
-            </div>
-            <div class="card-body">
-                <p style="color: #6b7280; margin-bottom: 1rem;">
-                    All widgets display "Powered by <a href="https://vallit.net" target="_blank"
-                        style="color: var(--color-primary);">Syntra</a>" branding.
-                </p>
-
-                <div class="form-group">
-                    <label class="form-label">Custom Branding Text (optional)</label>
-                    <input type="text" id="customBranding" placeholder="e.g., Powered by Your Company"
-                        class="form-input">
-                    <small style="display: block; margin-top: 0.5rem; color: #6b7280;">
-                        Add additional branding text that will appear alongside the Syntra branding.
-                    </small>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Privacy Policy URL</label>
-                    <input type="url" id="privacyPolicyUrl" placeholder="https://vallit.net/privacy"
-                        value="https://vallit.net/privacy" class="form-input">
-                    <small style="display: block; margin-top: 0.5rem; color: #6b7280;">
-                        Link to your privacy & data protection page. Will appear as "Privacy & Data Protection" in the
-                        widget.
-                    </small>
-                </div>
-            </div>
-        </div>
-
-        <!-- Appointment Scheduling Card -->
-        <div class="dashboard-card">
-            <div class="card-header">
-                <h2 class="card-title">📅 Appointment Scheduling</h2>
-            </div>
-            <div class="card-body">
-                <div class="form-group">
-                    <label class="form-label" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                        <input type="checkbox" id="enableScheduling">
-                        Enable Appointment Scheduling
-                    </label>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Notification Email</label>
-                    <input type="email" id="schedulingEmail" placeholder="appointments@company.com" class="form-input">
-                    <small style="display: block; margin-top: 0.5rem; color: #6b7280;">
-                        Waitlist/confirmation strings will be sent here. The AI will collect Name, Email, and Preferred
-                        Time.
-                    </small>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-</div>
-
-<!-- Right Column: Preview -->
-<div>
-    <div class="dashboard-card" style="position: sticky; top: 1rem;">
-        <div class="card-header">
-            <h2 class="card-title">👁️ Live Preview</h2>
+    <!-- Knowledge Base Manager Card -->
+    <div class="dashboard-card">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <h2 class="card-title">📚 Knowledge Base</h2>
+            <button type="button" onclick="toggleAddKnowledgeForm()" class="btn btn-sm btn-secondary"
+                style="font-size: 0.8rem;">+ Add Entry</button>
         </div>
         <div class="card-body">
-            <div
-                style="background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%); border-radius: 8px; padding: 2rem; min-height: 400px; margin-bottom: 1.5rem; position: relative;">
-                <p style="text-align: center; color: #6b7280; font-size: 0.875rem; margin-bottom: 1rem;">Widget
-                    Preview</p>
-                <div id="previewWidget" style="position: absolute; bottom: 1rem; right: 1rem;"></div>
+            <p style="color: #6b7280; font-size: 0.875rem; margin-bottom: 1rem;">
+                Manage the explicit knowledge available to your bot.
+            </p>
+
+            <!-- Add New Entry Form -->
+            <div id="addKnowledgeForm"
+                style="display: none; background: #f9fafb; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #e5e7eb;">
+                <h3 style="font-size: 0.95rem; font-weight: 600; margin-bottom: 1rem; color: #374151;">New Knowledge
+                    Entry</h3>
+
+                <div class="form-group">
+                    <label class="form-label" style="font-size: 0.8rem;">Title / Question</label>
+                    <input type="text" id="kbTitle" placeholder="e.g., What are your opening hours?" class="form-input">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" style="font-size: 0.8rem;">Content / Answer</label>
+                    <textarea id="kbContent" rows="3" placeholder="The detailed answer or information..."
+                        class="form-textarea"></textarea>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label" style="font-size: 0.8rem;">Category</label>
+                        <input type="text" id="kbCategory" placeholder="e.g., General" class="form-input"
+                            list="categoryList">
+                        <datalist id="categoryList"></datalist>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" style="font-size: 0.8rem;">Type</label>
+                        <select id="kbType" class="form-select">
+                            <option value="text">General Text</option>
+                            <option value="faq">FAQ</option>
+                            <option value="instruction">Instruction</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" style="font-size: 0.8rem;">Tags (comma separated)</label>
+                    <input type="text" id="kbTags" placeholder="e.g., hours, contact, support" class="form-input">
+                </div>
+
+                <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem;">
+                    <button type="button" onclick="toggleAddKnowledgeForm()"
+                        class="btn btn-sm btn-outline">Cancel</button>
+                    <button type="button" onclick="saveKnowledgeEntry()" class="btn btn-sm btn-primary">Save
+                        Entry</button>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Embed Code</label>
-                <pre
-                    style="background: #1f2937; color: #e5e7eb; padding: 1rem; border-radius: 6px; overflow-x: auto; font-family: Monaco, monospace; font-size: 0.875rem; line-height: 1.5;"><code id="embedCodePreview">&lt;script src="{{ request.host_url.rstrip('/') }}/widget/embed.js" 
-    data-company-id="{{ company.id }}"
-    data-api-url="{{ request.host_url.rstrip('/') }}"
-    data-theme="glassmorphism"
-    data-position="bottom-right"&gt;
-&lt;/script&gt;</code></pre>
-                <button id="copyEmbedCode" class="btn btn-secondary btn-sm" style="margin-top: 0.5rem;">
-                    📋 Copy to Clipboard
-                </button>
+            <!-- Filters -->
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                <input type="text" id="kbSearch" placeholder="Search knowledge..." class="form-input"
+                    style="padding: 0.4rem 0.8rem; font-size: 0.875rem;" onkeyup="filterKnowledgeList()">
+                <select id="kbCategoryFilter" class="form-select"
+                    style="width: auto; padding: 0.4rem 2rem 0.4rem 0.8rem; font-size: 0.875rem;"
+                    onchange="filterKnowledgeList()">
+                    <option value="">All Categories</option>
+                </select>
+            </div>
+
+            <!-- Knowledge List -->
+            <div id="knowledgeList"
+                style="max-height: 500px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem;">
+                <div style="text-align: center; color: #6b7280; padding: 2rem;">Loading knowledge entries...</div>
             </div>
         </div>
     </div>
-</div>
 </div>
 
 <script>
-    const widgetSettings = {
-        appearance: {
-            theme: 'glassmorphism'
-        },
-        content: {
-            headerTitle: 'AI Assistant',
-            welcomeMessage: "Hi! 👋 I'm Kian, your AI assistant. How can I help you today?",
-            placeholderText: 'Type your message...'
-        },
-        branding: {
-            customBranding: '',
-            privacyPolicyUrl: 'https://vallit.net/privacy'
-        },
-        bot: {
-            instructions: '',
-            homepage: ''
-        }
-    };
-
-    async function loadSettings() {
-        try {
-            const response = await fetch('/api/admin/companies/{{ company.id }}/widget-settings');
-            const data = await response.json();
-            if (data.settings) {
-                // deep merge helper or just assign top level specific
-                // Careful not to overwrite if structure changes
-                if (data.settings.appearance) Object.assign(widgetSettings.appearance, data.settings.appearance);
-                if (data.settings.content) Object.assign(widgetSettings.content, data.settings.content);
-                if (data.settings.branding) Object.assign(widgetSettings.branding, data.settings.branding);
-                if (data.settings.bot) Object.assign(widgetSettings.bot, data.settings.bot);
-
-                applySettingsToForm();
-            }
-        } catch (error) {
-            console.error('Error loading settings:', error);
-        }
-    }
-
-    function applySettingsToForm() {
-        document.getElementById('theme').value = widgetSettings.appearance.theme || 'glassmorphism';
-
-        document.getElementById('headerTitle').value = widgetSettings.content.headerTitle || 'AI Assistant';
-        document.getElementById('welcomeMessage').value = widgetSettings.content.welcomeMessage || "Hi! 👋 I'm Kian, your AI assistant. How can I help you today?";
-        document.getElementById('placeholderText').value = widgetSettings.content.placeholderText || 'Type your message...';
-
-        document.getElementById('customBranding').value = widgetSettings.branding.customBranding || '';
-        document.getElementById('privacyPolicyUrl').value = widgetSettings.branding.privacyPolicyUrl || 'https://vallit.net/privacy';
-
-        document.getElementById('botInstructions').value = widgetSettings.bot?.instructions || '';
-        document.getElementById('companyHomepage').value = widgetSettings.bot?.homepage || '';
-
-        updateCharCount();
-        updatePreview();
-    }
-
-    function updateCharCount() {
-        const textarea = document.getElementById('botInstructions');
-        const charCount = document.getElementById('charCount');
-        charCount.textContent = `${textarea.value.length} / 5000 characters`;
-    }
-
-    function collectSettings() {
-        widgetSettings.appearance.theme = document.getElementById('theme').value;
-
-        widgetSettings.content.headerTitle = document.getElementById('headerTitle').value;
-        widgetSettings.content.welcomeMessage = document.getElementById('welcomeMessage').value;
-        widgetSettings.content.placeholderText = document.getElementById('placeholderText').value;
-
-        widgetSettings.branding.customBranding = document.getElementById('customBranding').value;
-        widgetSettings.branding.privacyPolicyUrl = document.getElementById('privacyPolicyUrl').value;
-
-        if (!widgetSettings.bot) widgetSettings.bot = {};
-        widgetSettings.bot.instructions = document.getElementById('botInstructions').value;
-        widgetSettings.bot.homepage = document.getElementById('companyHomepage').value;
-
-        return widgetSettings;
-    }
-
-    function updatePreview() {
-        const settings = collectSettings();
-        const embedCode = `<script src="{{ request.host_url.rstrip('/') }}/widget/embed.js" 
-    data-company-id="{{ company.id }}"
-    data-api-url="{{ request.host_url.rstrip('/') }}"
-    data-theme="${settings.appearance.theme}"
-    data-title="${settings.content.headerTitle}"
-    data-welcome-message="${settings.content.welcomeMessage}"
-    data-privacy-url="${settings.branding.privacyPolicyUrl}">
-<` + `/script>`;
-
-        document.getElementById('embedCodePreview').textContent = embedCode;
-
-        const previewHTML = `<div style="text-align: center; padding: 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white;"><div style="font-size: 24px; margin-bottom: 0.5rem;">💬</div><div style="font-size: 14px; opacity: 0.9;">Theme: ${settings.appearance.theme}</div></div>`;
-        document.getElementById('previewWidget').innerHTML = previewHTML;
-    }
-
-    async function saveSettings() {
-        const settings = collectSettings();
-        try {
-            const response = await fetch('/api/admin/companies/{{ company.id }}/widget-settings', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ settings })
-            });
-            const data = await response.json();
-            if (response.ok) {
-                alert('✅ Widget settings saved successfully!');
-            } else {
-                alert('❌ Error saving settings: ' + (data.error || 'Unknown error'));
-            }
-        } catch (error) {
-            console.error('Error saving settings:', error);
-            alert('❌ Error saving settings: ' + error.message);
-        }
-    }
-
-    // Scraping functionality
-    async function triggerScraping() {
-        const url = document.getElementById('companyHomepage').value;
-        const statusDiv = document.getElementById('scrapeStatus');
-        const scrapeBtn = document.getElementById('scrapeButton');
-
-        if (!url) {
-            alert('Please enter a URL first');
-            return;
-        }
-
-        // Save URL first just in case
-        collectSettings();
-
-        statusDiv.style.display = 'block';
-        statusDiv.style.color = '#6366f1';
-        statusDiv.innerHTML = '⏳ Scraping started... This may take a minute.';
-        scrapeBtn.disabled = true;
-
-        try {
-            const response = await fetch(`/api/admin/companies/{{ company.id }}/scrape`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url: url })
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                statusDiv.style.color = '#10b981';
-                statusDiv.innerHTML = `✅ Successfully indexed! Found ${data.pages_count || 1} page(s).`;
-            } else {
-                statusDiv.style.color = '#ef4444';
-                statusDiv.innerHTML = `❌ Error: ${data.error || 'Scraping failed'}`;
-            }
-        } catch (error) {
-            console.error('Scraping error:', error);
-            statusDiv.style.color = '#ef4444';
-            statusDiv.innerHTML = `❌ Connection error: ${error.message}`;
-        } finally {
-            scrapeBtn.disabled = false;
-        }
-    }
-
-    function copyEmbedCode() {
-        const code = document.getElementById('embedCodePreview').textContent;
-        navigator.clipboard.writeText(code).then(() => {
-            alert('📋 Embed code copied to clipboard!');
-        });
-    }
-
-    document.getElementById('saveSettings').addEventListener('click', saveSettings);
-    document.getElementById('copyEmbedCode').addEventListener('click', copyEmbedCode);
-    document.getElementById('scrapeButton').addEventListener('click', triggerScraping);
-
-
-    ['theme', 'headerTitle', 'welcomeMessage', 'placeholderText',
-        'customBranding', 'privacyPolicyUrl', 'botInstructions', 'companyHomepage'].forEach(id => {
-            const element = document.getElementById(id);
-            if (element) {
-                element.addEventListener('input', updatePreview);
-                element.addEventListener('change', updatePreview);
-            }
-        });
-
-    // Character counter for bot instructions
-    document.getElementById('botInstructions').addEventListener('input', updateCharCount);
-
-
     // Knowledge Base Management
     let allKnowledge = [];
 
@@ -631,7 +270,5 @@
 
     // Initial Load
     loadKnowledge();
-
-    loadSettings();
 </script>
 {% endblock %}
