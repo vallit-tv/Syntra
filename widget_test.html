@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Widget Customization Test</title>
+</head>
+
+<body style="background: #e2e8f0; font-family: sans-serif; height: 100vh;">
+    <h1>Minimal Theme Test</h1>
+
+    <!-- Configure widget -->
+    <script src="static/js/chat-widget.js" data-widget-id="test-widget" data-company-id="test-company"
+        data-theme="minimal" data-api-url="http://localhost:5000" data-welcome-message="Hello! I am the minimal bot."
+        data-branding="true"></script>
+
+    <script>
+        // Mock fetch
+        window.fetch = async (url) => {
+            console.log('Mock fetch:', url);
+            return {
+                json: async () => ({ status: 'success', new_session_id: 'new_sess_' + Date.now() })
+            };
+        };
+    </script>
+</body>
+
+</html>
