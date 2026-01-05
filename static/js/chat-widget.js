@@ -132,6 +132,51 @@
             this.createWidget();
             this.attachEventListeners();
             this.loadHistory();
+            this.loadRemoteConfig(); // Fetch server-side settings
+        }
+
+        async loadRemoteConfig() {
+            try {
+                // Only fetch if we have an API URL
+                if (!this.config.apiUrl) return;
+
+                const response = await fetch(`${this.config.apiUrl}/api/chat/config?widget_id=${this.config.widgetId}`);
+                if (!response.ok) return;
+
+                const remoteConfig = await response.json();
+
+                // Merge config, preferring remote for editable fields
+                if (remoteConfig.welcome_message) {
+                    this.config.welcomeMessage = remoteConfig.welcome_message;
+                    // If we haven't started chatting yet (messages empty or just 1 welcome msg), update it
+                    if (this.messages.length <= 1) {
+                        // Check if we already have a welcome message
+                        const hasWelcome = this.messages.some(m => m.role === 'assistant');
+                        if (!hasWelcome || this.messages.length === 0) {
+                            // Just set it for next usage
+                        } else if (this.messages.length === 1 && this.messages[0].role === 'assistant') {
+                            // Replace the existing welcome message
+                            this.messages[0].content = this.config.welcomeMessage;
+                            // Re-render if open
+                            if (this.isOpen) {
+                                this.messagesContainer.innerHTML = '';
+                                this.renderMessage(this.messages[0], false);
+                            }
+                        }
+                    }
+                }
+
+                // Update other settings if provided (e.g. theme, title)
+                if (remoteConfig.theme && remoteConfig.theme !== this.config.theme) {
+                    this.container.classList.replace(`syntra-theme-${this.config.theme}`, `syntra-theme-${remoteConfig.theme}`);
+                    this.config.theme = remoteConfig.theme;
+                }
+
+                // Store standard session ID if backend rotates it? No, keep local logic.
+
+            } catch (e) {
+                console.warn('Failed to load remote config:', e);
+            }
         }
 
         // =====================================================================
