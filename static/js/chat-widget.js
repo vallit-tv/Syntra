@@ -167,10 +167,12 @@
                 }
 
                 // Update other settings if provided (e.g. theme, title)
+                /*
                 if (remoteConfig.theme && remoteConfig.theme !== this.config.theme) {
                     this.container.classList.replace(`syntra-theme-${this.config.theme}`, `syntra-theme-${remoteConfig.theme}`);
                     this.config.theme = remoteConfig.theme;
                 }
+                */
 
                 // Store standard session ID if backend rotates it? No, keep local logic.
 
