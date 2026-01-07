@@ -7,16 +7,16 @@
 {% block dashboard_content %}
 <div class="page-header">
     <h1 class="page-title">Dashboard</h1>
-    <p class="page-description">Welcome back, {{ user.name }}! Here's an overview of your account.</p>
+    <p class="page-description">Welcome back, {{ user.name }}.</p>
 </div>
 
 <!-- Stats Cards -->
 <div class="stats-grid">
     <div class="stat-card">
         <div class="stat-header">
-            <span class="stat-label">Active Workflows</span>
-            <div class="stat-icon blue">
-                <i data-lucide="workflow" width="20" height="20"></i>
+            <span class="stat-label">Workflows</span>
+            <div class="stat-icon">
+                <i data-lucide="workflow" width="16" height="16"></i>
             </div>
         </div>
         <div class="stat-value">{{ active_workflows_count|default(0) }}</div>
@@ -24,8 +24,8 @@
     <div class="stat-card">
         <div class="stat-header">
             <span class="stat-label">API Keys</span>
-            <div class="stat-icon blue">
-                <i data-lucide="key" width="20" height="20"></i>
+            <div class="stat-icon">
+                <i data-lucide="key" width="16" height="16"></i>
             </div>
         </div>
         <div class="stat-value">{{ api_keys_count|default(0) }}</div>
@@ -33,20 +33,11 @@
     <div class="stat-card">
         <div class="stat-header">
             <span class="stat-label">Integrations</span>
-            <div class="stat-icon green">
-                <i data-lucide="plug" width="20" height="20"></i>
+            <div class="stat-icon">
+                <i data-lucide="plug" width="16" height="16"></i>
             </div>
         </div>
         <div class="stat-value">{{ integrations_count|default(0) }}</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-header">
-            <span class="stat-label">Recent Activity</span>
-            <div class="stat-icon orange">
-                <i data-lucide="activity" width="20" height="20"></i>
-            </div>
-        </div>
-        <div class="stat-value">{{ recent_activity_count|default(0) }}</div>
     </div>
 </div>
 
@@ -56,24 +47,24 @@
         <h2 class="card-title">Quick Actions</h2>
     </div>
     <div class="card-grid">
-        <a href="{{ url_for('dashboard_workflows') }}?action=create" class="card-item">
+        <a href="{{ url_for('dashboard_workflows') }}" class="card-item">
             <div class="card-item-header">
-                <h3 class="card-item-title">Create Workflow</h3>
-                <i data-lucide="workflow" width="20" height="20"></i>
+                <h3 class="card-item-title">Workflows</h3>
+                <i data-lucide="arrow-right" width="14" height="14"></i>
             </div>
-            <p class="card-item-body">Set up a new automation workflow</p>
+            <p class="card-item-body">Manage your automation workflows</p>
         </a>
-        <a href="{{ url_for('dashboard_api_keys') }}?action=add" class="card-item">
+        <a href="{{ url_for('dashboard_api_keys') }}" class="card-item">
             <div class="card-item-header">
-                <h3 class="card-item-title">Add API Key</h3>
-                <i data-lucide="key" width="20" height="20"></i>
+                <h3 class="card-item-title">API Keys</h3>
+                <i data-lucide="arrow-right" width="14" height="14"></i>
             </div>
             <p class="card-item-body">Connect external services</p>
         </a>
         <a href="{{ url_for('dashboard_integrations') }}" class="card-item">
             <div class="card-item-header">
-                <h3 class="card-item-title">Manage Integrations</h3>
-                <i data-lucide="plug" width="20" height="20"></i>
+                <h3 class="card-item-title">Integrations</h3>
+                <i data-lucide="arrow-right" width="14" height="14"></i>
             </div>
             <p class="card-item-body">Configure n8n and other services</p>
         </a>
@@ -96,29 +87,23 @@
                     <th>Name</th>
                     <th>Status</th>
                     <th>Last Run</th>
-                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for workflow in recent_workflows[:5] %}
                 <tr>
                     <td>
-                        <a href="{{ url_for('dashboard_workflow_detail', workflow_id=workflow.id) }}" style="font-weight: 600; color: var(--color-primary); text-decoration: none;">
+                        <a href="{{ url_for('dashboard_workflow_detail', workflow_id=workflow.id) }}"
+                            style="font-weight: 500; color: var(--db-text-primary); text-decoration: none;">
                             {{ workflow.name }}
                         </a>
                     </td>
                     <td>
                         <span class="status-badge {{ workflow.status|lower }}">
-                            <span class="status-badge-dot"></span>
                             {{ workflow.status }}
                         </span>
                     </td>
-                    <td>{{ workflow.last_run|default('Never') }}</td>
-                    <td>
-                        <div class="table-actions">
-                            <a href="{{ url_for('dashboard_workflow_detail', workflow_id=workflow.id) }}" class="btn btn-secondary btn-sm">Edit</a>
-                        </div>
-                    </td>
+                    <td style="color: var(--db-text-secondary);">{{ workflow.last_run|default('Never') }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -127,13 +112,12 @@
     {% else %}
     <div class="empty-state">
         <div class="empty-state-icon">
-            <i data-lucide="workflow" width="32" height="32"></i>
+            <i data-lucide="workflow" width="24" height="24"></i>
         </div>
         <h3 class="empty-state-title">No workflows yet</h3>
-        <p class="empty-state-description">Create your first workflow to get started with automation.</p>
-        <a href="{{ url_for('dashboard_workflows') }}?action=create" class="btn btn-primary">Create Workflow</a>
+        <p class="empty-state-description">Activate your first workflow to get started.</p>
+        <a href="{{ url_for('dashboard_workflows') }}" class="btn btn-primary btn-sm">Browse Workflows</a>
     </div>
     {% endif %}
 </div>
 {% endblock %}
-

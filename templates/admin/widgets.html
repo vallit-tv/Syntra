@@ -1,235 +1,102 @@
 {% extends "admin/base.html" %}
 
-{% block page_title %}AI Chat Widgets{% endblock %}
+{% block breadcrumbs %}
+<a href="{{ url_for('admin_dashboard') }}">Admin</a>
+<span class="breadcrumbs-separator">/</span>
+<span>Widgets</span>
+{% endblock %}
 
 {% block admin_content %}
-<div class="admin-header">
-    <div>
-        <h1>AI Chat Widgets</h1>
-        <p class="subtitle">Manage chat widgets and view statistics across all companies</p>
-    </div>
+<div class="page-header">
+    <h1 class="page-title">Widgets</h1>
+    <p class="page-description">Manage AI chat widgets for companies.</p>
 </div>
 
-<!-- Summary Cards -->
-<div class="stats-grid" style="margin-bottom: 2rem;">
+<!-- Stats -->
+<div class="stats-grid">
     <div class="stat-card">
-        <div class="stat-label">Total Companies</div>
+        <div class="stat-header">
+            <span class="stat-label">Companies</span>
+            <div class="stat-icon"><i data-lucide="building-2" width="16" height="16"></i></div>
+        </div>
         <div class="stat-value">{{ companies|length }}</div>
     </div>
     <div class="stat-card">
-        <div class="stat-label">Active Widgets</div>
+        <div class="stat-header">
+            <span class="stat-label">Active</span>
+            <div class="stat-icon"><i data-lucide="message-square" width="16" height="16"></i></div>
+        </div>
         <div class="stat-value">{{ companies|selectattr('has_activity')|list|length }}</div>
     </div>
     <div class="stat-card">
-        <div class="stat-label">Total Messages (30d)</div>
+        <div class="stat-header">
+            <span class="stat-label">Messages (30d)</span>
+            <div class="stat-icon"><i data-lucide="bar-chart" width="16" height="16"></i></div>
+        </div>
         <div class="stat-value">{{ companies|sum(attribute='total_messages') }}</div>
     </div>
-    <div class="stat-card">
-        <div class="stat-label">Total Tokens (30d)</div>
-        <div class="stat-value">{{ (companies|sum(attribute='total_tokens') / 1000)|round(1) }}K</div>
-    </div>
 </div>
 
-<!-- Companies List -->
-<div class="card">
+<!-- Widgets Table -->
+<div class="dashboard-card">
     <div class="card-header">
-        <h2>Companies</h2>
+        <h2 class="card-title">All Widgets</h2>
     </div>
-
-    <div class="card-body">
-        {% if companies %}
-        <div class="company-widgets-grid">
-            {% for company in companies %}
-            <div class="widget-company-card {% if not company.has_activity %}inactive{% endif %}">
-                <div class="company-card-header">
-                    <h3>{{ company.company_name }}</h3>
-                    {% if company.has_activity %}
-                    <span class="badge badge-success">✅ Active</span>
-                    {% elif company.company_id in widget_configs %}
-                    <span class="badge badge-warning">⚠️ Configured</span>
-                    {% else %}
-                    <span class="badge badge-secondary">⚙️ Needs Setup</span>
-                    {% endif %}
-                </div>
-
-                <div class="company-stats-row">
-                    <div class="stat-mini">
-                        <div class="stat-mini-label">💬 Messages</div>
-                        <div class="stat-mini-value">{{ company.total_messages }}</div>
-                    </div>
-                    <div class="stat-mini">
-                        <div class="stat-mini-label">🔥 Sessions</div>
-                        <div class="stat-mini-value">{{ company.total_sessions }}</div>
-                    </div>
-                    <div class="stat-mini">
-                        <div class="stat-mini-label">📊 Tokens</div>
-                        <div class="stat-mini-value">{{ (company.total_tokens / 1000)|round(1) }}K</div>
-                    </div>
-                </div>
-
-                <div class="company-actions">
-                    <a href="{{ url_for('admin_widget_detail', company_id=company.company_id) }}"
-                        class="btn btn-sm btn-primary">
-                        View Details
-                    </a>
-                    <button class="btn btn-sm btn-outline" onclick="copyEmbedCode('{{ company.company_id }}')">
-                        📋 Embed Code
-                    </button>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        {% else %}
-        <div class="empty-state">
-            <p>No companies found. Create a company first to manage widgets.</p>
-            <a href="{{ url_for('admin_companies') }}" class="btn btn-primary">
-                Go to Companies
-            </a>
-        </div>
-        {% endif %}
+    {% if companies %}
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Company</th>
+                    <th>Status</th>
+                    <th>Messages</th>
+                    <th>Sessions</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for company in companies %}
+                <tr>
+                    <td style="font-weight: 500;">{{ company.company_name }}</td>
+                    <td>
+                        <span class="status-badge {{ 'active' if company.has_activity else 'inactive' }}">
+                            {{ 'Active' if company.has_activity else 'Inactive' }}
+                        </span>
+                    </td>
+                    <td style="color: var(--db-text-secondary);">{{ company.total_messages }}</td>
+                    <td style="color: var(--db-text-secondary);">{{ company.total_sessions }}</td>
+                    <td>
+                        <div class="table-actions">
+                            <a href="{{ url_for('admin_widget_detail', company_id=company.company_id) }}"
+                                class="btn btn-secondary btn-sm">View</a>
+                            <button class="btn btn-secondary btn-sm"
+                                onclick="copyEmbed('{{ company.company_id }}')">Copy Embed</button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon"><i data-lucide="bot" width="24" height="24"></i></div>
+        <h3 class="empty-state-title">No widgets</h3>
+        <p class="empty-state-description">Create a company first to manage widgets.</p>
+        <a href="{{ url_for('admin_companies') }}" class="btn btn-primary btn-sm">Go to Companies</a>
+    </div>
+    {% endif %}
 </div>
+{% endblock %}
 
-<!-- Hidden embed code template -->
-<div id="embed-code-template" style="display: none;">
-    <script src="{{ request.host_url }}widget/embed.js" data-company-id="COMPANY_ID" data-theme="glassmorphism"
-        data-position="bottom-right">
-        </script>
-</div>
-
-<style>
-    .company-widgets-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 1.5rem;
-    }
-
-    .widget-company-card {
-        border: 1px solid var(--border-color, #e5e7eb);
-        border-radius: 8px;
-        padding: 1.5rem;
-        background: white;
-        transition: all 0.2s ease;
-    }
-
-    .widget-company-card:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        transform: translateY(-2px);
-    }
-
-    .widget-company-card.inactive {
-        opacity: 0.7;
-    }
-
-    .company-card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: start;
-        margin-bottom: 1rem;
-    }
-
-    .company-card-header h3 {
-        margin: 0;
-        font-size: 1.25rem;
-        font-weight: 600;
-    }
-
-    .badge {
-        padding: 0.25rem 0.75rem;
-        border-radius: 12px;
-        font-size: 0.875rem;
-        font-weight: 500;
-    }
-
-    .badge-success {
-        background: #d1fae5;
-        color: #065f46;
-    }
-
-    .badge-warning {
-        background: #fef3c7;
-        color: #92400e;
-    }
-
-    .badge-secondary {
-        background: #f3f4f6;
-        color: #6b7280;
-    }
-
-    .company-stats-row {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 1rem;
-        margin-bottom: 1rem;
-        padding: 1rem;
-        background: #f9fafb;
-        border-radius: 6px;
-    }
-
-    .stat-mini {
-        text-align: center;
-    }
-
-    .stat-mini-label {
-        font-size: 0.875rem;
-        color: #6b7280;
-        margin-bottom: 0.25rem;
-    }
-
-    .stat-mini-value {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: #111827;
-    }
-
-    .company-actions {
-        display: flex;
-        gap: 0.5rem;
-    }
-
-    .btn-sm {
-        padding: 0.5rem 1rem;
-        font-size: 0.875rem;
-    }
-
-    .btn-outline {
-        background: white;
-        border: 1px solid #d1d5db;
-        color: #374151;
-    }
-
-    .btn-outline:hover {
-        background: #f9fafb;
-    }
-
-    .empty-state {
-        text-align: center;
-        padding: 3rem;
-        color: #6b7280;
-    }
-</style>
-
+{% block admin_scripts %}
 <script>
-    function copyEmbedCode(companyId) {
-        const template = document.getElementById('embed-code-template').textContent;
-        const embedCode = template.replace('COMPANY_ID', companyId);
-
-        navigator.clipboard.writeText(embedCode).then(() => {
-            // Show success notification
-            const btn = event.target;
-            const originalText = btn.textContent;
-            btn.textContent = '✓ Copied!';
-            btn.style.background = '#d1fae5';
-            btn.style.color = '#065f46';
-
-            setTimeout(() => {
-                btn.textContent = originalText;
-                btn.style.background = '';
-                btn.style.color = '';
-            }, 2000);
-        }).catch(err => {
-            alert('Failed to copy embed code. Please try again.');
+    function copyEmbed(companyId) {
+        const code = `<script src="{{ request.host_url }}widget/embed.js" data-company-id="${companyId}" data-theme="minimal"><\/script>`;
+        navigator.clipboard.writeText(code).then(() => {
+            alert('Embed code copied!');
         });
     }
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 </script>
 {% endblock %}

@@ -7,178 +7,70 @@
 {% endblock %}
 
 {% block admin_content %}
-<div class="page-header">
-    <div class="page-header-left">
-        <div>
-            <h1 class="page-title">Workflow Management</h1>
-            <p class="page-description">Sync and curate the automation catalog sourced from n8n.</p>
-        </div>
+<div class="page-header"
+    style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+    <div>
+        <h1 class="page-title">Workflows</h1>
+        <p class="page-description">Manage automation workflows from n8n.</p>
     </div>
-    <div class="page-header-actions">
-        <button id="syncWorkflowsButton" onclick="syncWorkflows(event)" class="btn btn-secondary">
-            <i data-lucide="refresh-cw" width="16" height="16"></i>
-            <span>Sync from n8n</span>
-        </button>
-    </div>
+    <button onclick="syncWorkflows(event)" class="btn btn-secondary btn-sm" id="syncBtn">
+        <i data-lucide="refresh-cw" width="14" height="14"></i>
+        Sync from n8n
+    </button>
 </div>
 
-<!-- Sync Status Card -->
-<div class="dashboard-card" style="background: linear-gradient(135deg, var(--db-primary-light), var(--db-info-light));">
-    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
-        <div style="flex: 1; min-width: 200px;">
-            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-                <h3 style="margin: 0; color: var(--db-primary); font-size: 14px; font-weight: 600;">
-                    <i data-lucide="refresh-cw" width="16" height="16" style="vertical-align: middle;"></i>
-                    N8N Auto-Sync
-                </h3>
-                <label class="toggle-switch" style="margin: 0;">
-                    <input type="checkbox" id="autoSyncToggle" {% if sync_status and sync_status.enabled %}checked{% endif %}>
-                    <span class="toggle-slider"></span>
-                </label>
-            </div>
-            <p id="syncStatusText" style="margin: 0; color: var(--db-text-secondary); font-size: 13px;">
-                {% if sync_status and sync_status.last_run %}
-                    Last synced {{ sync_status.last_run|format_datetime('relative') if sync_status.last_run else 'Never' }}
-                    {% if sync_status.next_run %}
-                        • Next sync {{ sync_status.next_run|format_datetime('relative') }}
-                    {% endif %}
-                {% elif workflow_stats and workflow_stats.last_updated %}
-                    Last synced {{ workflow_stats.last_updated|format_datetime('relative') }}
-                {% else %}
-                    Never synced. Enable auto-sync or click "Sync Now" to begin.
-                {% endif %}
-            </p>
-            {% if sync_status and sync_status.last_error %}
-            <p style="margin: 0.5rem 0 0 0; color: var(--db-danger); font-size: 12px;">
-                <i data-lucide="alert-circle" width="12" height="12" style="vertical-align: middle;"></i>
-                {{ sync_status.last_error[:100] }}
-            </p>
-            {% endif %}
-        </div>
-        <div style="display: flex; gap: 0.5rem;">
-            <button onclick="syncWorkflows(event)" class="btn btn-sm btn-primary" id="syncWorkflowsButton">
-                <i data-lucide="refresh-cw" width="14" height="14"></i>
-                Sync Now
-            </button>
-        </div>
-    </div>
-</div>
-
-{% if workflow_stats %}
+<!-- Stats -->
 <div class="stats-grid">
     <div class="stat-card">
         <div class="stat-header">
-            <span class="stat-label">Total Workflows</span>
-            <div class="stat-icon blue">
-                <i data-lucide="workflow" width="18" height="18"></i>
-            </div>
+            <span class="stat-label">Total</span>
+            <div class="stat-icon"><i data-lucide="workflow" width="16" height="16"></i></div>
         </div>
-        <div class="stat-value">{{ workflow_stats.total }}</div>
-        <p class="stat-caption">
-            {% if workflow_stats.last_updated %}
-                Updated {{ workflow_stats.last_updated|format_datetime('relative') }}
-            {% else %}
-                Awaiting first sync
-            {% endif %}
-        </p>
+        <div class="stat-value">{{ workflow_stats.total if workflow_stats else 0 }}</div>
     </div>
     <div class="stat-card">
         <div class="stat-header">
-            <span class="stat-label">Activation Status</span>
-            <div class="stat-icon green">
-                <i data-lucide="play-circle" width="18" height="18"></i>
-            </div>
+            <span class="stat-label">Active</span>
+            <div class="stat-icon"><i data-lucide="play" width="16" height="16"></i></div>
         </div>
-        <div class="stat-value">{{ workflow_stats.active }}</div>
-        <p class="stat-caption">{{ workflow_stats.inactive }} disabled</p>
+        <div class="stat-value">{{ workflow_stats.active if workflow_stats else 0 }}</div>
     </div>
     <div class="stat-card">
         <div class="stat-header">
-            <span class="stat-label">Visibility</span>
-            <div class="stat-icon purple">
-                <i data-lucide="globe-2" width="18" height="18"></i>
-            </div>
+            <span class="stat-label">Public</span>
+            <div class="stat-icon"><i data-lucide="globe" width="16" height="16"></i></div>
         </div>
-        <div class="stat-value">{{ workflow_stats.public }}</div>
-        <p class="stat-caption">{{ workflow_stats.private }} private</p>
-    </div>
-    <div class="stat-card">
-        <div class="stat-header">
-            <span class="stat-label">Service Coverage</span>
-            <div class="stat-icon amber">
-                <i data-lucide="plug" width="18" height="18"></i>
-            </div>
-        </div>
-        <div class="stat-value">{{ workflow_stats.services|length }}</div>
-        <p class="stat-caption">
-            {% if workflow_stats.services %}
-                Top: {{ workflow_stats.services[0][0] }} ({{ workflow_stats.services[0][1] }})
-            {% else %}
-                No external services required
-            {% endif %}
-        </p>
+        <div class="stat-value">{{ workflow_stats.public if workflow_stats else 0 }}</div>
     </div>
 </div>
-{% endif %}
 
-<div class="dashboard-card" style="margin-bottom: 1.5rem;">
-    <div class="card-header">
-        <div>
-            <h3 class="card-title">n8n Connection</h3>
-            <p class="card-subtitle">Ensure n8n is reachable to keep workflows in sync.</p>
-        </div>
-        <div>
-            <span class="status-badge {{ 'active' if n8n_configured and n8n_status and n8n_status.connected else 'inactive' }}">
-                <span class="status-badge-dot"></span>
-                {% if n8n_configured %}
-                    {% if n8n_status and n8n_status.connected %}
-                        Connected
-                    {% else %}
-                        Not reachable
-                    {% endif %}
-                {% else %}
-                    Not configured
-                {% endif %}
-            </span>
-        </div>
-    </div>
-    <div class="card-body">
-        {% if n8n_configured %}
-            {% if n8n_status and not n8n_status.connected %}
-                <p class="text-danger" style="margin-bottom: 0.75rem;">{{ n8n_status.message }}</p>
-            {% endif %}
-            <p class="text-secondary">
-                {{ workflow_stats.synced_workflows if workflow_stats and workflow_stats.synced_workflows is defined else workflow_stats.total }} workflows tracked.
-                {% if workflow_stats and workflow_stats.private %}
-                {{ workflow_stats.private }} workflows are still private to admins.
-                {% endif %}
-            </p>
-        {% else %}
-            <p class="text-secondary">
-                Provide <code>N8N_API_KEY</code> in the environment to enable automatic syncing. <code>N8N_URL</code> is optional (defaults to https://app.n8n.cloud).
-            </p>
-        {% endif %}
-    </div>
-    {% if workflow_stats and workflow_stats.services %}
-    <div class="card-footer">
-        <div class="pill-row">
-            {% for service, count in workflow_stats.services[:6] %}
-            <span class="pill">{{ service }} · {{ count }}</span>
-            {% endfor %}
-            {% if workflow_stats.services|length > 6 %}
-            <span class="pill muted">+{{ workflow_stats.services|length - 6 }} more</span>
-            {% endif %}
-        </div>
-    </div>
-    {% endif %}
-</div>
-
+<!-- n8n Connection -->
 <div class="dashboard-card">
     <div class="card-header">
-        <div>
-            <h2 class="card-title">All Workflows</h2>
-            <p class="card-subtitle">Toggle availability and visibility for each automation.</p>
-        </div>
+        <h2 class="card-title">n8n Connection</h2>
+        <span
+            class="status-badge {{ 'active' if n8n_configured and n8n_status and n8n_status.connected else 'inactive' }}">
+            {% if n8n_configured and n8n_status and n8n_status.connected %}Connected{% else %}Not Connected{% endif %}
+        </span>
+    </div>
+    <p style="color: var(--db-text-secondary); font-size: var(--db-text-sm); margin: 0;">
+        {% if n8n_configured %}
+        {% if n8n_status and n8n_status.connected %}
+        Workflows are synced automatically.
+        {% else %}
+        n8n is configured but not reachable.
+        {% endif %}
+        {% else %}
+        Set <code style="background: var(--db-bg-tertiary); padding: 2px 4px; border-radius: 3px;">N8N_API_KEY</code>
+        environment variable to enable.
+        {% endif %}
+    </p>
+</div>
+
+<!-- Workflows Table -->
+<div class="dashboard-card">
+    <div class="card-header">
+        <h2 class="card-title">All Workflows</h2>
     </div>
     {% if workflows %}
     <div class="table-container">
@@ -186,26 +78,17 @@
             <thead>
                 <tr>
                     <th>Name</th>
-                    <th>Category</th>
                     <th>Status</th>
-                    <th>Public</th>
-                    <th>Required Services</th>
-                    <th>Updated</th>
+                    <th>Visibility</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for workflow in workflows %}
                 <tr>
-                    <td>
-                        <a href="{{ url_for('admin_workflow_detail', workflow_id=workflow.id) }}" class="table-link">
-                            {{ workflow.name }}
-                        </a>
-                    </td>
-                    <td>{{ workflow.category or 'Automation' }}</td>
+                    <td style="font-weight: 500;">{{ workflow.name }}</td>
                     <td>
                         <span class="status-badge {{ 'active' if workflow.is_active else 'inactive' }}">
-                            <span class="status-badge-dot"></span>
                             {{ 'Active' if workflow.is_active else 'Disabled' }}
                         </span>
                     </td>
@@ -215,33 +98,14 @@
                         </span>
                     </td>
                     <td>
-                        {% if workflow.required_services_list %}
-                            {% for service in workflow.required_services_list[:3] %}
-                            <span class="pill small">{{ service }}</span>
-                            {% endfor %}
-                            {% if workflow.required_services_list|length > 3 %}
-                            <span class="pill small muted">+{{ workflow.required_services_list|length - 3 }}</span>
-                            {% endif %}
-                        {% else %}
-                            <span class="text-secondary">None</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if workflow.updated_at %}
-                            {{ workflow.updated_at|format_datetime('short') }}
-                        {% elif workflow.created_at %}
-                            {{ workflow.created_at|format_datetime('short') }}
-                        {% else %}
-                            —
-                        {% endif %}
-                    </td>
-                    <td>
                         <div class="table-actions">
-                            <button onclick="toggleWorkflow('{{ workflow.id }}', {{ workflow.is_active|lower }})" class="btn btn-sm btn-secondary">
+                            <button onclick="toggleWorkflow('{{ workflow.id }}', {{ workflow.is_active|lower }})"
+                                class="btn btn-secondary btn-sm">
                                 {{ 'Disable' if workflow.is_active else 'Enable' }}
                             </button>
-                            <button onclick="togglePublic('{{ workflow.id }}', {{ workflow.is_public|lower }})" class="btn btn-sm btn-secondary">
-                                {{ 'Make Private' if workflow.is_public else 'Make Public' }}
+                            <button onclick="togglePublic('{{ workflow.id }}', {{ workflow.is_public|lower }})"
+                                class="btn btn-secondary btn-sm">
+                                {{ 'Hide' if workflow.is_public else 'Publish' }}
                             </button>
                         </div>
                     </td>
@@ -252,10 +116,10 @@
     </div>
     {% else %}
     <div class="empty-state">
-        <i data-lucide="workflow" width="48" height="48" class="empty-state-icon"></i>
-        <h3 class="empty-state-title">No workflows synced yet</h3>
-        <p class="empty-state-description">Run a sync from n8n to load automations into the catalog.</p>
-        <button onclick="syncWorkflows(event)" class="btn btn-primary">Sync from n8n</button>
+        <div class="empty-state-icon"><i data-lucide="workflow" width="24" height="24"></i></div>
+        <h3 class="empty-state-title">No workflows</h3>
+        <p class="empty-state-description">Sync from n8n to load workflows.</p>
+        <button onclick="syncWorkflows(event)" class="btn btn-primary btn-sm">Sync Now</button>
     </div>
     {% endif %}
 </div>
@@ -263,193 +127,54 @@
 
 {% block admin_scripts %}
 <script>
-// Load sync status on page load
-let syncStatusInterval = null;
+    function syncWorkflows(event) {
+        const btn = event.currentTarget;
+        btn.disabled = true;
+        btn.innerHTML = '<i data-lucide="refresh-cw" width="14" height="14" style="animation: spin 1s linear infinite;"></i> Syncing...';
 
-function loadSyncStatus() {
-    fetch('/api/admin/workflows/sync/status')
-        .then(response => response.json())
-        .then(data => {
-            // Update toggle
-            const toggle = document.getElementById('autoSyncToggle');
-            if (toggle) {
-                toggle.checked = data.enabled;
-            }
-            
-            // Update status text
-            const statusText = document.getElementById('syncStatusText');
-            if (statusText) {
-                let statusMsg = '';
-                if (data.last_run) {
-                    const lastRun = new Date(data.last_run);
-                    const now = new Date();
-                    const diffMs = now - lastRun;
-                    const diffMins = Math.floor(diffMs / 60000);
-                    if (diffMins < 1) {
-                        statusMsg = 'Last synced just now';
-                    } else if (diffMins === 1) {
-                        statusMsg = 'Last synced 1 minute ago';
-                    } else {
-                        statusMsg = `Last synced ${diffMins} minutes ago`;
-                    }
-                    
-                    if (data.next_run) {
-                        const nextRun = new Date(data.next_run);
-                        const nextDiffMs = nextRun - now;
-                        const nextDiffMins = Math.floor(nextDiffMs / 60000);
-                        if (nextDiffMins > 0) {
-                            statusMsg += ` • Next sync in ${nextDiffMins} minute${nextDiffMins !== 1 ? 's' : ''}`;
-                        }
-                    }
-                } else {
-                    statusMsg = 'Never synced. Enable auto-sync or click "Sync Now" to begin.';
-                }
-                
-                if (data.last_error) {
-                    statusMsg += ` • Error: ${data.last_error.substring(0, 50)}`;
-                }
-                
-                statusText.textContent = statusMsg;
-            }
-        })
-        .catch(err => console.error('Error loading sync status:', err));
-}
-
-function syncWorkflows(event) {
-    const btn = event.currentTarget || document.getElementById('syncWorkflowsButton');
-    if (!btn) return;
-    const icon = btn.querySelector('i[data-lucide="refresh-cw"]');
-    const label = btn.querySelector('span');
-    const originalText = label ? label.textContent : '';
-    btn.disabled = true;
-    if (icon) {
-        icon.style.animation = 'spin 1s linear infinite';
-    }
-    if (label) {
-        label.textContent = 'Syncing...';
+        fetch('/api/admin/workflows/sync', { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.error) alert('Error: ' + data.error);
+                else location.reload();
+            })
+            .catch(err => alert('Error: ' + err))
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i data-lucide="refresh-cw" width="14" height="14"></i> Sync from n8n';
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            });
     }
 
-    fetch('/api/admin/workflows/sync', { method: 'POST' })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error || !data.success) {
-                window.alert('Sync failed: ' + (data.error || 'Unknown error'));
-            } else {
-                // Update sync status
-                loadSyncStatus();
-                window.alert(`Sync complete!\n${data.added || 0} added, ${data.updated || 0} updated, ${data.removed || 0} removed\nTotal: ${data.total || 0} workflows`);
-                // Reload after a short delay to show updated status
-                setTimeout(() => window.location.reload(), 1000);
-            }
-        })
-        .catch(err => window.alert('Sync error: ' + err))
-        .finally(() => {
-            if (icon) {
-                icon.style.animation = '';
-            }
-            if (label) {
-                label.textContent = originalText;
-            }
-            btn.disabled = false;
-        });
-}
-
-function toggleAutoSync(enabled) {
-    const toggle = document.getElementById('autoSyncToggle');
-    if (toggle) {
-        toggle.disabled = true;
+    function toggleWorkflow(id, current) {
+        fetch(`/api/admin/workflows/${id}/toggle`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ is_active: !current })
+        }).then(() => location.reload());
     }
-    
-    fetch('/api/admin/workflows/sync/toggle', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ enabled: enabled })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            window.alert('Failed to toggle auto-sync: ' + data.error);
-            // Revert toggle
-            if (toggle) {
-                toggle.checked = !enabled;
-            }
-        } else {
-            loadSyncStatus();
-        }
-    })
-    .catch(err => {
-        window.alert('Error toggling auto-sync: ' + err);
-        // Revert toggle
-        if (toggle) {
-            toggle.checked = !enabled;
-        }
-    })
-    .finally(() => {
-        if (toggle) {
-            toggle.disabled = false;
-        }
+
+    function togglePublic(id, current) {
+        fetch(`/api/admin/workflows/${id}/public`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ is_public: !current })
+        }).then(() => location.reload());
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof lucide !== 'undefined') lucide.createIcons();
     });
-}
-
-function toggleWorkflow(workflowId, currentState) {
-    fetch(`/api/admin/workflows/${workflowId}/toggle`, {
-        method: 'PUT',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ is_active: !currentState })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            window.alert('Update failed: ' + data.error);
-        } else {
-            window.location.reload();
-        }
-    })
-    .catch(err => window.alert('Update error: ' + err));
-}
-
-function togglePublic(workflowId, currentState) {
-    fetch(`/api/admin/workflows/${workflowId}/public`, {
-        method: 'PUT',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ is_public: !currentState })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            window.alert('Update failed: ' + data.error);
-        } else {
-            window.location.reload();
-        }
-    })
-    .catch(err => window.alert('Update error: ' + err));
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
-    }
-    
-    // Load sync status on page load
-    loadSyncStatus();
-    
-    // Update sync status every 10 seconds
-    syncStatusInterval = setInterval(loadSyncStatus, 10000);
-    
-    // Setup auto-sync toggle
-    const autoSyncToggle = document.getElementById('autoSyncToggle');
-    if (autoSyncToggle) {
-        autoSyncToggle.addEventListener('change', function(e) {
-            toggleAutoSync(e.target.checked);
-        });
-    }
-});
 </script>
 <style>
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
+    }
 </style>
 {% endblock %}
-

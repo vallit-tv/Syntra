@@ -8,27 +8,22 @@
 
 {% block dashboard_content %}
 <div class="page-header">
-    <div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
-        <div>
-            <h1 class="page-title">Workflows</h1>
-            <p class="page-description">Activate and manage available automation workflows.</p>
-        </div>
-    </div>
+    <h1 class="page-title">Workflows</h1>
+    <p class="page-description">Activate and manage automation workflows.</p>
 </div>
 
-
-<!-- Filters and Actions -->
+<!-- Filters -->
 <div class="filters-bar">
-    <div style="position: relative; flex: 1; min-width: 240px;">
-        <i data-lucide="search" width="16" height="16" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--color-text-lighter);"></i>
-        <input type="text" id="searchInput" class="search-input" placeholder="Search workflows..." style="padding-left: 2.5rem;">
+    <div style="position: relative; flex: 1; max-width: 280px;">
+        <i data-lucide="search" width="14" height="14"
+            style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--db-text-tertiary);"></i>
+        <input type="text" id="searchInput" class="search-input" placeholder="Search workflows..."
+            style="padding-left: 32px;">
     </div>
     <select id="statusFilter" class="filter-select">
         <option value="">All Status</option>
         <option value="active">Active</option>
         <option value="inactive">Inactive</option>
-        <option value="error">Error</option>
-        <option value="running">Running</option>
     </select>
 </div>
 
@@ -42,7 +37,6 @@
                     <th>Name</th>
                     <th>Description</th>
                     <th>Status</th>
-                    <th>Required Services</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -50,47 +44,30 @@
                 {% for workflow in workflows %}
                 <tr>
                     <td>
-                        <a href="{{ url_for('dashboard_workflow_detail', workflow_id=workflow.id) }}" style="font-weight: 600; color: var(--color-primary); text-decoration: none;">
+                        <a href="{{ url_for('dashboard_workflow_detail', workflow_id=workflow.id) }}"
+                            style="font-weight: 500; color: var(--db-text-primary); text-decoration: none;">
                             {{ workflow.name }}
                         </a>
                     </td>
-                    <td>{{ workflow.description|default('No description') }}</td>
-                    <td>
-                        {% if workflow.is_activated %}
-                        <span class="status-badge active">
-                            <span class="status-badge-dot"></span>
-                            Activated
-                        </span>
-                        {% else %}
-                        <span class="status-badge inactive">Not Activated</span>
-                        {% endif %}
+                    <td style="color: var(--db-text-secondary);">{{ workflow.description|default('—')|truncate(50) }}
                     </td>
                     <td>
-                        {% set services = workflow.required_services if workflow.required_services is iterable and workflow.required_services is not string else [] %}
-                        {% if services %}
-                            {% for service in services[:2] %}
-                            <span class="status-badge" style="margin-right: 0.25rem; font-size: var(--text-xs);">{{ service }}</span>
-                            {% endfor %}
-                            {% if services|length > 2 %}+{{ services|length - 2 }}{% endif %}
+                        {% if workflow.is_activated %}
+                        <span class="status-badge active">Active</span>
                         {% else %}
-                            <span style="color: var(--color-text-light); font-size: var(--text-sm);">None</span>
+                        <span class="status-badge inactive">Inactive</span>
                         {% endif %}
                     </td>
                     <td>
                         <div class="table-actions">
                             {% if workflow.is_activated %}
-                            <a href="{{ url_for('dashboard_workflow_detail', workflow_id=workflow.id) }}" class="btn btn-secondary btn-sm">
-                                <i data-lucide="settings" width="14" height="14"></i>
-                                Configure
-                            </a>
-                            <button onclick="deactivateWorkflow('{{ workflow.id }}')" class="btn btn-danger btn-sm">
-                                Deactivate
-                            </button>
+                            <a href="{{ url_for('dashboard_workflow_detail', workflow_id=workflow.id) }}"
+                                class="btn btn-secondary btn-sm">Configure</a>
+                            <button onclick="deactivateWorkflow('{{ workflow.id }}')"
+                                class="btn btn-danger btn-sm">Deactivate</button>
                             {% else %}
-                            <button onclick="activateWorkflow('{{ workflow.id }}')" class="btn btn-primary btn-sm">
-                                <i data-lucide="power" width="14" height="14"></i>
-                                Activate
-                            </button>
+                            <button onclick="activateWorkflow('{{ workflow.id }}')"
+                                class="btn btn-primary btn-sm">Activate</button>
                             {% endif %}
                         </div>
                     </td>
@@ -102,10 +79,10 @@
     {% else %}
     <div class="empty-state">
         <div class="empty-state-icon">
-            <i data-lucide="workflow" width="32" height="32"></i>
+            <i data-lucide="workflow" width="24" height="24"></i>
         </div>
         <h3 class="empty-state-title">No workflows available</h3>
-        <p class="empty-state-description">No workflows are currently available. Contact your administrator to make workflows available.</p>
+        <p class="empty-state-description">Contact your administrator to make workflows available.</p>
     </div>
     {% endif %}
 </div>
@@ -113,70 +90,59 @@
 
 {% block dashboard_scripts %}
 <script>
-function activateWorkflow(workflowId) {
-    fetch(`/api/workflows/${workflowId}/activate`, { method: 'POST' })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                alert('Error: ' + data.error);
-            } else {
-                alert('Workflow activated! Configure API keys to use it.');
-                window.location.href = `/dashboard/workflows/${workflowId}`;
-            }
-        })
-        .catch(err => alert('Error: ' + err));
-}
-
-function deactivateWorkflow(workflowId) {
-    if (confirm('Are you sure you want to deactivate this workflow?')) {
-        fetch(`/api/workflows/${workflowId}/deactivate`, { method: 'DELETE' })
+    function activateWorkflow(workflowId) {
+        fetch(`/api/workflows/${workflowId}/activate`, { method: 'POST' })
             .then(response => response.json())
             .then(data => {
                 if (data.error) {
                     alert('Error: ' + data.error);
                 } else {
-                    location.reload();
+                    window.location.href = `/dashboard/workflows/${workflowId}`;
                 }
             })
             .catch(err => alert('Error: ' + err));
     }
-}
 
-// Simple search and filter
-document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('searchInput');
-    const statusFilter = document.getElementById('statusFilter');
-    const tableRows = document.querySelectorAll('.table tbody tr');
-    
-    function filterTable() {
-        const searchTerm = searchInput.value.toLowerCase();
-        const statusValue = statusFilter.value.toLowerCase();
-        
-        tableRows.forEach(row => {
-            const name = row.cells[0].textContent.toLowerCase();
-            const status = row.cells[2].textContent.toLowerCase();
-            
-            const matchesSearch = name.includes(searchTerm);
-            const matchesStatus = !statusValue || status.includes(statusValue);
-            
-            row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
-        });
+    function deactivateWorkflow(workflowId) {
+        if (confirm('Deactivate this workflow?')) {
+            fetch(`/api/workflows/${workflowId}/deactivate`, { method: 'DELETE' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert('Error: ' + data.error);
+                    } else {
+                        location.reload();
+                    }
+                })
+                .catch(err => alert('Error: ' + err));
+        }
     }
-    
-    if (searchInput) searchInput.addEventListener('input', filterTable);
-    if (statusFilter) statusFilter.addEventListener('change', filterTable);
-    
-    // Reinitialize icons
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
-    }
-});
+
+    // Search and filter
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.getElementById('searchInput');
+        const statusFilter = document.getElementById('statusFilter');
+        const tableRows = document.querySelectorAll('.table tbody tr');
+
+        function filterTable() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const statusValue = statusFilter.value.toLowerCase();
+
+            tableRows.forEach(row => {
+                const name = row.cells[0].textContent.toLowerCase();
+                const status = row.cells[2].textContent.toLowerCase();
+
+                const matchesSearch = name.includes(searchTerm);
+                const matchesStatus = !statusValue || status.includes(statusValue);
+
+                row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
+            });
+        }
+
+        if (searchInput) searchInput.addEventListener('input', filterTable);
+        if (statusFilter) statusFilter.addEventListener('change', filterTable);
+
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    });
 </script>
-<style>
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-</style>
 {% endblock %}
-

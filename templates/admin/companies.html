@@ -1,51 +1,39 @@
 {% extends "admin/base.html" %}
 
 {% block breadcrumbs %}
+<a href="{{ url_for('admin_dashboard') }}">Admin</a>
+<span class="breadcrumbs-separator">/</span>
 <span>Companies</span>
 {% endblock %}
 
 {% block admin_content %}
-<div class="page-header">
-    <div class="d-flex align-items-center justify-content-between">
-        <div>
-            <h1 class="page-title">Companies</h1>
-            <p class="page-description">Manage companies and their members</p>
-        </div>
-        <button class="btn btn-primary" onclick="syntra.openModal('createCompanyModal')">
-            <i data-lucide="plus" width="16" height="16"></i>
-            Add Company
-        </button>
+<div class="page-header"
+    style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+    <div>
+        <h1 class="page-title">Companies</h1>
+        <p class="page-description">Manage companies and their members.</p>
     </div>
+    <button class="btn btn-primary btn-sm" onclick="openCreateModal()">
+        <i data-lucide="plus" width="14" height="14"></i>
+        Add Company
+    </button>
 </div>
 
 <!-- Stats -->
 <div class="stats-grid">
     <div class="stat-card">
         <div class="stat-header">
-            <span class="stat-label">Total Companies</span>
-            <div class="stat-icon blue">
-                <i data-lucide="building-2" width="16" height="16"></i>
-            </div>
+            <span class="stat-label">Companies</span>
+            <div class="stat-icon"><i data-lucide="building-2" width="16" height="16"></i></div>
         </div>
         <div class="stat-value">{{ companies|length }}</div>
     </div>
     <div class="stat-card">
         <div class="stat-header">
-            <span class="stat-label">Total Members</span>
-            <div class="stat-icon green">
-                <i data-lucide="users" width="16" height="16"></i>
-            </div>
+            <span class="stat-label">Members</span>
+            <div class="stat-icon"><i data-lucide="users" width="16" height="16"></i></div>
         </div>
         <div class="stat-value">{{ total_members }}</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-header">
-            <span class="stat-label">Active Workflows</span>
-            <div class="stat-icon orange">
-                <i data-lucide="workflow" width="16" height="16"></i>
-            </div>
-        </div>
-        <div class="stat-value">{{ total_activations }}</div>
     </div>
 </div>
 
@@ -53,262 +41,120 @@
 <div class="dashboard-card">
     <div class="card-header">
         <h2 class="card-title">All Companies</h2>
-        <div class="card-actions">
-            <input type="text" id="searchInput" class="form-input" placeholder="Search companies..." style="width: 250px;">
-        </div>
+        <input type="text" id="searchInput" class="search-input" placeholder="Search..." style="max-width: 200px;">
     </div>
-    <div class="card-body">
-        {% if companies %}
-        <div class="table-container">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Company Name</th>
-                        <th>Slug</th>
-                        <th>Members</th>
-                        <th>Workflows</th>
-                        <th>Created</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="companiesTableBody">
-                    {% for company in companies %}
-                    <tr data-company-name="{{ company.name|lower }}" data-company-slug="{{ company.slug|lower }}">
-                        <td>
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="logo-icon" style="width: 32px; height: 32px; font-size: 14px;">
-                                    {{ company.name[0].upper() }}
-                                </div>
-                                <strong>{{ company.name }}</strong>
-                            </div>
-                        </td>
-                        <td><code>{{ company.slug }}</code></td>
-                        <td>{{ company.member_count or 0 }}</td>
-                        <td>{{ company.workflow_count or 0 }}</td>
-                        <td>{{ company.created_at|format_datetime('short') }}</td>
-                        <td>
-                            <div class="d-flex gap-1">
-                                <a href="{{ url_for('admin_company_detail', company_id=company.id) }}" class="btn btn-sm btn-secondary">
-                                    <i data-lucide="eye" width="14" height="14"></i>
-                                    View
-                                </a>
-                                <button class="btn btn-sm btn-secondary" onclick="editCompany('{{ company.id }}', '{{ company.name }}', '{{ company.slug }}')">
-                                    <i data-lucide="edit" width="14" height="14"></i>
-                                </button>
-                                <button class="btn btn-sm btn-danger" onclick="deleteCompany('{{ company.id }}', '{{ company.name }}')">
-                                    <i data-lucide="trash-2" width="14" height="14"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <div class="empty-state">
-            <div class="empty-state-icon">🏢</div>
-            <h3 class="empty-state-title">No Companies Yet</h3>
-            <p class="empty-state-description">Create your first company to get started.</p>
-            <button class="btn btn-primary mt-2" onclick="syntra.openModal('createCompanyModal')">
-                <i data-lucide="plus" width="16" height="16"></i>
-                Add Company
-            </button>
-        </div>
-        {% endif %}
+    {% if companies %}
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Slug</th>
+                    <th>Members</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="companiesTable">
+                {% for company in companies %}
+                <tr data-name="{{ company.name|lower }}">
+                    <td style="font-weight: 500;">{{ company.name }}</td>
+                    <td><code
+                            style="font-size: var(--db-text-xs); background: var(--db-bg-tertiary); padding: 2px 4px; border-radius: 3px;">{{ company.slug }}</code>
+                    </td>
+                    <td style="color: var(--db-text-secondary);">{{ company.member_count or 0 }}</td>
+                    <td>
+                        <div class="table-actions">
+                            <a href="{{ url_for('admin_company_detail', company_id=company.id) }}"
+                                class="btn btn-secondary btn-sm">View</a>
+                            <button onclick="deleteCompany('{{ company.id }}', '{{ company.name }}')"
+                                class="btn btn-danger btn-sm">Delete</button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon"><i data-lucide="building-2" width="24" height="24"></i></div>
+        <h3 class="empty-state-title">No companies</h3>
+        <p class="empty-state-description">Create your first company to get started.</p>
+        <button class="btn btn-primary btn-sm" onclick="openCreateModal()">Add Company</button>
+    </div>
+    {% endif %}
 </div>
 
-<!-- Create Company Modal -->
-<div id="createCompanyModal" class="modal">
+<!-- Create Modal -->
+<div id="createModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
             <h2 class="modal-title">Create Company</h2>
-            <button class="modal-close" onclick="syntra.closeModal('createCompanyModal')">
-                <i data-lucide="x" width="20" height="20"></i>
-            </button>
+            <button class="modal-close" onclick="closeModal()"><i data-lucide="x" width="18" height="18"></i></button>
         </div>
-        <form id="createCompanyForm">
+        <form id="createForm">
             <div class="modal-body">
                 <div class="form-group">
-                    <label for="companyName" class="form-label">Company Name *</label>
-                    <input type="text" id="companyName" name="name" class="form-input" placeholder="e.g., Acme Corporation" required>
+                    <label class="form-label">Name</label>
+                    <input type="text" id="companyName" name="name" class="form-input" required
+                        placeholder="Company name">
                 </div>
                 <div class="form-group">
-                    <label for="companySlug" class="form-label">Slug *</label>
-                    <input type="text" id="companySlug" name="slug" class="form-input" placeholder="e.g., acme-corp" required>
-                    <p class="form-help-text">URL-friendly identifier (lowercase, no spaces)</p>
-                </div>
-                <div class="form-group">
-                    <label for="companySettings" class="form-label">Settings (JSON, optional)</label>
-                    <textarea id="companySettings" name="settings" class="form-textarea" placeholder='{"key": "value"}'></textarea>
-                    <p class="form-help-text">Optional JSON configuration for company-specific settings</p>
+                    <label class="form-label">Slug</label>
+                    <input type="text" id="companySlug" name="slug" class="form-input" required
+                        placeholder="company-slug">
+                    <p class="form-help-text">URL-friendly identifier</p>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="syntra.closeModal('createCompanyModal')">Cancel</button>
-                <button type="submit" class="btn btn-primary" id="createCompanyBtn">Create Company</button>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm">Create</button>
             </div>
         </form>
     </div>
 </div>
+{% endblock %}
 
-<!-- Edit Company Modal -->
-<div id="editCompanyModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2 class="modal-title">Edit Company</h2>
-            <button class="modal-close" onclick="syntra.closeModal('editCompanyModal')">
-                <i data-lucide="x" width="20" height="20"></i>
-            </button>
-        </div>
-        <form id="editCompanyForm">
-            <input type="hidden" id="editCompanyId" name="id">
-            <div class="modal-body">
-                <div class="form-group">
-                    <label for="editCompanyName" class="form-label">Company Name *</label>
-                    <input type="text" id="editCompanyName" name="name" class="form-input" required>
-                </div>
-                <div class="form-group">
-                    <label for="editCompanySlug" class="form-label">Slug</label>
-                    <input type="text" id="editCompanySlug" name="slug" class="form-input" disabled>
-                    <p class="form-help-text">Slug cannot be changed</p>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="syntra.closeModal('editCompanyModal')">Cancel</button>
-                <button type="submit" class="btn btn-primary" id="editCompanyBtn">Save Changes</button>
-            </div>
-        </form>
-    </div>
-</div>
-
+{% block admin_scripts %}
 <script>
-// Auto-generate slug from company name
-document.getElementById('companyName').addEventListener('input', function(e) {
-    const slug = e.target.value
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '');
-    document.getElementById('companySlug').value = slug;
-});
+    function openCreateModal() {
+        document.getElementById('createModal').classList.add('show');
+    }
 
-// Search functionality
-document.getElementById('searchInput').addEventListener('input', function(e) {
-    const searchTerm = e.target.value.toLowerCase();
-    const rows = document.querySelectorAll('#companiesTableBody tr');
-    
-    rows.forEach(row => {
-        const name = row.dataset.companyName;
-        const slug = row.dataset.companySlug;
-        const matches = name.includes(searchTerm) || slug.includes(searchTerm);
-        row.style.display = matches ? '' : 'none';
+    function closeModal() {
+        document.getElementById('createModal').classList.remove('show');
+    }
+
+    document.getElementById('companyName').addEventListener('input', function (e) {
+        document.getElementById('companySlug').value = e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
     });
-});
 
-// Create company form submission
-document.getElementById('createCompanyForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    const btn = document.getElementById('createCompanyBtn');
-    const resetBtn = syntra.setButtonLoading(btn, 'Creating...');
-    
-    const formData = new FormData(e.target);
-    const data = {
-        name: formData.get('name'),
-        slug: formData.get('slug'),
-        settings: formData.get('settings') ? JSON.parse(formData.get('settings')) : {}
-    };
-    
-    try {
-        const response = await fetch('/api/admin/companies', {
+    document.getElementById('createForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const data = { name: document.getElementById('companyName').value, slug: document.getElementById('companySlug').value };
+        fetch('/api/admin/companies', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
+        }).then(r => r.json()).then(d => {
+            if (d.error) alert('Error: ' + d.error);
+            else location.reload();
         });
-        
-        const result = await response.json();
-        
-        if (response.ok) {
-            alert('Company created successfully!');
-            window.location.reload();
-        } else {
-            alert('Error: ' + (result.error || 'Failed to create company'));
-            resetBtn();
+    });
+
+    function deleteCompany(id, name) {
+        if (confirm(`Delete "${name}"?`)) {
+            fetch(`/api/admin/companies/${id}`, { method: 'DELETE' }).then(() => location.reload());
         }
-    } catch (error) {
-        alert('Error: ' + error.message);
-        resetBtn();
     }
-});
 
-// Edit company
-function editCompany(id, name, slug) {
-    document.getElementById('editCompanyId').value = id;
-    document.getElementById('editCompanyName').value = name;
-    document.getElementById('editCompanySlug').value = slug;
-    syntra.openModal('editCompanyModal');
-}
-
-// Edit company form submission
-document.getElementById('editCompanyForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    const btn = document.getElementById('editCompanyBtn');
-    const resetBtn = syntra.setButtonLoading(btn, 'Saving...');
-    
-    const companyId = document.getElementById('editCompanyId').value;
-    const name = document.getElementById('editCompanyName').value;
-    
-    try {
-        const response = await fetch(`/api/admin/companies/${companyId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name })
+    document.getElementById('searchInput').addEventListener('input', function (e) {
+        const term = e.target.value.toLowerCase();
+        document.querySelectorAll('#companiesTable tr').forEach(row => {
+            row.style.display = row.dataset.name.includes(term) ? '' : 'none';
         });
-        
-        const result = await response.json();
-        
-        if (response.ok) {
-            alert('Company updated successfully!');
-            window.location.reload();
-        } else {
-            alert('Error: ' + (result.error || 'Failed to update company'));
-            resetBtn();
-        }
-    } catch (error) {
-        alert('Error: ' + error.message);
-        resetBtn();
-    }
-});
+    });
 
-// Delete company
-async function deleteCompany(id, name) {
-    if (!confirm(`Are you sure you want to delete "${name}"? This action cannot be undone and will remove all associated data.`)) {
-        return;
-    }
-    
-    try {
-        const response = await fetch(`/api/admin/companies/${id}`, {
-            method: 'DELETE'
-        });
-        
-        const result = await response.json();
-        
-        if (response.ok) {
-            alert('Company deleted successfully!');
-            window.location.reload();
-        } else {
-            alert('Error: ' + (result.error || 'Failed to delete company'));
-        }
-    } catch (error) {
-        alert('Error: ' + error.message);
-    }
-}
-
-// Initialize Lucide icons
-if (typeof lucide !== 'undefined') {
-    lucide.createIcons();
-}
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 </script>
 {% endblock %}

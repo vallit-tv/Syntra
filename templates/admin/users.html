@@ -8,144 +8,81 @@
 
 {% block admin_content %}
 <div class="page-header">
-    <div>
-        <h1 class="page-title">User Management</h1>
-        <p class="page-description">Review platform access, roles, and company assignments.</p>
-    </div>
+    <h1 class="page-title">Users</h1>
+    <p class="page-description">Manage user accounts and roles.</p>
 </div>
 
-{% if user_stats %}
+<!-- Stats -->
 <div class="stats-grid">
     <div class="stat-card">
         <div class="stat-header">
             <span class="stat-label">Total Users</span>
-            <div class="stat-icon blue">
-                <i data-lucide="users" width="18" height="18"></i>
-            </div>
+            <div class="stat-icon"><i data-lucide="users" width="16" height="16"></i></div>
         </div>
-        <div class="stat-value">{{ user_stats.total }}</div>
-        <p class="stat-caption">
-            {% if user_stats.last_created %}
-                Latest account {{ user_stats.last_created|format_datetime('relative') }}
-            {% else %}
-                No accounts yet
-            {% endif %}
-        </p>
+        <div class="stat-value">{{ user_stats.total if user_stats else users|length }}</div>
     </div>
     <div class="stat-card">
         <div class="stat-header">
-            <span class="stat-label">Company Assignment</span>
-            <div class="stat-icon green">
-                <i data-lucide="building-2" width="18" height="18"></i>
-            </div>
+            <span class="stat-label">Assigned</span>
+            <div class="stat-icon"><i data-lucide="building-2" width="16" height="16"></i></div>
         </div>
-        <div class="stat-value">{{ user_stats.assigned_companies }}</div>
-        <p class="stat-caption">{{ user_stats.unassigned }} not assigned</p>
-    </div>
-    <div class="stat-card">
-        <div class="stat-header">
-            <span class="stat-label">Password Setup</span>
-            <div class="stat-icon amber">
-                <i data-lucide="lock" width="18" height="18"></i>
-            </div>
-        </div>
-        <div class="stat-value">{{ user_stats.with_password }}</div>
-        <p class="stat-caption">{{ user_stats.without_password }} pending setup</p>
-    </div>
-    <div class="stat-card">
-        <div class="stat-header">
-            <span class="stat-label">Roles</span>
-            <div class="stat-icon purple">
-                <i data-lucide="shield-check" width="18" height="18"></i>
-            </div>
-        </div>
-        <div class="stat-value">{{ user_stats.role_counts|length }}</div>
-        <p class="stat-caption">
-            {% for role, count in user_stats.role_counts[:3] %}
-                {{ role|capitalize }} · {{ count }}{% if not loop.last %}, {% endif %}
-            {% endfor %}
-        </p>
+        <div class="stat-value">{{ user_stats.assigned_companies if user_stats else 0 }}</div>
     </div>
 </div>
-{% endif %}
 
+<!-- Users Table -->
 <div class="dashboard-card">
     <div class="card-header">
-        <div>
-            <h2 class="card-title">All Users</h2>
-            <p class="card-subtitle">Click through to view activation history and audit details.</p>
-        </div>
+        <h2 class="card-title">All Users</h2>
     </div>
     {% if users %}
-        <div class="table-container">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Role</th>
-                        <th>Company</th>
-                        <th>Password</th>
-                        <th>Created</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for u in users %}
-                    <tr>
-                        <td>
-                            <a href="{{ url_for('admin_user_detail', user_id=u.id) }}" class="table-link">{{ u.name }}</a>
-                        </td>
-                        <td>
-                            <span class="status-badge">
-                                {{ u.get('role', 'user')|capitalize }}
-                            </span>
-                        </td>
-                        <td>
-                            {% if u.company_name %}
-                                {{ u.company_name }}
-                            {% elif u.get('company_id') %}
-                                {{ u.get('company_id')[:8] }}…
-                            {% else %}
-                                <span class="text-secondary">Unassigned</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if u.get('is_password_set') %}
-                                <span class="status-badge active">
-                                    <span class="status-badge-dot"></span>
-                                    Set
-                                </span>
-                            {% else %}
-                                <span class="status-badge inactive">
-                                    <span class="status-badge-dot"></span>
-                                    Pending
-                                </span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if u.created_at %}
-                                {{ u.created_at|format_datetime('short') }}
-                            {% else %}
-                                —
-                            {% endif %}
-                        </td>
-                        <td>
-                            <div class="table-actions">
-                                <a href="{{ url_for('admin_user_detail', user_id=u.id) }}" class="btn btn-sm btn-secondary">View</a>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Role</th>
+                    <th>Company</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td style="font-weight: 500;">{{ u.name }}</td>
+                    <td>
+                        <span class="status-badge">{{ u.get('role', 'user')|capitalize }}</span>
+                    </td>
+                    <td style="color: var(--db-text-secondary);">
+                        {{ u.company_name if u.company_name else '—' }}
+                    </td>
+                    <td>
+                        <span class="status-badge {{ 'active' if u.get('is_password_set') else 'inactive' }}">
+                            {{ 'Active' if u.get('is_password_set') else 'Pending' }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('admin_user_detail', user_id=u.id) }}"
+                            class="btn btn-secondary btn-sm">View</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
     {% else %}
-        <div class="empty-state">
-            <i data-lucide="users" width="36" height="36" class="empty-state-icon"></i>
-            <h3 class="empty-state-title">No users yet</h3>
-            <p class="empty-state-description">Use the admin API or CLI to create your first account.</p>
-        </div>
+    <div class="empty-state">
+        <div class="empty-state-icon"><i data-lucide="users" width="24" height="24"></i></div>
+        <h3 class="empty-state-title">No users</h3>
+        <p class="empty-state-description">Users will appear here after registration.</p>
+    </div>
     {% endif %}
 </div>
 {% endblock %}
 
+{% block admin_scripts %}
+<script>
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+</script>
+{% endblock %}

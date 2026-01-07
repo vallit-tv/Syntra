@@ -1,10 +1,10 @@
 {% extends "dashboard_base.html" %}
 
-{% block title %}Admin Panel – Syntra{% endblock %}
+{% block title %}Admin – Vallit{% endblock %}
 
-{% block logo_icon %}S{% endblock %}
-{% block logo_text %}Syntra Admin{% endblock %}
-{% block logo_badge %}<span class="admin-badge">ADMIN</span>{% endblock %}
+{% block logo_icon %}V{% endblock %}
+{% block logo_text %}Vallit{% endblock %}
+{% block logo_badge %}<span class="admin-badge">Admin</span>{% endblock %}
 
 {% block sidebar_home_url %}{{ url_for('admin_dashboard') }}{% endblock %}
 
@@ -12,61 +12,49 @@
 <a href="{{ url_for('admin_workflows') }}"
     class="nav-item {% if request.endpoint == 'admin_workflows' or request.endpoint == 'admin_workflow_detail' %}active{% endif %}">
     <span class="nav-item-icon">
-        <i data-lucide="workflow" width="20" height="20"></i>
+        <i data-lucide="workflow" width="18" height="18"></i>
     </span>
     <span class="nav-item-text">Workflows</span>
 </a>
 <a href="{{ url_for('admin_companies') }}"
     class="nav-item {% if request.endpoint == 'admin_companies' or request.endpoint == 'admin_company_detail' %}active{% endif %}">
     <span class="nav-item-icon">
-        <i data-lucide="building-2" width="20" height="20"></i>
+        <i data-lucide="building-2" width="18" height="18"></i>
     </span>
     <span class="nav-item-text">Companies</span>
 </a>
 <a href="{{ url_for('admin_users') }}"
     class="nav-item {% if request.endpoint == 'admin_users' or request.endpoint == 'admin_user_detail' %}active{% endif %}">
     <span class="nav-item-icon">
-        <i data-lucide="users" width="20" height="20"></i>
+        <i data-lucide="users" width="18" height="18"></i>
     </span>
     <span class="nav-item-text">Users</span>
 </a>
-<a href="{{ url_for('admin_n8n') }}" class="nav-item {% if request.endpoint == 'admin_n8n' %}active{% endif %}">
-    <span class="nav-item-icon">
-        <i data-lucide="workflow" width="20" height="20"></i>
-    </span>
-    <span class="nav-item-text">N8N</span>
-</a>
-<a href="{{ url_for('admin_analytics') }}"
-    class="nav-item {% if request.endpoint == 'admin_analytics' %}active{% endif %}">
-    <span class="nav-item-icon">
-        <i data-lucide="bar-chart-3" width="20" height="20"></i>
-    </span>
-    <span class="nav-item-text">Analytics</span>
-</a>
-<a href="{{ url_for('admin_chat') }}" class="nav-item {% if request.endpoint == 'admin_chat' %}active{% endif %}">
-    <span class="nav-item-icon">
-        <i data-lucide="message-square" width="20" height="20"></i>
-    </span>
-    <span class="nav-item-text">AI Chat</span>
-</a>
 <a href="{{ url_for('admin_widgets') }}"
-    class="nav-item {% if request.endpoint == 'admin_widgets' or request.endpoint == 'admin_widget_detail' %}active{% endif %}">
+    class="nav-item {% if request.endpoint == 'admin_widgets' or request.endpoint == 'admin_widget_detail' or request.endpoint == 'admin_widget_customize' %}active{% endif %}">
     <span class="nav-item-icon">
-        <i data-lucide="bot" width="20" height="20"></i>
+        <i data-lucide="bot" width="18" height="18"></i>
     </span>
     <span class="nav-item-text">Widgets</span>
 </a>
-<a href="{{ url_for('admin_system') }}" class="nav-item {% if request.endpoint == 'admin_system' %}active{% endif %}">
+<a href="{{ url_for('admin_n8n') }}" class="nav-item {% if request.endpoint == 'admin_n8n' %}active{% endif %}">
     <span class="nav-item-icon">
-        <i data-lucide="server" width="20" height="20"></i>
+        <i data-lucide="zap" width="18" height="18"></i>
     </span>
-    <span class="nav-item-text">System</span>
+    <span class="nav-item-text">N8N</span>
+</a>
+<div class="nav-divider"></div>
+<a href="{{ url_for('dashboard_overview') }}" class="nav-item">
+    <span class="nav-item-icon">
+        <i data-lucide="arrow-left" width="18" height="18"></i>
+    </span>
+    <span class="nav-item-text">Back to Dashboard</span>
 </a>
 {% endblock %}
 
 {% block user_menu_items %}
 <a href="{{ url_for('logout') }}" class="dropdown-item danger">
-    <i data-lucide="log-out" width="16" height="16"></i>
+    <i data-lucide="log-out" width="14" height="14"></i>
     <span>Logout</span>
 </a>
 {% endblock %}

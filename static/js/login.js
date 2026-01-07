@@ -1,5 +1,5 @@
 // Progressive Login System
-(function() {
+(function () {
     'use strict';
 
     // State management
@@ -30,7 +30,8 @@
         submitSpinner: document.getElementById('submitSpinner'),
         usernameError: document.getElementById('usernameError'),
         passwordError: document.getElementById('passwordError'),
-        loadingIndicator: document.getElementById('loadingIndicator')
+        loadingIndicator: document.getElementById('loadingOverlay'),
+        eyeIcon: document.getElementById('eyeIcon')
     };
 
     // Initialize
@@ -81,7 +82,7 @@
     // Handle username submission
     async function handleUsernameSubmit() {
         const username = elements.nameInput.value.trim();
-        
+
         if (!username || username.length < 2) {
             showError(elements.usernameError, 'Username must be at least 2 characters');
             return;
@@ -94,7 +95,7 @@
         try {
             const response = await fetch('/api/auth/check-user', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: { 'Content-Type': 'application/json' },
                 credentials: 'same-origin', // Include cookies in request
                 body: JSON.stringify({ name: username })
             });
@@ -145,62 +146,35 @@
             elements.confirmPasswordInput.required = false;
         }
 
-        // Animate transition
-        elements.stepUsername.style.opacity = '0';
-        elements.stepUsername.style.transform = 'translateX(-20px)';
-        
-        setTimeout(() => {
-            elements.stepUsername.style.display = 'none';
-            elements.stepPassword.style.display = 'block';
-            elements.stepPassword.style.opacity = '0';
-            elements.stepPassword.style.transform = 'translateX(20px)';
-            
-            // Trigger animation
-            requestAnimationFrame(() => {
-                elements.stepPassword.style.transition = 'all 0.3s ease';
-                elements.stepPassword.style.opacity = '1';
-                elements.stepPassword.style.transform = 'translateX(0)';
-            });
-
-            elements.passwordInput.focus();
-        }, 150);
+        // Switch steps
+        elements.stepUsername.classList.remove('active');
+        elements.stepPassword.classList.add('active');
+        elements.passwordInput.focus();
     }
 
     // Show username step (back button)
     function showUsernameStep() {
-        elements.stepPassword.style.opacity = '0';
-        elements.stepPassword.style.transform = 'translateX(20px)';
-        
-        setTimeout(() => {
-            elements.stepPassword.style.display = 'none';
-            elements.stepUsername.style.display = 'block';
-            elements.stepUsername.style.opacity = '0';
-            elements.stepUsername.style.transform = 'translateX(-20px)';
-            
-            requestAnimationFrame(() => {
-                elements.stepUsername.style.transition = 'all 0.3s ease';
-                elements.stepUsername.style.opacity = '1';
-                elements.stepUsername.style.transform = 'translateX(0)';
-            });
+        // Switch steps
+        elements.stepPassword.classList.remove('active');
+        elements.stepUsername.classList.add('active');
 
-            // Reset state
-            currentState.needsPassword = false;
-            currentState.isCreatingPassword = false;
-            elements.passwordInput.value = '';
-            elements.confirmPasswordInput.value = '';
-            hideError(elements.passwordError);
-            elements.passwordStrength.style.display = 'none';
-            
-            elements.nameInput.focus();
-        }, 150);
+        // Reset state
+        currentState.needsPassword = false;
+        currentState.isCreatingPassword = false;
+        elements.passwordInput.value = '';
+        elements.confirmPasswordInput.value = '';
+        hideError(elements.passwordError);
+        if (elements.passwordStrength) elements.passwordStrength.style.display = 'none';
+
+        elements.nameInput.focus();
     }
 
     // Handle form submit
     async function handleFormSubmit(e) {
         e.preventDefault();
-        
+
         const password = elements.passwordInput.value;
-        
+
         if (!password) {
             showError(elements.passwordError, 'Password is required');
             return;
@@ -235,7 +209,7 @@
         try {
             const response = await fetch('/api/auth/setup-password', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: { 'Content-Type': 'application/json' },
                 credentials: 'same-origin', // Include cookies in request
                 body: JSON.stringify({
                     name: currentState.username,
@@ -273,7 +247,7 @@
         try {
             const response = await fetch('/api/auth/login', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: { 'Content-Type': 'application/json' },
                 credentials: 'same-origin', // Include cookies in request
                 body: JSON.stringify({
                     name: currentState.username,
@@ -355,15 +329,15 @@
 
     function isPasswordStrong(password) {
         return password.length >= 8 &&
-               /[A-Z]/.test(password) &&
-               /[a-z]/.test(password) &&
-               /[0-9]/.test(password);
+            /[A-Z]/.test(password) &&
+            /[a-z]/.test(password) &&
+            /[0-9]/.test(password);
     }
 
     function validatePasswordMatch() {
         const password = elements.passwordInput.value;
         const confirm = elements.confirmPasswordInput.value;
-        
+
         if (confirm && password !== confirm) {
             elements.confirmPasswordInput.setCustomValidity('Passwords do not match');
         } else {
@@ -376,14 +350,17 @@
         const type = elements.passwordInput.type === 'password' ? 'text' : 'password';
         elements.passwordInput.type = type;
         elements.confirmPasswordInput.type = type;
-        
-        const eyeIcon = elements.passwordToggle.querySelector('.eye-icon');
-        eyeIcon.textContent = type === 'password' ? '👁️' : '🙈';
+
+        if (elements.eyeIcon) {
+            elements.eyeIcon.textContent = type === 'password' ? '👁️' : '🙈';
+        }
     }
 
     // Utility functions
     function showLoading(show) {
-        elements.loadingIndicator.style.display = show ? 'flex' : 'none';
+        if (elements.loadingIndicator) {
+            elements.loadingIndicator.style.display = show ? 'flex' : 'none';
+        }
     }
 
     function setSubmitLoading(loading) {
@@ -414,7 +391,7 @@
         successDiv.style.transform = 'translateX(-50%)';
         successDiv.style.zIndex = '10000';
         document.body.appendChild(successDiv);
-        
+
         setTimeout(() => {
             successDiv.remove();
         }, 3000);
