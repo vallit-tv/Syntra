@@ -1,5 +1,5 @@
 /**
- * Syntra AI Chat Widget
+ * Vallit AI Chat Widget
  * Embeddable chat widget with n8n/ChatGPT integration
  * 
  * Usage:
@@ -15,7 +15,7 @@
     'use strict';
 
     // Prevent multiple initializations
-    if (window.SyntraChatWidget) return;
+    if (window.VallitChatWidget) return;
 
     // =========================================================================
     // Configuration
@@ -24,7 +24,7 @@
     const WIDGET_VERSION = '1.0.0';
 
     // Smart default: use the origin of this script (embed.js), not the host page
-    // This ensures the widget connects to the Syntra backend even when embedded on other domains
+    // This ensures the widget connects to the Vallit backend even when embedded on other domains
     const getScriptOrigin = () => {
         try {
             // Try to get the current script element
@@ -57,12 +57,12 @@
         theme: 'glassmorphism',
         position: 'bottom-right',
         apiUrl: DEFAULT_API_URL,
-        welcomeMessage: "Hi! 👋 I'm your AI assistant. How can I help you today?",
+        welcomeMessage: "Hi! I'm Kian, your AI Agent. How can I help you today?",
         placeholderText: 'Type your message...',
         primaryColor: '#6366f1',
-        headerTitle: 'AI Assistant',
+        headerTitle: 'Kian',
         showBranding: true,
-        privacyPolicyUrl: null  // Optional privacy policy link
+        privacyPolicyUrl: 'https://vallit.net/datenschutz'  // Privacy policy link
     };
 
     // =========================================================================
@@ -70,12 +70,12 @@
     // =========================================================================
 
     function generateSessionId() {
-        return 'syntra_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+        return 'vallit_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
     }
 
     function getStoredSessionId() {
         try {
-            return localStorage.getItem('syntra_chat_session') || null;
+            return localStorage.getItem('vallit_chat_session') || null;
         } catch (e) {
             return null;
         }
@@ -83,7 +83,7 @@
 
     function storeSessionId(sessionId) {
         try {
-            localStorage.setItem('syntra_chat_session', sessionId);
+            localStorage.setItem('vallit_chat_session', sessionId);
         } catch (e) {
             // Storage not available
         }
@@ -115,7 +115,7 @@
     // Widget Class
     // =========================================================================
 
-    class SyntraChatWidget {
+    class VallitChatWidget {
         constructor(config = {}) {
             this.config = { ...defaultConfig, ...config };
             this.sessionId = getStoredSessionId() || generateSessionId();
@@ -287,8 +287,8 @@
                             </button>
                         </form>
                         ${this.config.showBranding || this.config.privacyPolicyUrl ? `
-                        <div class="syntra-branding">
-                            ${this.config.showBranding ? 'Powered by <a href="https://vallit.net" target="_blank" rel="noopener">Syntra</a>' : ''}
+                        <div class="vallit-branding">
+                            ${this.config.showBranding ? 'Powered by <a href="https://vallit.net" target="_blank" rel="noopener">Vallit</a>' : ''}
                             ${this.config.showBranding && this.config.privacyPolicyUrl ? ' • ' : ''}
                             ${this.config.privacyPolicyUrl ? '<a href="' + this.config.privacyPolicyUrl + '" target="_blank" rel="noopener">Privacy & Data Protection</a>' : ''}
                         </div>
@@ -799,7 +799,7 @@
             }
 
             try {
-                localStorage.setItem('syntra_chat_history', JSON.stringify(history));
+                localStorage.setItem('vallit_chat_history', JSON.stringify(history));
             } catch (e) {
                 console.warn('Failed to save history to localStorage', e);
             }
@@ -807,7 +807,7 @@
 
         getHistory() {
             try {
-                const stored = localStorage.getItem('syntra_chat_history');
+                const stored = localStorage.getItem('vallit_chat_history');
                 return stored ? JSON.parse(stored) : [];
             } catch (e) {
                 return [];
@@ -956,12 +956,16 @@
             });
 
             // Initialize widget
-            window.syntraChat = new SyntraChatWidget(config);
+            window.vallitChat = new VallitChatWidget(config);
+            // Backward compatibility
+            window.syntraChat = window.vallitChat;
         });
     }
 
     // Export to window
-    window.SyntraChatWidget = SyntraChatWidget;
+    window.VallitChatWidget = VallitChatWidget;
+    // Backward compatibility alias
+    window.SyntraChatWidget = VallitChatWidget;
 
     // Auto-init on DOM ready
     if (document.readyState === 'loading') {

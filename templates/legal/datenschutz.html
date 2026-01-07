@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Datenschutz – Syntra{% endblock %}
+{% block title %}Datenschutz – Vallit{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}?v=7">
@@ -34,6 +34,10 @@
                 <span class="legal-nav-icon">👤</span>
                 <span>Verantwortlicher</span>
             </a>
+            <a href="#ki-chatbot" class="legal-nav-item">
+                <span class="legal-nav-icon">🤖</span>
+                <span>KI-Chatbot</span>
+            </a>
             <a href="#cookies" class="legal-nav-item">
                 <span class="legal-nav-icon">🍪</span>
                 <span>Cookies</span>
@@ -58,11 +62,11 @@
                 <h2>1. Verantwortlicher</h2>
                 <div class="legal-info-card">
                     <p>
-                        <strong>Syntra GmbH</strong><br>
+                        <strong>Vallit Network</strong><br>
                         Musterstraße 123<br>
                         12345 Berlin<br>
                         Deutschland<br><br>
-                        <strong>E-Mail:</strong> datenschutz@syntra.io
+                        <strong>E-Mail:</strong> datenschutz@vallit.net
                     </p>
                 </div>
             </div>
@@ -183,6 +187,46 @@
                 </p>
             </div>
 
+            <div class="legal-section" id="ki-chatbot">
+                <h2>6a. KI-Chatbot (Kian)</h2>
+                <p>
+                    Auf unserer Website und auf Websites unserer Kunden setzen wir einen KI-gestützten Chatbot
+                    namens "Kian" ein, der von Vallit Network entwickelt wurde. Bei der Nutzung des Chatbots
+                    werden folgende Daten verarbeitet:
+                </p>
+                <h3>Erhobene Daten</h3>
+                <ul class="legal-list">
+                    <li><span class="legal-bullet">•</span> Ihre Chat-Nachrichten und Eingaben</li>
+                    <li><span class="legal-bullet">•</span> Session-ID zur Zuordnung der Konversation</li>
+                    <li><span class="legal-bullet">•</span> Zeitstempel der Nachrichten</li>
+                    <li><span class="legal-bullet">•</span> Technische Metadaten (Browser, Gerätetyp)</li>
+                </ul>
+                <h3>Zweck der Verarbeitung</h3>
+                <ul class="legal-list">
+                    <li><span class="legal-bullet">•</span> Beantwortung Ihrer Anfragen mittels KI-Unterstützung</li>
+                    <li><span class="legal-bullet">•</span> Verbesserung der Servicequalität</li>
+                    <li><span class="legal-bullet">•</span> Terminvereinbarungen und Kontaktaufnahme</li>
+                </ul>
+                <h3>Datenverarbeitung durch Dritte</h3>
+                <p>
+                    Zur Verarbeitung Ihrer Anfragen nutzen wir die API von OpenAI. Ihre Chat-Nachrichten
+                    werden an OpenAI übermittelt, um KI-gestützte Antworten zu generieren. OpenAI verarbeitet
+                    diese Daten gemäß ihrer Datenschutzrichtlinie. Es gelten die Standard-Vertragsklauseln
+                    für die Datenübermittlung in Drittländer.
+                </p>
+                <h3>Speicherdauer</h3>
+                <p>
+                    Chat-Verläufe werden für maximal 90 Tage gespeichert und anschließend automatisch gelöscht,
+                    sofern keine längere Aufbewahrung aufgrund gesetzlicher Verpflichtungen erforderlich ist.
+                </p>
+                <h3>Rechtsgrundlage</h3>
+                <p>
+                    Die Verarbeitung erfolgt auf Grundlage Ihrer Einwilligung (Art. 6 Abs. 1 lit. a DSGVO)
+                    durch die Nutzung des Chatbots sowie zur Durchführung vorvertraglicher Maßnahmen
+                    (Art. 6 Abs. 1 lit. b DSGVO).
+                </p>
+            </div>
+
             <div class="legal-section cookie-section" id="cookies">
                 <h2>7. Cookies und Einwilligungsmanagement</h2>
                 <p>
@@ -224,7 +268,7 @@
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td><code>syntra_consent</code></td>
+                                        <td><code>vallit_consent</code></td>
                                         <td>Speichert Ihre Cookie-Einwilligungen</td>
                                         <td>365 Tage</td>
                                     </tr>
@@ -418,13 +462,13 @@
                 <div class="contact-card">
                     <p>
                         Bei Fragen zum Datenschutz wenden Sie sich bitte an:<br><br>
-                        <strong>Syntra GmbH</strong><br>
+                        <strong>Vallit Network</strong><br>
                         Datenschutzbeauftragter<br>
                         Musterstraße 123<br>
                         12345 Berlin<br><br>
-                        <a href="mailto:datenschutz@syntra.io" class="contact-email">
+                        <a href="mailto:datenschutz@vallit.net" class="contact-email">
                             <span class="email-icon">📧</span>
-                            datenschutz@syntra.io
+                            datenschutz@vallit.net
                         </a>
                     </p>
                 </div>

@@ -505,20 +505,23 @@
     cursor: not-allowed;
 }
 
-.syntra-branding {
+.syntra-branding,
+.vallit-branding {
     text-align: center;
     margin-top: 12px;
     font-size: 11px;
     color: var(--syntra-text-secondary);
 }
 
-.syntra-branding a {
+.syntra-branding a,
+.vallit-branding a {
     color: var(--syntra-primary);
     text-decoration: none;
     font-weight: 500;
 }
 
-.syntra-branding a:hover {
+.syntra-branding a:hover,
+.vallit-branding a:hover {
     text-decoration: underline;
 }
 
@@ -1043,7 +1046,8 @@
     opacity: 0.9;
 }
 
-background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+.syntra-theme-rounded .syntra-toggle-btn {
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
 }
 
 .syntra-theme-rounded .syntra-chat-window {
