@@ -1,68 +1,118 @@
-{% extends "layout_console.html" %}
+{% extends "layout_console_v3.html" %}
 
 {% block page_title %}Agents{% endblock %}
 
+{% block header_actions %}
+<button class="btn btn-primary btn-sm" style="margin-left: var(--space-4);" disabled title="Coming soon">
+    <i data-lucide="plus" width="14" height="14"></i>
+    New Agent
+</button>
+{% endblock %}
+
 {% block content %}
-<div style="max-width: 900px;">
+<div class="flex flex-col gap-6">
 
-    <div class="subtitle">
-        Manage chat agents for your companies.
+    <p class="text-muted">Manage chat agents for your companies. Copy embed codes to deploy widgets on your websites.
+    </p>
+
+    <!-- AGENTS TABLE -->
+    <div class="card">
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Company</th>
+                        <th>Activity (30d)</th>
+                        <th>Status</th>
+                        <th style="width: 120px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if companies %}
+                    {% for company in companies %}
+                    <tr>
+                        <td>
+                            <div class="flex items-center gap-3">
+                                <div class="user-avatar" style="width: 32px; height: 32px; font-size: 12px;">
+                                    {{ company.company_name[0]|upper if company.company_name else 'C' }}
+                                </div>
+                                <div>
+                                    <div style="font-weight: 500; color: var(--text-primary);">{{ company.company_name
+                                        }}</div>
+                                    <div class="text-xs text-muted">{{ company.company_slug }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="flex flex-col gap-1">
+                                <span>{{ company.total_messages }} messages</span>
+                                <span class="text-xs text-muted">{{ company.total_sessions }} sessions</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span
+                                class="badge {% if company.has_activity %}badge-success{% else %}badge-default{% endif %}">
+                                {{ 'Active' if company.has_activity else 'Idle' }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="table-actions">
+                                <button class="btn btn-ghost btn-icon btn-sm"
+                                    onclick="copyEmbed('{{ company.company_id }}')" title="Copy Embed Code">
+                                    <i data-lucide="code" width="14" height="14"></i>
+                                </button>
+                                <button class="btn btn-ghost btn-icon btn-sm"
+                                    onclick="Vallit.Toast.info('Settings coming soon')" title="Settings">
+                                    <i data-lucide="settings" width="14" height="14"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="4">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">
+                                    <i data-lucide="bot" width="24" height="24"></i>
+                                </div>
+                                <div class="empty-state-title">No agents yet</div>
+                                <div class="empty-state-description">
+                                    Create a company and agent to start deploying chat widgets.
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
     </div>
 
-    <!-- Widgets List -->
-    <div class="console-list">
-        <div class="list-header" style="display:grid; grid-template-columns: 2fr 3fr 1fr 1fr; gap:var(--space-md);">
-            <span>COMPANY</span>
-            <span>ACTIVITY (30d)</span>
-            <span>STATUS</span>
-            <span>ACTIONS</span>
+    <!-- EMBED INSTRUCTIONS -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="heading-md">How to Embed</h3>
         </div>
-
-        {% if companies %}
-        {% for company in companies %}
-        <div class="list-item" style="display:grid; grid-template-columns: 2fr 3fr 1fr 1fr; gap:var(--space-md);">
-            <div style="font-weight:500;">
-                {{ company.company_name }}
-                <span style="font-size:11px; color:var(--console-text-tertiary); margin-left:4px;">{{
-                    company.company_slug }}</span>
-            </div>
-            <div style="color:var(--console-text-secondary);">
-                {{ company.total_messages }} msgs · {{ company.total_sessions }} sessions
-            </div>
-            <div>
-                <span class="status-dot {% if company.has_activity %}active{% endif %}"></span>
-                <span style="font-size:11px; color:var(--console-text-secondary); margin-left:4px;">{{ 'Active' if
-                    company.has_activity else 'Idle' }}</span>
-            </div>
-            <div style="display:flex; gap:8px;">
-                <button onclick="copyEmbed('{{ company.company_id }}')"
-                    style="background:transparent; border:none; cursor:pointer; color:var(--console-text-secondary);"
-                    title="Copy Embed Code">
-                    <i data-lucide="code" width="14" height="14"></i>
-                </button>
-                <!-- Detail View (Coming Soon) -->
-                <a href="#"
-                    style="background:transparent; border:none; cursor:pointer; color:var(--console-text-secondary);"
-                    title="Settings (Coming Soon)">
-                    <i data-lucide="settings" width="14" height="14"></i>
-                </a>
+        <div class="card-body">
+            <p class="text-muted mb-4">Add the following script tag to your website's HTML, just before the closing
+                <code>&lt;/body&gt;</code> tag:</p>
+            <div
+                style="background: var(--bg-tertiary); padding: var(--space-4); border-radius: var(--radius-md); font-family: var(--font-mono); font-size: 12px; overflow-x: auto;">
+                <code
+                    style="color: var(--text-secondary);">&lt;script src="{{ request.host_url }}widget/embed.js" data-company-id="YOUR_COMPANY_ID" data-theme="minimal"&gt;&lt;/script&gt;</code>
             </div>
         </div>
-        {% endfor %}
-        {% else %}
-        <div style="padding:var(--space-xl); text-align:center; color:var(--console-text-secondary);">
-            No companies found. Create a company first.
-        </div>
-        {% endif %}
     </div>
+
 </div>
+{% endblock %}
 
+{% block scripts %}
 <script>
     function copyEmbed(companyId) {
         const code = `<script src="{{ request.host_url }}widget/embed.js" data-company-id="${companyId}" data-theme="minimal"><\/script>`;
-        navigator.clipboard.writeText(code).then(() => {
-            alert('Embed code copied!');
-        });
+        Vallit.copyToClipboard(code);
     }
 </script>
 {% endblock %}
