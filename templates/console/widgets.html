@@ -177,9 +177,24 @@
                     <div class="form-group">
                         <label class="form-label">Widget Position</label>
                         <select id="settingsPosition" class="form-select w-full">
-                            <option value="bottom-right">Bottom Right</option>
                             <option value="bottom-left">Bottom Left</option>
                         </select>
+                    </div>
+
+                    <!-- Computed Embed Code -->
+                    <div class="form-group"
+                        style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);">
+                        <label class="form-label">Embed Code</label>
+                        <div style="position: relative;">
+                            <textarea id="settingsEmbedCode" class="form-input w-full" rows="4" readonly
+                                style="font-family: monospace; font-size: 12px; background: #f4f4f5; color: #666; resize: none;"></textarea>
+                            <button type="button" onclick="copySettingsEmbedCode()"
+                                style="position: absolute; top: 8px; right: 8px; padding: 4px 8px; font-size: 11px; background: #000; color: #fff; border: none; border-radius: 4px; cursor: pointer;">
+                                Copy
+                            </button>
+                        </div>
+                        <span class="form-hint">Code updates automatically. Settings must be saved for changes to
+                            persist on the backend.</span>
                     </div>
                 </div>
             </div>
@@ -209,7 +224,46 @@
         }
     });
 
-    // Open settings modal
+    // Generate Embed Code dynamically
+    function updateEmbedCode() {
+        const companyId = document.getElementById('settingsCompanyId').value;
+        const theme = document.getElementById('settingsTheme').value;
+        const language = document.getElementById('settingsLanguage').value;
+        const position = document.getElementById('settingsPosition').value;
+        const dbView = document.getElementById('settingsDbView').checked;
+        const primaryColor = document.getElementById('settingsPrimaryColor').value;
+        const botName = document.getElementById('settingsBotName').value;
+
+        // Base Attributes
+        let code = `<script src="{{ request.host_url }}widget/embed.js" \n  data-company-id="${companyId}"`;
+
+        // Optional Attributes (only add if not default or strictly needed)
+        code += `\n  data-theme="${theme}"`;
+        code += `\n  data-language="${language}"`;
+        code += `\n  data-position="${position}"`;
+        code += `\n  data-color="${primaryColor}"`;
+        if (botName) code += `\n  data-title="${botName}"`;
+        // if (dbView) code += `\n  data-db-view="true"`; // If supported by embed.js/autoInit lookup
+
+        code += `>\n<\/script>`;
+
+        document.getElementById('settingsEmbedCode').value = code;
+    }
+
+    function copySettingsEmbedCode() {
+        const code = document.getElementById('settingsEmbedCode');
+        code.select();
+        document.execCommand('copy');
+        Vallit.Toast.success('Embed code copied!');
+    }
+
+    // Attach listeners to all inputs to update code live
+    ['settingsTheme', 'settingsLanguage', 'settingsPosition', 'settingsPrimaryColor', 'settingsBotName', 'settingsDbView'].forEach(id => {
+        document.getElementById(id).addEventListener('change', updateEmbedCode);
+        document.getElementById(id).addEventListener('input', updateEmbedCode);
+    });
+
+    // Validated copy of openSettings
     async function openSettings(companyId, companyName) {
         document.getElementById('settingsCompanyId').value = companyId;
         document.querySelector('#widget-settings-modal .modal-title').textContent = `Widget Settings - ${companyName}`;
@@ -228,6 +282,10 @@
             document.getElementById('settingsPrimaryColor').value = settings.primary_color || '#6366f1';
             document.getElementById('settingsPrimaryColorText').value = settings.primary_color || '#6366f1';
             document.getElementById('settingsPosition').value = settings.position || 'bottom-right';
+
+            // Generate initial code
+            updateEmbedCode();
+
         } catch (e) {
             console.error('Failed to load settings:', e);
         }
