@@ -235,7 +235,11 @@
         const botName = document.getElementById('settingsBotName').value;
 
         // Base Attributes
-        let code = `<script src="{{ request.host_url }}widget/embed.js" \n  data-company-id="${companyId}"`;
+        // Ensure host URL has no trailing slash for cleaner output
+        let hostUrl = "{{ request.host_url }}";
+        if (hostUrl.endsWith('/')) hostUrl = hostUrl.slice(0, -1);
+
+        let code = `<script src="${hostUrl}/widget/embed.js" \n  data-api-url="${hostUrl}" \n  data-company-id="${companyId}"`;
 
         // Optional Attributes (only add if not default or strictly needed)
         code += `\n  data-theme="${theme}"`;
