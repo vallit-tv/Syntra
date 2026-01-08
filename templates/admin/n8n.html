@@ -3,275 +3,205 @@
 {% block breadcrumbs %}
 <a href="{{ url_for('admin_dashboard') }}">Admin</a>
 <span class="breadcrumbs-separator">/</span>
-<span>n8n Editor</span>
+<span>n8n Integration</span>
 {% endblock %}
 
 {% block admin_content %}
+<!-- Page Header -->
 <div class="page-header">
-    <h1 class="page-title">n8n Workflow Editor</h1>
-    <p class="page-description">Access your n8n instance to create and manage workflows.</p>
-</div>
-
-{% if error_message %}
-<div class="dashboard-card" style="margin-bottom: 1.5rem; border-left: 3px solid var(--db-danger);">
-    <div class="card-body">
-        <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--db-danger);">
-            <i data-lucide="alert-circle" width="20" height="20"></i>
-            <strong>Error loading n8n page</strong>
-        </div>
-        <p style="margin-top: 0.5rem; color: var(--db-text-secondary);">{{ error_message }}</p>
+    <div class="page-header-content">
+        <h1 class="page-title">n8n Integration</h1>
+        <p class="page-description">Connect your n8n instance to sync workflows</p>
     </div>
 </div>
-{% endif %}
 
-{% if n8n_overview %}
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-header">
-            <span class="stat-label">Workflows Tracked</span>
-            <div class="stat-icon blue">
-                <i data-lucide="workflow" width="18" height="18"></i>
-            </div>
+<!-- Two Column Settings Layout -->
+<div class="settings-grid">
+    <!-- Left Column: Connection -->
+    <div class="settings-section">
+        <h3 class="settings-section-title">Connection</h3>
+
+        {% if n8n_configured %}
+        {% if n8n_status and n8n_status.connected %}
+        <div class="settings-row">
+            <span class="settings-label">Status</span>
+            <span class="status-indicator">
+                <span class="status-dot connected"></span>
+                Connected
+            </span>
         </div>
-        <div class="stat-value">{{ n8n_overview.total_workflows }}</div>
-        <p class="stat-caption">{{ n8n_overview.synced_workflows }} synced from n8n</p>
-    </div>
-    <div class="stat-card">
-        <div class="stat-header">
-            <span class="stat-label">Out of Sync</span>
-            <div class="stat-icon amber">
-                <i data-lucide="upload-cloud" width="18" height="18"></i>
-            </div>
+        <div class="settings-row">
+            <span class="settings-label">n8n URL</span>
+            <a href="{{ n8n_url }}" target="_blank" rel="noopener" class="settings-value"
+                style="color: var(--db-text-primary); text-decoration: underline;">
+                {{ n8n_url|truncate(30) }}
+            </a>
         </div>
-        <div class="stat-value">{{ n8n_overview.unsynced_workflows }}</div>
-        <p class="stat-caption">
-            {% if n8n_overview.last_synced_at %}
-                Last sync {{ n8n_overview.last_synced_at|format_datetime('relative') }}
-            {% else %}
+        <div class="settings-row">
+            <span class="settings-label">Workflows</span>
+            <span class="settings-value">{{ n8n_overview.total_workflows if n8n_overview else 0 }} tracked</span>
+        </div>
+        <div class="settings-row">
+            <span class="settings-label">Last sync</span>
+            <span class="settings-value" style="color: var(--db-text-secondary);">
+                {% if n8n_overview and n8n_overview.last_synced_at %}
+                {{ n8n_overview.last_synced_at|format_datetime('relative') }}
+                {% else %}
                 Awaiting first sync
+                {% endif %}
+            </span>
+        </div>
+
+        <div style="margin-top: var(--db-space-lg); display: flex; flex-direction: column; gap: var(--db-space-sm);">
+            <a href="{{ n8n_url }}" target="_blank" rel="noopener" class="btn btn-primary btn-sm">
+                <i data-lucide="external-link" width="14" height="14"></i>
+                Open n8n Editor
+            </a>
+            <button id="syncNowBtn" onclick="syncNow()" class="btn btn-secondary btn-sm">
+                <i data-lucide="refresh-cw" width="14" height="14"></i>
+                Sync Workflows
+            </button>
+            <a href="{{ url_for('admin_workflows') }}" class="btn btn-secondary btn-sm">
+                <i data-lucide="workflow" width="14" height="14"></i>
+                View Workflows
+            </a>
+        </div>
+
+        <!-- Sync Status -->
+        <div id="syncStatus"
+            style="margin-top: var(--db-space-md); padding: var(--db-space-md); border-radius: var(--db-radius-md); background-color: var(--db-bg-secondary); display: none;">
+            <div id="syncMessage" style="font-size: var(--db-text-sm); color: var(--db-text-primary);"></div>
+        </div>
+        {% else %}
+        <div class="settings-row">
+            <span class="settings-label">Status</span>
+            <span class="status-indicator">
+                <span class="status-dot disconnected"></span>
+                Disconnected
+            </span>
+        </div>
+        <div class="settings-row">
+            <span class="settings-label">n8n URL</span>
+            <span class="settings-value" style="color: var(--db-text-tertiary);">
+                {% if n8n_url %}{{ n8n_url|truncate(30) }}{% else %}Not configured{% endif %}
+            </span>
+        </div>
+        <p style="margin-top: var(--db-space-md); font-size: var(--db-text-sm); color: var(--db-text-tertiary);">
+            {% if n8n_status and n8n_status.message %}
+            {{ n8n_status.message.split('\n')[0] }}
+            {% else %}
+            Cannot connect to n8n instance.
             {% endif %}
         </p>
-    </div>
-</div>
-{% else %}
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-header">
-            <span class="stat-label">Workflows Tracked</span>
-            <div class="stat-icon blue">
-                <i data-lucide="workflow" width="18" height="18"></i>
-            </div>
-        </div>
-        <div class="stat-value">0</div>
-        <p class="stat-caption">No workflows tracked yet</p>
-    </div>
-    <div class="stat-card">
-        <div class="stat-header">
-            <span class="stat-label">Out of Sync</span>
-            <div class="stat-icon amber">
-                <i data-lucide="upload-cloud" width="18" height="18"></i>
-            </div>
-        </div>
-        <div class="stat-value">0</div>
-        <p class="stat-caption">Awaiting first sync</p>
-    </div>
-</div>
-{% endif %}
-
-<div class="dashboard-card">
-    <div class="card-header">
-        <h2 class="card-title">n8n Connection Status</h2>
-    </div>
-    <div class="card-body">
-        {% if n8n_configured %}
-            {% if n8n_status and n8n_status.connected %}
-            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
-                <span class="status-badge active">
-                    <span class="status-badge-dot"></span>
-                    Connected
-                </span>
-                <span style="color: var(--color-text-secondary);">{{ n8n_status.message }}</span>
-            </div>
-            
-            <div class="detail-item">
-                <strong>n8n URL:</strong> <a href="{{ n8n_url }}" target="_blank" rel="noopener noreferrer" style="color: var(--color-primary);">{{ n8n_url }}</a>
-            </div>
-            
-            <div style="margin-top: 2rem; display: flex; gap: 1rem;">
-                <a href="{{ n8n_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem;">
-                    <i data-lucide="external-link" width="16" height="16"></i>
-                    Open n8n Editor
-                </a>
-                <button id="syncNowBtn" onclick="syncNow()" class="btn btn-success" style="display: inline-flex; align-items: center; gap: 0.5rem;">
-                    <i data-lucide="refresh-cw" width="16" height="16"></i>
-                    Sync Now
-                </button>
-                <a href="{{ url_for('admin_workflows') }}" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 0.5rem;">
-                    <i data-lucide="workflow" width="16" height="16"></i>
-                    View Workflows
-                </a>
-            </div>
-            
-            <!-- Sync Status -->
-            <div id="syncStatus" style="margin-top: 1.5rem; padding: 1rem; border-radius: var(--db-radius-md); background-color: var(--db-bg-secondary); display: none;">
-                <div id="syncMessage" style="color: var(--db-text-primary);"></div>
-            </div>
-            {% else %}
-            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
-                <span class="status-badge inactive">
-                    <span class="status-badge-dot"></span>
-                    Disconnected
-                </span>
-                <span style="color: var(--color-danger);">
-                    {% if n8n_status and n8n_status.message %}
-                        {{ n8n_status.message.split('\n')[0] }}
-                    {% else %}
-                        Cannot connect to n8n
-                    {% endif %}
-                </span>
-            </div>
-            
-            <div class="detail-item">
-                <strong>n8n URL:</strong> 
-                {% if n8n_url %}
-                    <a href="{{ n8n_url }}" target="_blank" rel="noopener noreferrer" style="color: var(--color-primary); text-decoration: underline;">{{ n8n_url }}</a>
-                {% else %}
-                    <code>Not configured</code>
-                {% endif %}
-            </div>
-            {% endif %}
+        {% endif %}
         {% else %}
-        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
-            <span class="status-badge inactive">
-                <span class="status-badge-dot"></span>
+        <div class="settings-row">
+            <span class="settings-label">Status</span>
+            <span class="status-indicator">
+                <span class="status-dot disconnected"></span>
                 Not Configured
             </span>
         </div>
-        
-        <p style="color: var(--color-text-secondary);">
-            n8n is not configured. Please set the following environment variable:
+        <p style="margin-top: var(--db-space-md); font-size: var(--db-text-sm); color: var(--db-text-secondary);">
+            Set the following environment variables:
         </p>
-        <ul style="margin-top: 1rem; color: var(--color-text-secondary);">
-            <li><code>N8N_API_KEY</code> - Your n8n Cloud API key (required)</li>
-            <li><code>N8N_URL</code> - Your n8n workspace URL (optional, defaults to https://app.n8n.cloud)</li>
+        <ul
+            style="margin-top: var(--db-space-sm); font-size: var(--db-text-sm); color: var(--db-text-tertiary); padding-left: var(--db-space-lg);">
+            <li><code class="code-inline">N8N_API_KEY</code> — Required</li>
+            <li><code class="code-inline">N8N_URL</code> — Optional</li>
         </ul>
-        <p style="margin-top: 1rem; padding: 1rem; background-color: var(--db-bg-secondary); border-radius: var(--db-radius-md); border-left: 3px solid var(--db-info);">
-            <strong>Getting your API key:</strong><br>
-            Log in to your n8n Cloud account, go to Settings → n8n API, and create a new API key.
-        </p>
         {% endif %}
     </div>
-</div>
 
-<div class="dashboard-card">
-    <div class="card-header">
-        <h2 class="card-title">About n8n Integration</h2>
-    </div>
-    <div class="card-body">
-        <p style="margin-bottom: 1rem;">
-            Use the n8n editor to create and manage automation workflows. Once created, you can:
+    <!-- Right Column: About -->
+    <div class="settings-section">
+        <h3 class="settings-section-title">About</h3>
+        <p
+            style="font-size: var(--db-text-sm); color: var(--db-text-secondary); line-height: 1.6; margin-bottom: var(--db-space-md);">
+            n8n is a workflow automation tool that connects apps and automates tasks.
         </p>
-        <ul style="margin-left: 1.5rem; color: var(--color-text-secondary);">
-            <li>Sync workflows to Syntra using the "Sync with n8n" button in <a href="{{ url_for('admin_workflows') }}" style="color: var(--color-primary);">Admin Workflows</a></li>
-            <li>Mark workflows as public to make them available to companies</li>
-            <li>Monitor workflow executions and manage company activations</li>
+        <p
+            style="font-size: var(--db-text-sm); color: var(--db-text-secondary); line-height: 1.6; margin-bottom: var(--db-space-md);">
+            Once connected, you can:
+        </p>
+        <ul
+            style="font-size: var(--db-text-sm); color: var(--db-text-secondary); padding-left: var(--db-space-lg); line-height: 1.8;">
+            <li>Sync workflows from n8n</li>
+            <li>Mark workflows as public for companies</li>
+            <li>Monitor workflow executions</li>
         </ul>
+        <div style="margin-top: var(--db-space-lg);">
+            <a href="https://docs.n8n.io/" target="_blank" rel="noopener"
+                style="font-size: var(--db-text-sm); color: var(--db-text-secondary); text-decoration: underline;">
+                Learn more about n8n →
+            </a>
+        </div>
     </div>
 </div>
 {% endblock %}
 
-{% block dashboard_scripts %}
+{% block admin_scripts %}
 <script>
-function copyNgrokUrl(event) {
-    const urlElement = document.getElementById('ngrokUrlToCopy');
-    if (!urlElement) return;
-    
-    const url = urlElement.textContent.trim();
-    navigator.clipboard.writeText(url).then(() => {
-        // Show feedback
-        const btn = event ? event.target.closest('button') : document.querySelector('button[onclick*="copyNgrokUrl"]');
-        if (btn) {
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i data-lucide="check" width="14" height="14"></i> Copied!';
-            btn.classList.add('btn-success');
-            btn.classList.remove('btn-secondary');
-            lucide.createIcons();
-            
-            setTimeout(() => {
-                btn.innerHTML = originalText;
-                btn.classList.remove('btn-success');
-                btn.classList.add('btn-secondary');
-                lucide.createIcons();
-            }, 2000);
-        }
-    }).catch(err => {
-        alert('Failed to copy: ' + err);
-    });
-}
+    async function syncNow() {
+        const btn = document.getElementById('syncNowBtn');
+        const statusDiv = document.getElementById('syncStatus');
+        const messageDiv = document.getElementById('syncMessage');
 
-async function syncNow() {
-    const btn = document.getElementById('syncNowBtn');
-    const statusDiv = document.getElementById('syncStatus');
-    const messageDiv = document.getElementById('syncMessage');
-    
-    // Set button to loading state
-    const resetBtn = syntra.setButtonLoading(btn, '<i data-lucide="loader-2" width="16" height="16" class="animate-spin"></i> Syncing...');
-    
-    // Show status div
-    statusDiv.style.display = 'block';
-    messageDiv.innerHTML = '<i data-lucide="loader-2" width="16" height="16" class="animate-spin"></i> Syncing workflows from n8n...';
-    lucide.createIcons();
-    
-    try {
-        const response = await fetch('/api/admin/workflows/sync', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
-        });
-        
-        const result = await response.json();
-        
-        if (response.ok && result.success) {
-            messageDiv.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--db-success);">
-                    <i data-lucide="check-circle" width="16" height="16"></i>
-                    <strong>Sync completed successfully!</strong>
-                </div>
-                <div style="margin-top: 0.5rem; font-size: 13px; color: var(--db-text-secondary);">
-                    ${result.added} added, ${result.updated} updated, ${result.removed} removed (${result.total} total)
-                </div>
-            `;
-            
-            // Reload page after 2 seconds
-            setTimeout(() => {
-                window.location.reload();
-            }, 2000);
-        } else {
-            messageDiv.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--db-danger);">
-                    <i data-lucide="alert-circle" width="16" height="16"></i>
-                    <strong>Sync failed</strong>
-                </div>
-                <div style="margin-top: 0.5rem; font-size: 13px; color: var(--db-text-secondary);">
-                    ${result.error || 'Unknown error occurred'}
-                </div>
-            `;
-            resetBtn();
+        btn.disabled = true;
+        btn.innerHTML = '<i data-lucide="refresh-cw" width="14" height="14" class="spin"></i> Syncing...';
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        statusDiv.style.display = 'block';
+        messageDiv.innerHTML = 'Syncing workflows from n8n...';
+
+        try {
+            const response = await fetch('/api/admin/workflows/sync', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                messageDiv.innerHTML = `✓ Sync completed: ${result.added} added, ${result.updated} updated`;
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                messageDiv.innerHTML = `✗ ${result.error || 'Sync failed'}`;
+                btn.disabled = false;
+                btn.innerHTML = '<i data-lucide="refresh-cw" width="14" height="14"></i> Sync Workflows';
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+        } catch (error) {
+            messageDiv.innerHTML = `✗ Error: ${error.message}`;
+            btn.disabled = false;
+            btn.innerHTML = '<i data-lucide="refresh-cw" width="14" height="14"></i> Sync Workflows';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
-        
-        lucide.createIcons();
-    } catch (error) {
-        messageDiv.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--db-danger);">
-                <i data-lucide="alert-circle" width="16" height="16"></i>
-                <strong>Error: ${error.message}</strong>
-            </div>
-        `;
-        lucide.createIcons();
-        resetBtn();
     }
-}
 
-lucide.createIcons();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 </script>
-{% endblock %}
+<style>
+    .code-inline {
+        font-size: var(--db-text-xs);
+        background: var(--db-bg-tertiary);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: var(--db-font-mono);
+    }
 
+    .spin {
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+{% endblock %}

@@ -7,86 +7,64 @@
 {% endblock %}
 
 {% block admin_content %}
+<!-- Page Header with Inline Stats -->
 <div class="page-header">
-    <h1 class="page-title">Widgets</h1>
-    <p class="page-description">Manage AI chat widgets for companies.</p>
-</div>
-
-<!-- Stats -->
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-header">
-            <span class="stat-label">Companies</span>
-            <div class="stat-icon"><i data-lucide="building-2" width="16" height="16"></i></div>
+    <div class="page-header-content">
+        <h1 class="page-title">Chat Widgets</h1>
+        <div class="page-stats-inline">
+            <span class="stat-item">
+                <span class="stat-value">{{ companies|length }}</span> widgets
+            </span>
+            <span class="stat-divider">·</span>
+            <span class="stat-item">
+                <span class="stat-value">{{ companies|selectattr('has_activity')|list|length }}</span> active
+            </span>
+            <span class="stat-divider">·</span>
+            <span class="stat-item">
+                <span class="stat-value">{{ companies|sum(attribute='total_messages') }}</span> messages (30d)
+            </span>
         </div>
-        <div class="stat-value">{{ companies|length }}</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-header">
-            <span class="stat-label">Active</span>
-            <div class="stat-icon"><i data-lucide="message-square" width="16" height="16"></i></div>
-        </div>
-        <div class="stat-value">{{ companies|selectattr('has_activity')|list|length }}</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-header">
-            <span class="stat-label">Messages (30d)</span>
-            <div class="stat-icon"><i data-lucide="bar-chart" width="16" height="16"></i></div>
-        </div>
-        <div class="stat-value">{{ companies|sum(attribute='total_messages') }}</div>
     </div>
 </div>
 
-<!-- Widgets Table -->
+<!-- Widget Cards Grid -->
+{% if companies %}
+<div class="widget-grid">
+    {% for company in companies %}
+    <div class="widget-card">
+        <div class="widget-card-header">
+            <h3 class="widget-card-title">{{ company.company_name }}</h3>
+            <span class="widget-card-status">
+                <span class="status-dot {{ 'active' if company.has_activity else 'inactive' }}"></span>
+                {{ 'Active' if company.has_activity else 'Inactive' }}
+            </span>
+        </div>
+        <div class="widget-card-stats">
+            {{ company.total_messages }} messages · {{ company.total_sessions }} sessions
+        </div>
+        <div class="widget-card-actions">
+            <button class="btn btn-secondary btn-sm" onclick="copyEmbed('{{ company.company_id }}')">
+                <i data-lucide="copy" width="12" height="12"></i>
+                Copy Embed
+            </button>
+            <a href="{{ url_for('admin_widget_detail', company_id=company.company_id) }}" class="btn btn-primary btn-sm"
+                style="flex: 1;">
+                View →
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
 <div class="dashboard-card">
-    <div class="card-header">
-        <h2 class="card-title">All Widgets</h2>
-    </div>
-    {% if companies %}
-    <div class="table-container">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Company</th>
-                    <th>Status</th>
-                    <th>Messages</th>
-                    <th>Sessions</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for company in companies %}
-                <tr>
-                    <td style="font-weight: 500;">{{ company.company_name }}</td>
-                    <td>
-                        <span class="status-badge {{ 'active' if company.has_activity else 'inactive' }}">
-                            {{ 'Active' if company.has_activity else 'Inactive' }}
-                        </span>
-                    </td>
-                    <td style="color: var(--db-text-secondary);">{{ company.total_messages }}</td>
-                    <td style="color: var(--db-text-secondary);">{{ company.total_sessions }}</td>
-                    <td>
-                        <div class="table-actions">
-                            <a href="{{ url_for('admin_widget_detail', company_id=company.company_id) }}"
-                                class="btn btn-secondary btn-sm">View</a>
-                            <button class="btn btn-secondary btn-sm"
-                                onclick="copyEmbed('{{ company.company_id }}')">Copy Embed</button>
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% else %}
     <div class="empty-state">
-        <div class="empty-state-icon"><i data-lucide="bot" width="24" height="24"></i></div>
+        <div class="empty-state-icon"><i data-lucide="bot" width="32" height="32"></i></div>
         <h3 class="empty-state-title">No widgets</h3>
         <p class="empty-state-description">Create a company first to manage widgets.</p>
         <a href="{{ url_for('admin_companies') }}" class="btn btn-primary btn-sm">Go to Companies</a>
     </div>
-    {% endif %}
 </div>
+{% endif %}
 {% endblock %}
 
 {% block admin_scripts %}
@@ -94,7 +72,8 @@
     function copyEmbed(companyId) {
         const code = `<script src="{{ request.host_url }}widget/embed.js" data-company-id="${companyId}" data-theme="minimal"><\/script>`;
         navigator.clipboard.writeText(code).then(() => {
-            alert('Embed code copied!');
+            // Show toast or feedback
+            alert('Embed code copied to clipboard!');
         });
     }
     if (typeof lucide !== 'undefined') lucide.createIcons();

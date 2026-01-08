@@ -7,43 +7,34 @@
 {% endblock %}
 
 {% block admin_content %}
-<div class="page-header"
-    style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
-    <div>
+<!-- Page Header with Inline Stats -->
+<div class="page-header">
+    <div class="page-header-content">
         <h1 class="page-title">Companies</h1>
-        <p class="page-description">Manage companies and their members.</p>
-    </div>
-    <button class="btn btn-primary btn-sm" onclick="openCreateModal()">
-        <i data-lucide="plus" width="14" height="14"></i>
-        Add Company
-    </button>
-</div>
-
-<!-- Stats -->
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-header">
-            <span class="stat-label">Companies</span>
-            <div class="stat-icon"><i data-lucide="building-2" width="16" height="16"></i></div>
+        <div class="page-stats-inline">
+            <span class="stat-item">
+                <span class="stat-value">{{ companies|length }}</span> companies
+            </span>
+            <span class="stat-divider">·</span>
+            <span class="stat-item">
+                <span class="stat-value">{{ total_members }}</span> members
+            </span>
         </div>
-        <div class="stat-value">{{ companies|length }}</div>
     </div>
-    <div class="stat-card">
-        <div class="stat-header">
-            <span class="stat-label">Members</span>
-            <div class="stat-icon"><i data-lucide="users" width="16" height="16"></i></div>
-        </div>
-        <div class="stat-value">{{ total_members }}</div>
+    <div class="page-header-actions">
+        <button class="btn btn-primary btn-sm" onclick="openCreateModal()">
+            <i data-lucide="plus" width="14" height="14"></i>
+            Add Company
+        </button>
     </div>
 </div>
 
 <!-- Companies Table -->
 <div class="dashboard-card">
-    <div class="card-header">
-        <h2 class="card-title">All Companies</h2>
-        <input type="text" id="searchInput" class="search-input" placeholder="Search..." style="max-width: 200px;">
-    </div>
     {% if companies %}
+    <div class="table-toolbar">
+        <input type="text" id="searchInput" class="form-input search-input" placeholder="Search companies...">
+    </div>
     <div class="table-container">
         <table class="table">
             <thead>
@@ -58,16 +49,12 @@
                 {% for company in companies %}
                 <tr data-name="{{ company.name|lower }}">
                     <td style="font-weight: 500;">{{ company.name }}</td>
-                    <td><code
-                            style="font-size: var(--db-text-xs); background: var(--db-bg-tertiary); padding: 2px 4px; border-radius: 3px;">{{ company.slug }}</code>
-                    </td>
+                    <td><code class="code-inline">{{ company.slug }}</code></td>
                     <td style="color: var(--db-text-secondary);">{{ company.member_count or 0 }}</td>
                     <td>
                         <div class="table-actions">
                             <a href="{{ url_for('admin_company_detail', company_id=company.id) }}"
                                 class="btn btn-secondary btn-sm">View</a>
-                            <button onclick="deleteCompany('{{ company.id }}', '{{ company.name }}')"
-                                class="btn btn-danger btn-sm">Delete</button>
                         </div>
                     </td>
                 </tr>
@@ -77,7 +64,7 @@
     </div>
     {% else %}
     <div class="empty-state">
-        <div class="empty-state-icon"><i data-lucide="building-2" width="24" height="24"></i></div>
+        <div class="empty-state-icon"><i data-lucide="building-2" width="32" height="32"></i></div>
         <h3 class="empty-state-title">No companies</h3>
         <p class="empty-state-description">Create your first company to get started.</p>
         <button class="btn btn-primary btn-sm" onclick="openCreateModal()">Add Company</button>
@@ -142,12 +129,6 @@
         });
     });
 
-    function deleteCompany(id, name) {
-        if (confirm(`Delete "${name}"?`)) {
-            fetch(`/api/admin/companies/${id}`, { method: 'DELETE' }).then(() => location.reload());
-        }
-    }
-
     document.getElementById('searchInput').addEventListener('input', function (e) {
         const term = e.target.value.toLowerCase();
         document.querySelectorAll('#companiesTable tr').forEach(row => {
@@ -157,4 +138,13 @@
 
     if (typeof lucide !== 'undefined') lucide.createIcons();
 </script>
+<style>
+    .code-inline {
+        font-size: var(--db-text-xs);
+        background: var(--db-bg-tertiary);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: var(--db-font-mono);
+    }
+</style>
 {% endblock %}

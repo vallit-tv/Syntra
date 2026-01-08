@@ -7,71 +7,42 @@
 {% endblock %}
 
 {% block admin_content %}
-<div class="page-header"
-    style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
-    <div>
+<!-- Page Header with Inline Stats -->
+<div class="page-header">
+    <div class="page-header-content">
         <h1 class="page-title">Workflows</h1>
-        <p class="page-description">Manage automation workflows from n8n.</p>
-    </div>
-    <button onclick="syncWorkflows(event)" class="btn btn-secondary btn-sm" id="syncBtn">
-        <i data-lucide="refresh-cw" width="14" height="14"></i>
-        Sync from n8n
-    </button>
-</div>
-
-<!-- Stats -->
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-header">
-            <span class="stat-label">Total</span>
-            <div class="stat-icon"><i data-lucide="workflow" width="16" height="16"></i></div>
+        <p class="page-description">Manage automation workflows from n8n</p>
+        <div class="page-stats-inline">
+            <span class="stat-item">
+                <span class="stat-value">{{ workflow_stats.total if workflow_stats else 0 }}</span> total
+            </span>
+            <span class="stat-divider">·</span>
+            <span class="stat-item">
+                <span class="stat-value">{{ workflow_stats.active if workflow_stats else 0 }}</span> active
+            </span>
+            <span class="stat-divider">·</span>
+            <span class="stat-item">
+                <span class="stat-value">{{ workflow_stats.public if workflow_stats else 0 }}</span> public
+            </span>
+            <span class="stat-divider">·</span>
+            <span class="status-indicator">
+                <span
+                    class="status-dot {{ 'connected' if n8n_configured and n8n_status and n8n_status.connected else 'disconnected' }}"></span>
+                {% if n8n_configured and n8n_status and n8n_status.connected %}n8n connected{% else %}n8n disconnected{%
+                endif %}
+            </span>
         </div>
-        <div class="stat-value">{{ workflow_stats.total if workflow_stats else 0 }}</div>
     </div>
-    <div class="stat-card">
-        <div class="stat-header">
-            <span class="stat-label">Active</span>
-            <div class="stat-icon"><i data-lucide="play" width="16" height="16"></i></div>
-        </div>
-        <div class="stat-value">{{ workflow_stats.active if workflow_stats else 0 }}</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-header">
-            <span class="stat-label">Public</span>
-            <div class="stat-icon"><i data-lucide="globe" width="16" height="16"></i></div>
-        </div>
-        <div class="stat-value">{{ workflow_stats.public if workflow_stats else 0 }}</div>
+    <div class="page-header-actions">
+        <button onclick="syncWorkflows(event)" class="btn btn-primary btn-sm" id="syncBtn">
+            <i data-lucide="refresh-cw" width="14" height="14"></i>
+            Sync from n8n
+        </button>
     </div>
 </div>
 
-<!-- n8n Connection -->
+<!-- Workflows Content -->
 <div class="dashboard-card">
-    <div class="card-header">
-        <h2 class="card-title">n8n Connection</h2>
-        <span
-            class="status-badge {{ 'active' if n8n_configured and n8n_status and n8n_status.connected else 'inactive' }}">
-            {% if n8n_configured and n8n_status and n8n_status.connected %}Connected{% else %}Not Connected{% endif %}
-        </span>
-    </div>
-    <p style="color: var(--db-text-secondary); font-size: var(--db-text-sm); margin: 0;">
-        {% if n8n_configured %}
-        {% if n8n_status and n8n_status.connected %}
-        Workflows are synced automatically.
-        {% else %}
-        n8n is configured but not reachable.
-        {% endif %}
-        {% else %}
-        Set <code style="background: var(--db-bg-tertiary); padding: 2px 4px; border-radius: 3px;">N8N_API_KEY</code>
-        environment variable to enable.
-        {% endif %}
-    </p>
-</div>
-
-<!-- Workflows Table -->
-<div class="dashboard-card">
-    <div class="card-header">
-        <h2 class="card-title">All Workflows</h2>
-    </div>
     {% if workflows %}
     <div class="table-container">
         <table class="table">
@@ -116,10 +87,10 @@
     </div>
     {% else %}
     <div class="empty-state">
-        <div class="empty-state-icon"><i data-lucide="workflow" width="24" height="24"></i></div>
+        <div class="empty-state-icon"><i data-lucide="workflow" width="32" height="32"></i></div>
         <h3 class="empty-state-title">No workflows</h3>
-        <p class="empty-state-description">Sync from n8n to load workflows.</p>
-        <button onclick="syncWorkflows(event)" class="btn btn-primary btn-sm">Sync Now</button>
+        <p class="empty-state-description">Sync from n8n to import your automation workflows.</p>
+        <button onclick="syncWorkflows(event)" class="btn btn-primary btn-sm">Import Workflows</button>
     </div>
     {% endif %}
 </div>
@@ -130,7 +101,7 @@
     function syncWorkflows(event) {
         const btn = event.currentTarget;
         btn.disabled = true;
-        btn.innerHTML = '<i data-lucide="refresh-cw" width="14" height="14" style="animation: spin 1s linear infinite;"></i> Syncing...';
+        btn.innerHTML = '<i data-lucide="refresh-cw" width="14" height="14" class="spin"></i> Syncing...';
 
         fetch('/api/admin/workflows/sync', { method: 'POST' })
             .then(r => r.json())
@@ -167,6 +138,10 @@
     });
 </script>
 <style>
+    .spin {
+        animation: spin 1s linear infinite;
+    }
+
     @keyframes spin {
         from {
             transform: rotate(0deg);
