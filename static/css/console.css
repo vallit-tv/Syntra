@@ -6,15 +6,15 @@
 :root {
     /* Colors - Strict Monochrome */
     --console-bg: #000000;
-    --console-bg-panel: #0a0a0a;
-    --console-bg-active: #141414;
+    --console-bg-panel: #111111;
+    --console-bg-active: #1a1a1a;
 
     --console-text-primary: #ffffff;
-    --console-text-secondary: #888888;
-    --console-text-tertiary: #444444;
+    --console-text-secondary: #a0a0a0;
+    --console-text-tertiary: #555555;
 
-    --console-border: #222222;
-    --console-border-active: #444444;
+    --console-border: #333333;
+    --console-border-active: #555555;
 
     /* Accents - Only for critical status */
     --console-success: #22c55e;
@@ -27,6 +27,10 @@
     --space-md: 16px;
     --space-lg: 24px;
     --space-xl: 32px;
+
+    /* Layout Dimensions */
+    --rail-width: 64px;
+    --header-height: 56px;
 
     /* Animations */
     @keyframes fadeIn {
