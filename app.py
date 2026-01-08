@@ -2277,6 +2277,26 @@ def widget_demo():
     """Demo page showcasing the chat widget with different themes"""
     return render_template('widget-demo.html')
 
+@app.route('/admin/widgets/<company_id>/test')
+@auth.admin_required
+def admin_widget_test(company_id):
+    """Test page for a specific company widget"""
+    try:
+        user = auth.current_user()
+        company = db.get_company_by_id(company_id)
+        
+        if not company:
+            return "Company not found", 404
+            
+        settings = company.get('settings', {})
+        
+        # Ensure we can test locally or remotely
+        return render_template('admin/test_widget.html', 
+                             company=company,
+                             settings=settings)
+    except Exception as e:
+        return f"Error: {str(e)}", 500
+
 
 # Expose app as 'application' for Vercel's Python runtime
 application = app
