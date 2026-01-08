@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
 /* ============================================================================
    VALLIT CONSOLE - APP SHELL CSS
    Strict Monochrome. High Density.
@@ -20,6 +22,10 @@
     --console-success: #22c55e;
     --console-error: #ef4444;
     --console-accent: #ffffff;
+
+    /* Typography */
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
 
     /* Spacing */
     --space-xs: 4px;
@@ -47,6 +53,59 @@
 
     .console-content {
         animation: fadeIn 0.2s ease-out;
+    }
+
+    /* Global Typography */
+    body {
+        font-family: var(--font-sans);
+        background: var(--console-bg);
+        color: var(--console-text-primary);
+        margin: 0;
+        font-size: 13px;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+        font-family: inherit;
+    }
+
+    /* Modern Button Reset & Styles */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.1s;
+        text-decoration: none;
+        border: 1px solid transparent;
+    }
+
+    .btn-primary {
+        background: var(--console-text-primary);
+        color: var(--console-bg);
+    }
+
+    .btn-primary:hover {
+        opacity: 0.9;
+    }
+
+    .btn-secondary {
+        background: transparent;
+        border: 1px solid var(--console-border);
+        color: var(--console-text-primary);
+    }
+
+    .btn-secondary:hover {
+        background: var(--console-bg-active);
+        border-color: var(--console-border-active);
     }
 
     /* Micro-interactions */
@@ -259,19 +318,24 @@
         background: var(--console-error);
     }
 
-    /* Tables/Lists */
+    /* Tables/Lists - Refined */
     .console-list {
         border: 1px solid var(--console-border);
         border-radius: 8px;
         overflow: hidden;
+        background: var(--console-bg);
+        /* Remove panel bg for cleaner look */
     }
 
     .list-header {
-        background: var(--console-bg-active);
-        padding: var(--space-md);
+        background: var(--console-bg-panel);
+        padding: 10px var(--space-md);
         border-bottom: 1px solid var(--console-border);
-        font-weight: 500;
-        color: var(--console-text-primary);
+        font-weight: 600;
+        color: var(--console-text-secondary);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
     .list-item {
@@ -280,7 +344,7 @@
         justify-content: space-between;
         padding: 12px var(--space-md);
         border-bottom: 1px solid var(--console-border);
-        background: var(--console-bg-panel);
+        background: var(--console-bg);
         transition: background 0.1s;
     }
 
@@ -289,7 +353,7 @@
     }
 
     .list-item:hover {
-        background: var(--console-bg-active);
+        background: var(--console-bg-panel);
     }
 
     .list-col {
