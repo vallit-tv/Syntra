@@ -88,6 +88,8 @@
     pointer-events: none;
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     border: 1px solid var(--syntra-border);
+    position: relative;
+    /* Ensure absolute children contain here */
 }
 
 /* Open State */
@@ -113,33 +115,14 @@
     justify-content: space-between;
     padding: 0 20px;
     flex-shrink: 0;
+    border-bottom: 1px solid var(--syntra-border);
+    /* Add border */
 }
 
-.syntra-header-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.syntra-title {
+.syntra-header-title {
     font-size: 16px;
     font-weight: 600;
     color: var(--syntra-text);
-}
-
-.syntra-status {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    color: var(--syntra-text-muted);
-}
-
-.syntra-status-dot {
-    width: 8px;
-    height: 8px;
-    background: #10b981;
-    border-radius: 50%;
 }
 
 /* Header Actions */
@@ -150,7 +133,9 @@
 }
 
 .syntra-reset-btn,
-.syntra-close-btn {
+.syntra-close-btn,
+.syntra-back-btn {
+    /* Added back-btn here */
     background: transparent;
     border: none;
     cursor: pointer;
@@ -165,7 +150,8 @@
 }
 
 .syntra-reset-btn:hover,
-.syntra-close-btn:hover {
+.syntra-close-btn:hover,
+.syntra-back-btn:hover {
     opacity: 1;
     background: rgba(0, 0, 0, 0.05);
 }
@@ -185,6 +171,8 @@
     flex-direction: column;
     gap: 20px;
     flex: 1;
+    padding: 20px;
+    overflow-y: auto;
 }
 
 /* Message Bubbles */
@@ -226,6 +214,17 @@
     border-bottom-left-radius: 4px;
 }
 
+.syntra-message-time {
+    font-size: 11px;
+    color: #999;
+    margin-left: 4px;
+}
+
+.syntra-message-user .syntra-message-time {
+    align-self: flex-end;
+    margin-right: 4px;
+}
+
 /* Markdown Styles inside bubbles */
 .syntra-message-content p {
     margin-bottom: 8px;
@@ -253,6 +252,7 @@
 .syntra-input-area {
     padding: 16px 20px 24px;
     background: #fff;
+    border-top: 1px solid var(--syntra-border);
 }
 
 .syntra-input-form {
@@ -315,12 +315,12 @@
     text-decoration: none;
 }
 
-/* Privacy Disclaimer (New) */
+/* Privacy Disclaimer */
 .syntra-privacy-text {
-    font-size: 11px;
-    color: #888;
+    font-size: 10px;
+    color: #999;
     text-align: center;
-    margin-top: 24px;
+    margin-top: 8px;
     padding: 0 12px;
     line-height: 1.4;
 }
@@ -343,6 +343,189 @@
     }
 }
 
+/* ==========================================================================
+   Overlays & Modals (NEW)
+   ========================================================================== */
+
+/* Overlays (e.g. Menu) */
+.syntra-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--syntra-bg);
+    z-index: 10;
+    display: none;
+    flex-direction: column;
+}
+
+.syntra-overlay.active {
+    display: flex;
+    animation: syntra-fade-in 0.2s ease;
+}
+
+.syntra-overlay-header {
+    height: 64px;
+    border-bottom: 1px solid var(--syntra-border);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 12px;
+    font-weight: 600;
+    color: var(--syntra-text);
+}
+
+.syntra-menu-list {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.syntra-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-size: 14px;
+    color: var(--syntra-text);
+}
+
+.syntra-menu-item:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+/* Modals (e.g. Confirm) */
+.syntra-modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 20;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.syntra-modal-backdrop.active {
+    display: flex;
+    opacity: 1;
+}
+
+.syntra-modal {
+    background: var(--syntra-bg);
+    padding: 24px;
+    border-radius: 16px;
+    width: 80%;
+    max-width: 300px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+    transform: scale(0.95);
+    transition: transform 0.2s;
+}
+
+.syntra-modal-backdrop.active .syntra-modal {
+    transform: scale(1);
+}
+
+.syntra-modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--syntra-text);
+}
+
+.syntra-modal-text {
+    font-size: 14px;
+    color: var(--syntra-text-muted);
+    margin-bottom: 24px;
+    line-height: 1.5;
+}
+
+.syntra-modal-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.syntra-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.syntra-btn-primary {
+    background: var(--syntra-primary);
+    color: #fff;
+}
+
+.syntra-btn-secondary {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--syntra-text);
+}
+
+.syntra-btn-secondary:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* Typing Indicator */
+.syntra-typing-indicator {
+    padding: 12px 16px;
+    background: #f4f4f4;
+    border-radius: 12px;
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+    display: flex;
+    align-items: center;
+    width: fit-content;
+    margin-bottom: 4px;
+}
+
+.syntra-typing-dots {
+    display: flex;
+    gap: 4px;
+}
+
+.syntra-typing-dots span {
+    width: 6px;
+    height: 6px;
+    background: #999;
+    border-radius: 50%;
+    animation: syntra-bounce 1.4s infinite ease-in-out both;
+}
+
+.syntra-typing-dots span:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.syntra-typing-dots span:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+@keyframes syntra-bounce {
+
+    0%,
+    80%,
+    100% {
+        transform: scale(0);
+    }
+
+    40% {
+        transform: scale(1);
+    }
+}
+
+
 /* Media Queries */
 @media (max-width: 480px) {
     .syntra-chat-window {
@@ -360,80 +543,4 @@
     .syntra-widget.syntra-open .syntra-chat-window {
         transform: translateY(0);
     }
-}
-
-/* ==========================================================================
-   Themes - Skinning the Oura Layout
-   ========================================================================== */
-
-/* Theme: Dark */
-.syntra-theme-dark {
-    --syntra-bg: #1a1a1a;
-    --syntra-text: #ffffff;
-    --syntra-text-muted: #a0a0a0;
-    --syntra-border: #333333;
-    --syntra-primary: #ffffff;
-}
-
-.syntra-theme-dark .syntra-messages {
-    background: #1a1a1a;
-}
-
-.syntra-theme-dark .syntra-input-area,
-.syntra-theme-dark .syntra-input-form,
-.syntra-theme-dark .syntra-header {
-    background: #1a1a1a;
-}
-
-.syntra-theme-dark .syntra-input {
-    color: #fff;
-}
-
-.syntra-theme-dark .syntra-message-assistant .syntra-message-content {
-    background: #333;
-    color: #fff;
-}
-
-.syntra-theme-dark .syntra-message-user .syntra-message-content {
-    background: #fff;
-    color: #000;
-}
-
-.syntra-theme-dark .syntra-toggle-btn {
-    background: #fff;
-    color: #000;
-}
-
-/* Theme: Glassmorphism */
-.syntra-theme-glassmorphism .syntra-chat-window {
-    background: rgba(255, 255, 255, 0.75);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-.syntra-theme-glassmorphism .syntra-header {
-    background: rgba(255, 255, 255, 0.5);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.syntra-theme-glassmorphism .syntra-messages {
-    background: transparent;
-}
-
-.syntra-theme-glassmorphism .syntra-input-area {
-    background: rgba(255, 255, 255, 0.5);
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.syntra-theme-glassmorphism .syntra-input-form {
-    background: rgba(255, 255, 255, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.syntra-theme-glassmorphism .syntra-message-assistant .syntra-message-content {
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(4px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
