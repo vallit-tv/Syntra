@@ -12,16 +12,7 @@
 </div>
 
 <div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-header">
-            <span class="stat-label">Active Workflows</span>
-            <div class="stat-icon green">
-                <i data-lucide="workflow" width="18" height="18"></i>
-            </div>
-        </div>
-        <div class="stat-value">{{ summary.active_workflows }}</div>
-        <p class="stat-caption">{{ summary.pending_workflows }} awaiting activation</p>
-    </div>
+
     <div class="stat-card">
         <div class="stat-header">
             <span class="stat-label">Team Members</span>
@@ -32,16 +23,7 @@
         <div class="stat-value">{{ summary.team_members }}</div>
         <p class="stat-caption">{{ company.name }}</p>
     </div>
-    <div class="stat-card">
-        <div class="stat-header">
-            <span class="stat-label">Credentials Ready</span>
-            <div class="stat-icon amber">
-                <i data-lucide="key-round" width="18" height="18"></i>
-            </div>
-        </div>
-        <div class="stat-value">{{ activation_stats.active - summary.missing_credentials }}</div>
-        <p class="stat-caption">{{ summary.missing_credentials }} workflows need API keys</p>
-    </div>
+
 </div>
 
 <div class="card-grid">
@@ -51,10 +33,7 @@
         </div>
         <div class="card-body">
             <div class="quick-actions">
-                <a href="{{ url_for('company_workflows') }}" class="action-button">
-                    <i data-lucide="workflow" width="20" height="20"></i>
-                    <span>Manage Workflows</span>
-                </a>
+
                 <a href="{{ url_for('company_workers') }}" class="action-button">
                     <i data-lucide="user-plus" width="20" height="20"></i>
                     <span>Invite Team</span>
@@ -64,71 +43,11 @@
                     <span>Company Settings</span>
                 </a>
             </div>
-            {% if summary.missing_credentials > 0 %}
-            <p class="text-danger" style="margin-top: 1rem;">
-                <strong>Finish setup:</strong> {{ summary.missing_credentials }} workflow{{ 's' if summary.missing_credentials != 1 else '' }} need credentials before they can run.
-            </p>
-            {% endif %}
+
         </div>
     </div>
 
-    <div class="dashboard-card">
-        <div class="card-header">
-            <div>
-                <h2 class="card-title">Recent Activity</h2>
-                <p class="card-subtitle">Latest runs across company workflows.</p>
-            </div>
-        </div>
-        {% if recent_executions %}
-        <div class="table-container">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Workflow</th>
-                        <th>Status</th>
-                        <th>Started</th>
-                        <th>Duration</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for exec in recent_executions %}
-                    <tr>
-                        <td>
-                            {% if exec.workflow %}
-                                {{ exec.workflow.name }}
-                            {% else %}
-                                <span class="text-secondary">Unknown</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <span class="status-badge {{ exec.status|lower }}">
-                                <span class="status-badge-dot"></span>
-                                {{ exec.status|capitalize }}
-                            </span>
-                        </td>
-                        <td>
-                            {% if exec.started_at %}
-                                {{ exec.started_at|format_datetime('relative') }}
-                            {% else %}
-                                —
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if exec.duration_ms %}
-                                {{ exec.duration_ms|format_duration }}
-                            {% else %}
-                                —
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <p class="text-secondary">No activity yet. Activate a workflow to start tracking results.</p>
-        {% endif %}
-    </div>
+
 
     <div class="dashboard-card">
         <div class="card-header">
@@ -145,7 +64,8 @@
                     <strong>{{ teammate.name }}</strong>
                     <p class="text-secondary">
                         {{ teammate.get('role', 'worker')|capitalize }}
-                        · Joined {{ teammate.created_at|format_datetime('relative') if teammate.created_at else 'recently' }}
+                        · Joined {{ teammate.created_at|format_datetime('relative') if teammate.created_at else
+                        'recently' }}
                     </p>
                 </div>
                 <a href="{{ url_for('company_workers') }}" class="btn btn-sm btn-secondary">Manage</a>
@@ -166,4 +86,3 @@
     }
 </script>
 {% endblock %}
-

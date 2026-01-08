@@ -8,7 +8,7 @@ Syntra is a Flask-based workflow automation platform that integrates with Supaba
 
 - **Backend**: Flask (Python) running on Vercel Serverless Functions
 - **Database**: Supabase (PostgreSQL with REST API)
-- **Workflows**: n8n Cloud
+
 - **Deployment**: Vercel
 
 ## Prerequisites
@@ -43,9 +43,7 @@ SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_KEY=your-service-role-key
 SUPABASE_KEY=your-anon-key
 
-# N8N Configuration (optional)
-N8N_API_KEY=your-n8n-api-key
-N8N_URL=https://your-instance.app.n8n.cloud
+
 ```
 
 ### 3. Set Up Database Schema
@@ -119,10 +117,7 @@ Add the following (use the same values from your `.env` file):
 - `SUPABASE_SERVICE_KEY`
 - `FLASK_SECRET_KEY`
 
-**Optional (for workflows):**
-- `N8N_API_KEY`
-- `N8N_URL`
-- `N8N_WEBHOOK_URL`
+
 
 **Important:** Make sure to set these for all environments (Production, Preview, Development)
 
@@ -194,13 +189,13 @@ Visit `https://your-app.vercel.app/debug/env` to check which environment variabl
 2. **Admin Dashboard** at `/admin/dashboard`
 3. **Manage Users** at `/admin/users`
 4. **Manage Companies** at `/admin/companies`
-5. **View Workflows** at `/admin/workflows`
+
 
 ### For CEOs
 
 1. **Login** at `/login`
 2. **Company Dashboard** at `/company/dashboard`
-3. **Activate Workflows** at `/company/workflows`
+
 4. **Manage Team** at `/company/workers`
 5. **Company Settings** at `/company/settings`
 
@@ -208,19 +203,10 @@ Visit `https://your-app.vercel.app/debug/env` to check which environment variabl
 
 1. **Login** at `/login`
 2. **Dashboard** at `/dashboard/overview`
-3. **View Workflows** at `/dashboard/workflows`
+
 4. **Manage API Keys** at `/dashboard/api-keys`
 
-## iOS Shortcut Integration
 
-1. Generate an API key using `generate_api_key.py` or through the web dashboard
-2. In your iOS Shortcut, add a "Get Contents of URL" action
-3. Set the URL to: `https://your-app.vercel.app/api/webhook/daily-summary`
-4. Method: POST
-5. Headers:
-   - `Authorization`: `Bearer YOUR_API_KEY`
-   - `Content-Type`: `application/json`
-6. Body: JSON with your data
 
 ## Development Workflow
 
@@ -260,7 +246,7 @@ Visit `https://your-app.vercel.app/debug/env` to check which environment variabl
 - Vercel Documentation: https://vercel.com/docs
 - Supabase Documentation: https://supabase.com/docs
 - Flask Documentation: https://flask.palletsprojects.com/
-- n8n Documentation: https://docs.n8n.io/
+
 
 ## Next Steps
 
@@ -269,6 +255,5 @@ Visit `https://your-app.vercel.app/debug/env` to check which environment variabl
 3. ✅ Set up database schema
 4. ✅ Generate API keys
 5. Create company and users
-6. Activate workflows
-7. Integrate with iOS Shortcuts
+
 8. Set up monitoring

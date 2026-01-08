@@ -17,7 +17,7 @@ class ChatService:
     def __init__(self):
         self.openai_api_key = os.getenv('OPENAI_API_KEY', '')
         self.openai_model = os.getenv('OPENAI_MODEL', 'gpt-4o')
-        self.n8n_chat_webhook_url = os.getenv('N8N_CHAT_WEBHOOK_URL', '')
+
         
         # Guardrailed System Prompt
         self.default_system_prompt = """You are Kian, an AI assistant created by Vallit Network.
@@ -47,9 +47,7 @@ CRITICAL RULES:
         """Check if OpenAI API is configured"""
         return bool(self.openai_api_key)
     
-    def has_n8n_integration(self) -> bool:
-        """Check if n8n webhook is configured"""
-    # =========================================================================
+
     
     # =========================================================================
     # Session Management
@@ -158,7 +156,7 @@ CRITICAL RULES:
     
     def save_message(self, db_module, session_id_rec: str, role: str, content: str,
                      tokens_used: int = None, model: str = None,
-                     metadata: Dict = None, n8n_execution_id: str = None,
+                     metadata: Dict = None,
                      company_id: str = None) -> Optional[Dict]:
         """Save a message to the database (append to JSONB) and track analytics"""
         try:
@@ -174,8 +172,7 @@ CRITICAL RULES:
                 'timestamp': datetime.utcnow().isoformat(),
                 'tokens_used': tokens_used,
                 'model': model,
-                'metadata': metadata or {},
-                'n8n_execution_id': n8n_execution_id
+                'metadata': metadata or {}
             }
             
             # 1. Fetch current messages
@@ -440,88 +437,14 @@ CRITICAL RULES:
             print(f"Error generating response: {e}")
             return None, {'error': str(e)}
     
-    # =========================================================================
-    # n8n Integration
-    # =========================================================================
-    
-    def trigger_n8n_workflow(self, session_id: str, message: str,
-                              user_context: Dict = None,
-                              company_context: Dict = None,
-                              conversation_history: List[Dict] = None) -> Tuple[bool, Optional[str]]:
-        """Trigger n8n workflow for AI processing
-        
-        Args:
-            session_id: Chat session ID
-            message: User message
-            user_context: Additional user context
-            company_context: Company details for multi-tenant routing
-            conversation_history: Previous messages
-        
-        Returns:
-            Tuple of (success, execution_id or error)
-        """
-        # Determine webhook URL: use company-specific or fall back to default
-        webhook_url = self.n8n_chat_webhook_url
-        if company_context and company_context.get('webhook_url'):
-            webhook_url = company_context['webhook_url']
-            print(f"Using company-specific webhook: {webhook_url[:50]}...")
-        elif not webhook_url:
-            return False, 'n8n webhook not configured'
-        
-        try:
-            payload = {
-                'session_id': session_id,
-                'message': message,
-                'timestamp': datetime.now(timezone.utc).isoformat(),
-                'context': user_context or {},
-                'company': company_context or {},  # Multi-tenant company data
-                'conversation_history': conversation_history or []
-            }
-            
-            # Track start time for analytics
-            start_time = datetime.now(timezone.utc)
-            
-            response = requests.post(
-                webhook_url,
-                json=payload,
-                headers={'Content-Type': 'application/json'},
-                timeout=30
-            )
-            
-            # Calculate response time
-            response_time_ms = int((datetime.now(timezone.utc) - start_time).total_seconds() * 1000)
-            
-            # Track analytics (will be updated with token count later)
-            if company_context and company_context.get('id'):
-                chat_analytics.track_message(
-                    company_context['id'], 
-                    tokens_used=0,  # Updated after response
-                    response_time_ms=response_time_ms
-                )
-            
-            if response.status_code in [200, 201]:
-                # n8n may return execution ID or direct response
-                try:
-                    data = response.json()
-                    execution_id = data.get('executionId') or data.get('execution_id')
-                    return True, execution_id
-                except:
-                    return True, None
-            else:
-                return False, f'n8n error: HTTP {response.status_code}'
-                
-        except requests.exceptions.Timeout:
-            return False, 'n8n webhook timeout'
-        except Exception as e:
-            print(f"Error triggering n8n workflow: {e}")
-            return False, str(e)
+
     
     # =========================================================================
     # Widget Configuration
     # =========================================================================
     
     def get_company_context(self, db_module, company_id: str) -> Optional[Dict]:
-        """Get company context for multi-tenant n8n routing
+        """Get company context for multi-tenant routing
         
         Args:
             db_module: Database module
@@ -548,8 +471,6 @@ CRITICAL RULES:
                     'id': company.get('id'),
                     'name': company.get('name'),
                     'slug': company.get('slug'),
-                    'webhook_url': company.get('webhook_url'),  # Per-company webhook
-                    'n8n_config': company.get('n8n_config', {}),  # Additional config
                     'settings': company.get('settings', {})
                 }
             return None

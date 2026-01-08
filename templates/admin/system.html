@@ -15,26 +15,8 @@
 </div>
 
 <div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-header">
-            <span class="stat-label">Workflows</span>
-            <div class="stat-icon blue">
-                <i data-lucide="workflow" width="18" height="18"></i>
-            </div>
-        </div>
-        <div class="stat-value">{{ system_stats.total_workflows }}</div>
-        <p class="stat-caption">{{ system_stats.active_workflows }} active · {{ system_stats.inactive_workflows }} disabled</p>
-    </div>
-    <div class="stat-card">
-        <div class="stat-header">
-            <span class="stat-label">Visibility</span>
-            <div class="stat-icon green">
-                <i data-lucide="globe" width="18" height="18"></i>
-            </div>
-        </div>
-        <div class="stat-value">{{ system_stats.public_workflows }}</div>
-        <p class="stat-caption">{{ system_stats.private_workflows }} private</p>
-    </div>
+
+
     <div class="stat-card">
         <div class="stat-header">
             <span class="stat-label">Companies</span>
@@ -47,67 +29,15 @@
     </div>
     <div class="stat-card">
         <div class="stat-header">
-            <span class="stat-label">Activations</span>
-            <div class="stat-icon amber">
-                <i data-lucide="zap" width="18" height="18"></i>
-            </div>
-        </div>
-        <div class="stat-value">{{ system_stats.activations }}</div>
-        <p class="stat-caption">{{ system_stats.active_activations }} active</p>
-    </div>
-    <div class="stat-card">
-        <div class="stat-header">
-            <span class="stat-label">Executions</span>
+            <span class="stat-label">Total Users</span>
             <div class="stat-icon blue">
-                <i data-lucide="bar-chart-2" width="18" height="18"></i>
+                <i data-lucide="users" width="18" height="18"></i>
             </div>
         </div>
-        <div class="stat-value">{{ system_stats.executions }}</div>
-        <p class="stat-caption">
-            {% if system_stats.last_execution_at %}
-                Last run {{ system_stats.last_execution_at|format_datetime('relative') }}
-            {% else %}
-                No executions yet
-            {% endif %}
-        </p>
+        <div class="stat-value">{{ system_stats.users }}</div>
+        <p class="stat-caption">{{ system_stats.admins }} admins included</p>
     </div>
 </div>
 
-<div class="dashboard-card">
-    <div class="card-header">
-        <div>
-            <h2 class="card-title">n8n Configuration</h2>
-            <p class="card-subtitle">Connectivity and operational status for the automation runtime.</p>
-        </div>
-        <span class="status-badge {{ 'active' if n8n_configured and n8n_status and n8n_status.connected else 'inactive' }}">
-            <span class="status-badge-dot"></span>
-            {% if n8n_configured %}
-                {% if n8n_status and n8n_status.connected %}
-                    Connected
-                {% else %}
-                    Not reachable
-                {% endif %}
-            {% else %}
-                Not configured
-            {% endif %}
-        </span>
-    </div>
-    <div class="card-body">
-        {% if n8n_configured %}
-            {% if n8n_status and n8n_status.message %}
-            <p class="text-secondary">{{ n8n_status.message }}</p>
-            {% endif %}
-            {% if n8n_status and n8n_status.url %}
-            <p class="text-secondary" style="margin-top: 0.5rem;">
-                <strong>Instance:</strong> {{ n8n_status.url }}
-            </p>
-            {% endif %}
-        {% else %}
-        <p class="text-secondary">
-            Provide <code>N8N_API_KEY</code> environment variable to enable syncing and remote execution. <code>N8N_URL</code> is optional (defaults to https://app.n8n.cloud).
-        </p>
-        {% endif %}
-    </div>
-</div>
+
 {% endblock %}
-

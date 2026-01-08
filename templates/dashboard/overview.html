@@ -12,15 +12,7 @@
 
 <!-- Stats Cards -->
 <div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-header">
-            <span class="stat-label">Workflows</span>
-            <div class="stat-icon">
-                <i data-lucide="workflow" width="16" height="16"></i>
-            </div>
-        </div>
-        <div class="stat-value">{{ active_workflows_count|default(0) }}</div>
-    </div>
+
     <div class="stat-card">
         <div class="stat-header">
             <span class="stat-label">API Keys</span>
@@ -47,13 +39,7 @@
         <h2 class="card-title">Quick Actions</h2>
     </div>
     <div class="card-grid">
-        <a href="{{ url_for('dashboard_workflows') }}" class="card-item">
-            <div class="card-item-header">
-                <h3 class="card-item-title">Workflows</h3>
-                <i data-lucide="arrow-right" width="14" height="14"></i>
-            </div>
-            <p class="card-item-body">Manage your automation workflows</p>
-        </a>
+
         <a href="{{ url_for('dashboard_api_keys') }}" class="card-item">
             <div class="card-item-header">
                 <h3 class="card-item-title">API Keys</h3>
@@ -66,58 +52,10 @@
                 <h3 class="card-item-title">Integrations</h3>
                 <i data-lucide="arrow-right" width="14" height="14"></i>
             </div>
-            <p class="card-item-body">Configure n8n and other services</p>
+            <p class="card-item-body">Configure integrations</p>
         </a>
     </div>
 </div>
 
-<!-- Recent Workflows -->
-<div class="dashboard-card">
-    <div class="card-header">
-        <h2 class="card-title">Recent Workflows</h2>
-        <div class="card-actions">
-            <a href="{{ url_for('dashboard_workflows') }}" class="btn btn-secondary btn-sm">View All</a>
-        </div>
-    </div>
-    {% if recent_workflows %}
-    <div class="table-container">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Status</th>
-                    <th>Last Run</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for workflow in recent_workflows[:5] %}
-                <tr>
-                    <td>
-                        <a href="{{ url_for('dashboard_workflow_detail', workflow_id=workflow.id) }}"
-                            style="font-weight: 500; color: var(--db-text-primary); text-decoration: none;">
-                            {{ workflow.name }}
-                        </a>
-                    </td>
-                    <td>
-                        <span class="status-badge {{ workflow.status|lower }}">
-                            {{ workflow.status }}
-                        </span>
-                    </td>
-                    <td style="color: var(--db-text-secondary);">{{ workflow.last_run|default('Never') }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% else %}
-    <div class="empty-state">
-        <div class="empty-state-icon">
-            <i data-lucide="workflow" width="24" height="24"></i>
-        </div>
-        <h3 class="empty-state-title">No workflows yet</h3>
-        <p class="empty-state-description">Activate your first workflow to get started.</p>
-        <a href="{{ url_for('dashboard_workflows') }}" class="btn btn-primary btn-sm">Browse Workflows</a>
-    </div>
-    {% endif %}
-</div>
+
 {% endblock %}

@@ -8,25 +8,23 @@
 {% block sidebar_home_url %}{{ url_for('company_dashboard') }}{% endblock %}
 
 {% block sidebar_nav %}
-<a href="{{ url_for('company_dashboard') }}" class="nav-item {% if request.endpoint == 'company_dashboard' %}active{% endif %}">
+<a href="{{ url_for('company_dashboard') }}"
+    class="nav-item {% if request.endpoint == 'company_dashboard' %}active{% endif %}">
     <span class="nav-item-icon">
         <i data-lucide="layout-dashboard" width="20" height="20"></i>
     </span>
     <span class="nav-item-text">Dashboard</span>
 </a>
-<a href="{{ url_for('company_workflows') }}" class="nav-item {% if request.endpoint.startswith('company_workflows') or request.endpoint == 'company_workflow_detail' %}active{% endif %}">
-    <span class="nav-item-icon">
-        <i data-lucide="workflow" width="20" height="20"></i>
-    </span>
-    <span class="nav-item-text">Workflows</span>
-</a>
-<a href="{{ url_for('company_workers') }}" class="nav-item {% if request.endpoint == 'company_workers' %}active{% endif %}">
+
+<a href="{{ url_for('company_workers') }}"
+    class="nav-item {% if request.endpoint == 'company_workers' %}active{% endif %}">
     <span class="nav-item-icon">
         <i data-lucide="users" width="20" height="20"></i>
     </span>
     <span class="nav-item-text">Team</span>
 </a>
-<a href="{{ url_for('company_settings') }}" class="nav-item {% if request.endpoint == 'company_settings' %}active{% endif %}">
+<a href="{{ url_for('company_settings') }}"
+    class="nav-item {% if request.endpoint == 'company_settings' %}active{% endif %}">
     <span class="nav-item-icon">
         <i data-lucide="settings" width="20" height="20"></i>
     </span>
@@ -46,10 +44,13 @@
 
 {% block topbar_right %}
 {% if admin_viewing_mode %}
-<div style="margin-right: var(--db-space-md); padding: 0.5rem var(--db-space-md); background-color: var(--db-danger-light); border: 1px solid var(--db-danger); border-radius: var(--db-radius-md); display: flex; align-items: center; gap: var(--db-space-sm);">
+<div
+    style="margin-right: var(--db-space-md); padding: 0.5rem var(--db-space-md); background-color: var(--db-danger-light); border: 1px solid var(--db-danger); border-radius: var(--db-radius-md); display: flex; align-items: center; gap: var(--db-space-sm);">
     <i data-lucide="shield-alert" width="16" height="16" style="color: var(--db-danger);"></i>
-    <span style="font-size: 13px; font-weight: 600; color: var(--db-danger);">Admin Mode: Viewing as {{ company.name if company else 'Company' }}</span>
-    <a href="{{ url_for('admin_exit_company_view') }}" class="btn btn-sm" style="background-color: var(--db-danger); color: white; margin-left: var(--db-space-sm);">
+    <span style="font-size: 13px; font-weight: 600; color: var(--db-danger);">Admin Mode: Viewing as {{ company.name if
+        company else 'Company' }}</span>
+    <a href="{{ url_for('admin_exit_company_view') }}" class="btn btn-sm"
+        style="background-color: var(--db-danger); color: white; margin-left: var(--db-space-sm);">
         <i data-lucide="x" width="14" height="14"></i>
         Exit
     </a>
@@ -90,4 +91,3 @@
 {% block scripts %}
 {% block company_scripts %}{% endblock %}
 {% endblock %}
-
