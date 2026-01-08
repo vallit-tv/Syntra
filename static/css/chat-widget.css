@@ -1,6 +1,6 @@
 /**
  * Vallit/Oura Style Chat Widget CSS
- * Version: 2.0.0
+ * Version: 2.1.0 (Updated Header & Footer)
  */
 
 :root {
@@ -36,9 +36,19 @@
     gap: 16px;
 }
 
+.syntra-position-bottom-right {
+    right: 24px !important;
+    bottom: 24px !important;
+    left: auto !important;
+    top: auto !important;
+    align-items: flex-end;
+}
+
 .syntra-position-bottom-left {
-    right: auto;
-    left: 24px;
+    right: auto !important;
+    left: 24px !important;
+    bottom: 24px !important;
+    top: auto !important;
     align-items: flex-start;
 }
 
@@ -89,7 +99,6 @@
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     border: 1px solid var(--syntra-border);
     position: relative;
-    /* Ensure absolute children contain here */
 }
 
 /* Open State */
@@ -109,20 +118,62 @@
 
 /* Header */
 .syntra-header {
-    height: 64px;
+    height: 72px;
+    /* Slightly taller for avatar */
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0 20px;
     flex-shrink: 0;
     border-bottom: 1px solid var(--syntra-border);
-    /* Add border */
+}
+
+.syntra-header-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.syntra-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    flex-shrink: 0;
+}
+
+.syntra-header-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
 .syntra-header-title {
     font-size: 16px;
     font-weight: 600;
     color: var(--syntra-text);
+    line-height: 1.2;
+}
+
+.syntra-header-status {
+    font-size: 12px;
+    color: var(--syntra-text-muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.syntra-status-dot {
+    width: 6px;
+    height: 6px;
+    background: #22c55e;
+    border-radius: 50%;
 }
 
 /* Header Actions */
@@ -135,7 +186,6 @@
 .syntra-reset-btn,
 .syntra-close-btn,
 .syntra-back-btn {
-    /* Added back-btn here */
     background: transparent;
     border: none;
     cursor: pointer;
@@ -248,9 +298,10 @@
     font-size: 0.9em;
 }
 
-/* Input Area */
+/* Input Area & Footer */
 .syntra-input-area {
-    padding: 16px 20px 24px;
+    padding: 16px 20px 20px;
+    /* Adjusted padding */
     background: #fff;
     border-top: 1px solid var(--syntra-border);
 }
@@ -264,6 +315,7 @@
     border: 1px solid var(--syntra-border);
     border-radius: 24px;
     padding: 6px;
+    margin-bottom: 12px;
 }
 
 .syntra-input {
@@ -303,31 +355,21 @@
     cursor: default;
 }
 
-.syntra-branding {
-    font-size: 11px;
-    color: #999;
-    text-align: center;
-    margin-top: 12px;
+.syntra-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
 }
 
-.syntra-branding a {
-    color: #999;
-    text-decoration: none;
+.syntra-privacy-text a,
+.vallit-branding a {
+    transition: color 0.2s;
 }
 
-/* Privacy Disclaimer */
-.syntra-privacy-text {
-    font-size: 10px;
-    color: #999;
-    text-align: center;
-    margin-top: 8px;
-    padding: 0 12px;
-    line-height: 1.4;
-}
-
-.syntra-privacy-text a {
-    color: #666;
-    text-decoration: underline;
+.syntra-privacy-text a:hover,
+.vallit-branding a:hover {
+    color: #333;
 }
 
 /* Animations */
@@ -344,7 +386,7 @@
 }
 
 /* ==========================================================================
-   Overlays & Modals (NEW)
+   Overlays & Modals
    ========================================================================== */
 
 /* Overlays (e.g. Menu) */
@@ -366,7 +408,7 @@
 }
 
 .syntra-overlay-header {
-    height: 64px;
+    height: 72px;
     border-bottom: 1px solid var(--syntra-border);
     display: flex;
     align-items: center;

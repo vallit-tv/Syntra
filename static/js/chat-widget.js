@@ -224,7 +224,17 @@
                 <div class="syntra-chat-window">
                     <!-- Header -->
                     <div class="syntra-header">
-                        <div class="syntra-header-title">${this.config.headerTitle}</div>
+                        <div class="syntra-header-info">
+                            <div class="syntra-avatar">
+                                ${this.config.headerTitle.charAt(0)}
+                            </div>
+                            <div class="syntra-header-text">
+                                <div class="syntra-header-title">${this.config.headerTitle}</div>
+                                <div class="syntra-header-status">
+                                    <span class="syntra-status-dot"></span> Online
+                                </div>
+                            </div>
+                        </div>
                         <div class="syntra-header-actions">
                             <button class="syntra-reset-btn" title="New Chat">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -255,15 +265,16 @@
                                 </svg>
                             </button>
                         </form>
-                        <div class="syntra-privacy-text" style="font-size: 10px; color: #999; text-align: center; margin-top: 8px;">
-                            By using this assistant, you agree to our <a href="${this.config.privacyPolicyUrl}" target="_blank">Privacy Policy</a>
+                        <div class="syntra-footer">
+                            <div class="syntra-privacy-text" style="font-size: 10px; color: #999; text-align: center; margin-bottom: 4px;">
+                                By using this assistant, you agree to our <a href="${this.config.privacyPolicyUrl}" target="_blank">Privacy Policy</a>
+                            </div>
+                            ${this.config.showBranding ? `
+                            <div class="vallit-branding" style="font-size: 10px; color: #999; text-align: center; opacity: 0.7;">
+                                Powered by <a href="https://vallit.net" target="_blank" rel="noopener" style="text-decoration: none; font-weight: 500; color: #999;">Vallit</a>
+                            </div>
+                            ` : ''}
                         </div>
-                        ${this.config.showBranding ? `
-                        <div class="vallit-branding">
-                            Powered by <a href="https://vallit.net" target="_blank" rel="noopener">Vallit</a>
-                        </div>
-                        ` : ''
-                }
                     </div>
 
                     <!-- Overlays: Menu -->

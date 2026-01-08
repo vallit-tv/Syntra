@@ -527,24 +527,46 @@ CRITICAL RULES:
                 if settings_result.data:
                     settings = settings_result.data[0].get('settings', {})
                     
-                    # Map new settings structure to flat config structure expected by app
-                    # settings = { appearance: {theme...}, content: {headerTitle...}, bot: {instructions...} }
+                    # Support both nested (legacy/planned) and flat (current admin) structures
+                    # Flat structure: { bot_name, welcome_message, theme, language, position, primary_color, ... }
                     
-                    if settings.get('appearance'):
-                        config['theme'] = settings['appearance'].get('theme', config['theme'])
-                    
-                    if settings.get('content'):
-                        config['name'] = settings['content'].get('headerTitle', config['name'])
-                        config['welcome_message'] = settings['content'].get('welcomeMessage', config['welcome_message'])
-                        config['placeholder_text'] = settings['content'].get('placeholderText', config['placeholder_text'])
+                    # 1. Theme
+                    if settings.get('appearance') and settings['appearance'].get('theme'):
+                        config['theme'] = settings['appearance'].get('theme')
+                    elif settings.get('theme'):
+                        config['theme'] = settings.get('theme')
                         
-                    if settings.get('bot'):
-                        # Append instructions to system prompt or store separately
-                        instructions = settings['bot'].get('instructions', '')
-                        if instructions:
-                            config['system_prompt'] = f"{self.default_system_prompt}\n\nIMPORTANT INSTRUCTIONS:\n{instructions}"
+                    # 2. Name / Header Title
+                    if settings.get('content') and settings['content'].get('headerTitle'):
+                        config['name'] = settings['content'].get('headerTitle')
+                    elif settings.get('bot_name'):
+                        config['name'] = settings.get('bot_name')
+                        
+                    # 3. Welcome Message
+                    if settings.get('content') and settings['content'].get('welcomeMessage'):
+                        config['welcome_message'] = settings['content'].get('welcomeMessage')
+                    elif settings.get('welcome_message'):
+                        config['welcome_message'] = settings.get('welcome_message')
+                        
+                    # 4. Instructions / System Prompt
+                    instructions = ""
+                    if settings.get('bot') and settings['bot'].get('instructions'):
+                        instructions = settings['bot'].get('instructions')
+                    elif settings.get('instructions'):
+                        instructions = settings.get('instructions')
+                        
+                    if instructions:
+                        config['system_prompt'] = f"{self.default_system_prompt}\n\nIMPORTANT INSTRUCTIONS:\n{instructions}"
+                        
+                    # 5. Position
+                    if settings.get('position'):
+                        config['position'] = settings.get('position')
+                        
+                    # 6. Primary Color (if needed in config, strictly handled by CSS usually but passed for safety)
+                    if settings.get('primary_color'):
+                        config['primary_color'] = settings.get('primary_color')
                             
-                    config['settings'] = settings # Keep raw settings too
+                    config['settings'] = settings # Keep raw settings properties available
                     return config
 
             # 2. Fallback to legacy 'widget_configs' if no modern settings or no company_id
