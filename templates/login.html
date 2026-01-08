@@ -6,8 +6,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login – Vallit</title>
     <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard-core.css') }}?v=2">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/console.css') }}?v=1">
     <style>
+        :root {
+            --db-bg-secondary: var(--console-bg);
+            --db-bg-primary: var(--console-bg-panel);
+            --db-text-primary: var(--console-text-primary);
+            --db-text-secondary: var(--console-text-secondary);
+            --db-text-tertiary: var(--console-text-tertiary);
+            --db-border-color: var(--console-border);
+            --db-primary: var(--console-text-primary);
+            --db-primary-hover: var(--console-text-secondary);
+            --db-font-sans: 'Inter', sans-serif;
+            --db-bg-hover: var(--console-bg-active);
+        }
+
         body {
             margin: 0;
             padding: 0;

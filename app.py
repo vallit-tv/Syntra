@@ -359,7 +359,39 @@ def before_request():
 
 @app.route('/')
 def index():
-    return redirect(url_for('login'))
+    return render_template('index.html')
+
+@app.route('/features')
+def features():
+    return render_template('features.html')
+
+@app.route('/features/automation')
+def feature_automation():
+    return render_template('features/automation.html')
+
+@app.route('/features/analytics')
+def feature_analytics():
+    return render_template('features/analytics.html')
+
+@app.route('/features/security')
+def feature_security():
+    return render_template('features/security.html')
+
+@app.route('/pricing')
+def pricing():
+    return render_template('pricing.html')
+
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
+@app.route('/impressum')
+def impressum():
+    return render_template('legal/impressum.html')
+
+@app.route('/datenschutz')
+def datenschutz():
+    return render_template('legal/datenschutz.html')
 
 @app.route('/login')
 def login():
