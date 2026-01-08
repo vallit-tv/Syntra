@@ -31,6 +31,7 @@ print(f"SUPABASE_SERVICE_KEY set: {bool(os.getenv('SUPABASE_SERVICE_KEY'))}")
 print("=" * 60)
 
 app = Flask(__name__, static_folder='static', static_url_path='/static', template_folder='templates')
+# Force redeploy for route fix (Step 1010)
 
 # CRITICAL: Secret key must be stable across deployments on Vercel
 # Using a random key on each cold start invalidates all sessions!
@@ -586,7 +587,7 @@ def admin_user_detail(user_id):
         # Get user's workflow activations
         activations = db.get_user_workflow_activations(user_id)
         
-        return render_template('admin/user-detail.html',
+        return render_template('console/user_detail.html',
                              user=user,
                              target_user=target_user,
                              activations=activations)
@@ -596,31 +597,6 @@ def admin_user_detail(user_id):
 
 @app.route('/admin/system')
 @auth.admin_required
-def admin_system():
-    """Admin system status page"""
-    try:
-        user = auth.current_user()
-        # Get system stats
-        companies = db.get_companies()
-        all_users = db.get_all_users()
-
-        role_counts = Counter((u.get('role') or 'user') for u in all_users)
-
-        system_stats = {
-            'companies': len(companies),
-            'users': len(all_users),
-            'admins': role_counts.get('admin', 0),
-            'ceos': role_counts.get('ceo', 0),
-            'workers': role_counts.get('worker', 0) + role_counts.get('user', 0)
-        }
-        
-        return render_template('admin/system.html',
-                             user=user,
-                             system_stats=system_stats)
-    except Exception as e:
-        print(f"Admin system error: {str(e)}")
-        return redirect(url_for('admin_dashboard'))
-
 @app.route('/admin/widgets')
 @auth.admin_required
 def admin_widgets():
@@ -694,7 +670,7 @@ def admin_widget_detail(company_id):
     data-position="bottom-right"\u003e
 \u003c/script\u003e'''
         
-        return render_template('admin/widget_detail.html',
+        return render_template('console/widget_detail.html',
                              user=user,
                              company=company,
                              stats_30d=stats_30d,
@@ -723,9 +699,8 @@ def admin_widget_customize(company_id):
         
         company = company_result.data[0]
         
-        return render_template('admin/widget_customize.html',
-                             user=user,
-                             company=company)
+        # Redirect customize sub-route to main detail view (unified in console)
+        return redirect(url_for('admin_widget_detail', company_id=company_id))
     except Exception as e:
         print(f"Admin widget customize error: {str(e)}")
         import traceback
@@ -866,64 +841,7 @@ def api_delete_company_knowledge(company_id, entry_id):
 
 
                 
-        return jsonify({'success': True, 'pages_count': count, 'results': results})
-    except Exception as e:
-        print(f"Scrape error: {str(e)}")
-        return jsonify({'error': str(e)}), 500
 
-@app.route('/admin/chat')
-@auth.admin_required
-def admin_chat():
-    """Admin AI chat widget management page"""
-    try:
-        user = auth.current_user()
-        chat_service = get_chat_service()
-        
-        # Check configurations
-        openai_configured = chat_service.is_configured()
-        openai_model = os.getenv('OPENAI_MODEL', 'gpt-4o-mini')
-        
-        # Get widget config
-        config = chat_service.get_widget_config(db, 'default')
-        if not config:
-            config = chat_service.get_default_widget_config()
-        
-        # Get stats from database
-        stats = {
-            'total_sessions': 0,
-            'active_sessions': 0,
-            'total_messages': 0,
-            'messages_24h': 0
-        }
-        
-        sessions = []
-        try:
-            db_client = db.get_db()
-            if db_client:
-                # Get session count
-                sessions_result = db_client.table('chat_sessions').select('*').order('created_at', desc=True).limit(10).execute()
-                sessions = sessions_result.data if sessions_result.data else []
-                stats['total_sessions'] = len(sessions_result.data) if sessions_result.data else 0
-                stats['active_sessions'] = sum(1 for s in sessions if s.get('is_active'))
-                
-                # Get message count
-                messages_result = db_client.table('chat_messages').select('id', count='exact').execute()
-                stats['total_messages'] = messages_result.count if hasattr(messages_result, 'count') and messages_result.count else 0
-        except Exception as e:
-            print(f"Error getting chat stats: {e}")
-        
-        return render_template('admin/chat.html',
-                             user=user,
-                             openai_configured=openai_configured,
-                             openai_model=openai_model,
-                             config=config,
-                             stats=stats,
-                             sessions=sessions)
-    except Exception as e:
-        print(f"Admin chat error: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/analytics')
 @auth.admin_required
@@ -988,7 +906,7 @@ def admin_analytics():
             'failure_rate': failure_rate
         }
         
-        return render_template('admin/analytics.html',
+        return render_template('console/analytics.html',
                              user=user,
                              executions=all_executions,
                              execution_stats=execution_stats,
@@ -997,7 +915,8 @@ def admin_analytics():
                              user_lookup=user_lookup)
     except Exception as e:
         print(f"Admin analytics error: {str(e)}")
-        return redirect(url_for('admin_dashboard'))
+        # Fallback to the same page if dashboard redirect fails, or root
+        return redirect(url_for('admin_users'))
 
 @app.route('/admin/companies')
 @auth.admin_required
@@ -1040,7 +959,7 @@ def admin_companies():
             'without_ceo': total_companies - companies_with_ceo
         }
 
-        return render_template('admin/companies.html',
+        return render_template('console/companies.html',
                              user=user,
                              companies=enriched_companies,
                              company_stats=company_stats)
@@ -1070,7 +989,7 @@ def admin_company_detail(company_id):
             'workers': role_counter.get('worker', 0) + role_counter.get('user', 0)
         }
 
-        return render_template('admin/company-detail.html',
+        return render_template('console/company_detail.html',
                              user=user,
                              company=company,
                              members=company_users,
