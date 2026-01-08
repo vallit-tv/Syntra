@@ -848,51 +848,22 @@ def admin_analytics():
     try:
         user = auth.current_user()
         # Get system-wide stats
-        all_executions = db.get_all_workflow_executions(limit=1000)
+        # Workflow logic deprecated - return empty stats
+        all_executions = []
         users = db.get_all_users()
         user_lookup = {u['id']: u['name'] for u in users}
 
-        total_executions = len(all_executions)
+        total_executions = 0
         success_count = 0
         error_count = 0
         running_count = 0
-        duration_values = []
-        workflow_counter = Counter()
-
-        for execution in all_executions:
-            status = (execution.get('status') or '').lower()
-            if status == 'success':
-                success_count += 1
-            elif status == 'error':
-                error_count += 1
-            elif status == 'running':
-                running_count += 1
-
-            duration = execution.get('duration_ms')
-            if isinstance(duration, (int, float)) and duration >= 0:
-                duration_values.append(duration)
-
-            workflow_meta = execution.get('workflow_activations', {}).get('workflows', {})
-            workflow_id = workflow_meta.get('id') or execution.get('workflow_activation_id')
-            workflow_name = workflow_meta.get('name') or 'Unknown Workflow'
-            workflow_counter[(workflow_id, workflow_name)] += 1
-
+        
         avg_duration = None
-        if duration_values:
-            try:
-                avg_duration = statistics.mean(duration_values)
-            except statistics.StatisticsError:
-                avg_duration = None
+        success_rate = 0
+        failure_rate = 0
 
-        success_rate = (success_count / total_executions * 100) if total_executions else 0
-        failure_rate = (error_count / total_executions * 100) if total_executions else 0
-
-        top_workflows = [
-            {'workflow_id': wf_id, 'name': name, 'runs': count}
-            for (wf_id, name), count in workflow_counter.most_common(10)
-        ]
-
-        recent_failures = [exec_item for exec_item in all_executions if (exec_item.get('status') or '').lower() == 'error'][:5]
+        top_workflows = []
+        recent_failures = []
 
         execution_stats = {
             'total': total_executions,
