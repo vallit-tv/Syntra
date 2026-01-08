@@ -169,6 +169,19 @@
                         <label class="form-label">Slug</label>
                         <input type="text" name="slug" id="editCompanySlug" class="form-input w-full" required>
                     </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Embed Code</label>
+                        <div style="position: relative;">
+                            <textarea id="editCompanyEmbedCode" class="form-input w-full" rows="4" readonly
+                                style="font-family: monospace; font-size: 12px; background: #f4f4f5; color: #666; resize: none;"></textarea>
+                            <button type="button" onclick="copyEmbedCode()"
+                                style="position: absolute; top: 8px; right: 8px; padding: 4px 8px; font-size: 11px; background: #000; color: #fff; border: none; border-radius: 4px; cursor: pointer;">
+                                Copy
+                            </button>
+                        </div>
+                        <span class="form-hint">Paste this into your website's &lt;head&gt; or &lt;body&gt;.</span>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -222,7 +235,27 @@
         document.getElementById('editCompanyId').value = id;
         document.getElementById('editCompanyName').value = name;
         document.getElementById('editCompanySlug').value = slug;
+
+        // Generate Embed Code
+        const origin = window.location.origin;
+        const code = `<script src="${origin}/static/js/embed.js" \n  data-company-id="${id}"\n  data-widget-id="default">\n<\/script>`;
+        document.getElementById('editCompanyEmbedCode').value = code;
+
         Vallit.Modal.open('edit-company-modal');
+    }
+
+    function copyEmbedCode() {
+        const code = document.getElementById('editCompanyEmbedCode');
+        code.select();
+        document.execCommand('copy'); // Fallback
+        // Modern approach
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(code.value).then(() => {
+                Vallit.Toast.success('Embed code copied!');
+            });
+        } else {
+            Vallit.Toast.success('Embed code copied!');
+        }
     }
 
     document.getElementById('editCompanyForm').addEventListener('submit', function (e) {
