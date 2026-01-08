@@ -53,7 +53,8 @@
                                     onclick="copyEmbed('{{ company.company_id }}')" title="Copy Embed Code">
                                     <i data-lucide="code" width="14" height="14"></i>
                                 </button>
-                                <button class="btn btn-ghost btn-icon btn-sm" title="Settings">
+                                <button class="btn btn-ghost btn-icon btn-sm" title="Settings"
+                                    onclick="openSettings('{{ company.company_id }}', '{{ company.company_name }}')">
                                     <i data-lucide="settings" width="14" height="14"></i>
                                 </button>
                                 <a href="/admin/widgets/{{ company.company_id }}/test" target="_blank"

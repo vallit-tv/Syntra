@@ -355,9 +355,27 @@ CRITICAL RULES:
             )
             
             if response.status_code != 200:
-                error_text = response.text[:500]
+                error_text = response.text
                 print(f"OpenAI API error: {response.status_code} - {error_text}")
-                return None, {'error': f'API error: {response.status_code}'}
+                
+                # Fallback for model not found
+                if response.status_code == 404 or (response.status_code == 400 and 'model' in error_text):
+                    print("Model likely not found, retrying with gpt-3.5-turbo...")
+                    payload['model'] = 'gpt-3.5-turbo'
+                    response = requests.post(
+                        'https://api.openai.com/v1/chat/completions',
+                        headers={
+                            'Authorization': f'Bearer {self.openai_api_key}',
+                            'Content-Type': 'application/json'
+                        },
+                        json=payload,
+                        timeout=60
+                    )
+                    if response.status_code != 200:
+                        return None, {'error': f'API error after fallback: {response.status_code}'}
+                    # If success, proceed to parse data
+                else:
+                    return None, {'error': f'API error: {response.status_code}'}
             
             data = response.json()
             choice = data.get('choices', [{}])[0]
@@ -558,6 +576,18 @@ CRITICAL RULES:
                     if instructions:
                         config['system_prompt'] = f"{self.default_system_prompt}\n\nIMPORTANT INSTRUCTIONS:\n{instructions}"
                         
+                    # 4b. Language
+                    language = settings.get('language')
+                    if language:
+                        lang_map = {'de': 'German', 'fr': 'French', 'es': 'Spanish', 'en': 'English'}
+                        lang_name = lang_map.get(language, 'English')
+                        if language != 'en':
+                            lang_prompt = f"\n\nIMPORTANT: You must respond in {lang_name}."
+                            if config.get('system_prompt'):
+                                config['system_prompt'] += lang_prompt
+                            else:
+                                config['system_prompt'] = self.default_system_prompt + lang_prompt
+
                     # 5. Position
                     if settings.get('position'):
                         config['position'] = settings.get('position')
