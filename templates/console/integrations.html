@@ -1,0 +1,67 @@
+{% extends "layout_console.html" %}
+
+{% block page_title %}Integrations{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px;">
+
+    <div class="subtitle">
+        Connect external services to empower your agents.
+    </div>
+
+    <div class="console-list">
+        <div class="list-header" style="display:grid; grid-template-columns: 2fr 3fr 1fr 1fr; gap:var(--space-md);">
+            <span>SERVICE</span>
+            <span>DESCRIPTION</span>
+            <span>STATUS</span>
+            <span>ACTIONS</span>
+        </div>
+
+        <!-- OpenAI -->
+        <div class="list-item" style="display:grid; grid-template-columns: 2fr 3fr 1fr 1fr; gap:var(--space-md);">
+            <div class="list-col">
+                <i data-lucide="brain" width="16" height="16"></i>
+                <span style="font-weight:500;">OpenAI</span>
+            </div>
+            <div style="color:var(--console-text-secondary);">GPT-4o, Embeddings, Intelligence</div>
+            <div>
+                <span class="status-dot {% if openai_connected %}active{% endif %}"></span>
+                <span style="font-size:11px; color:var(--console-text-secondary); margin-left:4px;">{{ 'Connected' if
+                    openai_connected else 'Offline' }}</span>
+            </div>
+            <div>
+                {% if openai_connected %}
+                <a href="{{ url_for('dashboard_api_keys') }}"
+                    style="color:var(--console-text-secondary); text-decoration:none; font-size:12px; border:1px solid var(--console-border); padding:2px 6px; border-radius:4px;">Manage</a>
+                {% else %}
+                <a href="{{ url_for('dashboard_api_keys') }}?type=OpenAI"
+                    style="background:var(--console-text-primary); color:var(--console-bg); text-decoration:none; font-size:12px; padding:2px 8px; border-radius:4px;">Connect</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Notion -->
+        <div class="list-item" style="display:grid; grid-template-columns: 2fr 3fr 1fr 1fr; gap:var(--space-md);">
+            <div class="list-col">
+                <i data-lucide="file-text" width="16" height="16"></i>
+                <span style="font-weight:500;">Notion</span>
+            </div>
+            <div style="color:var(--console-text-secondary);">Knowledge Base Source</div>
+            <div>
+                <span class="status-dot {% if notion_connected %}active{% endif %}"></span>
+                <span style="font-size:11px; color:var(--console-text-secondary); margin-left:4px;">{{ 'Connected' if
+                    notion_connected else 'Offline' }}</span>
+            </div>
+            <div>
+                {% if notion_connected %}
+                <a href="{{ url_for('dashboard_api_keys') }}"
+                    style="color:var(--console-text-secondary); text-decoration:none; font-size:12px; border:1px solid var(--console-border); padding:2px 6px; border-radius:4px;">Manage</a>
+                {% else %}
+                <a href="{{ url_for('dashboard_api_keys') }}?type=Notion"
+                    style="background:var(--console-text-primary); color:var(--console-bg); text-decoration:none; font-size:12px; padding:2px 8px; border-radius:4px;">Connect</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

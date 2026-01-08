@@ -1,0 +1,136 @@
+{% extends "layout_console.html" %}
+
+{% block page_title %}API Keys{% endblock %}
+
+{% block header_left %}
+<div style="display:flex; align-items:center; gap:10px;">
+    <h1 style="margin:0; font-size:14px; font-weight:600;">API Keys</h1>
+    <button onclick="toggleAddForm()"
+        style="background:var(--console-text-primary); color:var(--console-bg); border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:12px; font-weight:500;">+
+        New Key</button>
+</div>
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px;">
+
+    <!-- Add Key Form Panel -->
+    <div id="addKeyFormContainer"
+        style="display:none; margin-bottom:var(--space-xl); border:1px solid var(--console-border); padding:var(--space-md); border-radius:8px; background:var(--console-bg-panel);">
+        <h3 style="margin-top:0; font-size:13px; font-weight:600; margin-bottom:var(--space-md);">Add New API Key</h3>
+        <form id="addKeyForm" style="display:flex; flex-direction:column; gap:var(--space-md);">
+            <div style="display:flex; gap:var(--space-md);">
+                <input type="text" name="name" placeholder="Key Name (e.g. OpenAI Project Key)" required class="cmd-bar"
+                    style="width:100%; color:var(--console-text-primary);">
+                <select name="type" required class="cmd-bar" style="width:150px; color:var(--console-text-primary);">
+                    <option value="OpenAI">OpenAI</option>
+                    <option value="Notion">Notion</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <input type="password" name="key" placeholder="sk-..." required class="cmd-bar"
+                style="width:100%; color:var(--console-text-primary);">
+
+            <div style="display:flex; gap:var(--space-sm);">
+                <button type="submit"
+                    style="background:var(--console-text-primary); color:var(--console-bg); border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:12px;">Save
+                    Key</button>
+                <button type="button" onclick="toggleAddForm()"
+                    style="background:transparent; color:var(--console-text-secondary); border:1px solid var(--console-border); padding:6px 12px; border-radius:4px; cursor:pointer; font-size:12px;">Cancel</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Keys List -->
+    <div class="console-list">
+        {% if api_keys %}
+        <div class="list-header" style="display:grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap:var(--space-md);">
+            <span>NAME</span>
+            <span>TYPE</span>
+            <span>STATUS</span>
+            <span>ACTIONS</span>
+        </div>
+        {% for key in api_keys %}
+        <div class="list-item" style="display:grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap:var(--space-md);">
+            <div style="font-weight:500;">{{ key.name }}</div>
+            <div style="color:var(--console-text-tertiary);">{{ key.type }}</div>
+            <div>
+                <span class="status-dot {% if key.is_active %}active{% endif %}"></span>
+                <span style="font-size:11px; color:var(--console-text-secondary); margin-left:4px;">{{ 'Active' if
+                    key.is_active else 'Inactive' }}</span>
+            </div>
+            <div style="display:flex; gap:8px;">
+                <button class="copy-btn" data-copy="{{ key.key_value }}"
+                    style="background:transparent; border:none; cursor:pointer; color:var(--console-text-secondary);"
+                    title="Copy Key">
+                    <i data-lucide="copy" width="14" height="14"></i>
+                </button>
+                <button onclick="deleteKey('{{ key.id }}')"
+                    style="background:transparent; border:none; cursor:pointer; color:var(--console-error);"
+                    title="Revoke Key">
+                    <i data-lucide="trash-2" width="14" height="14"></i>
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div style="padding:var(--space-xl); text-align:center; color:var(--console-text-secondary);">
+            No API keys found. Add one to get started.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    function toggleAddForm() {
+        const el = document.getElementById('addKeyFormContainer');
+        el.style.display = el.style.display === 'none' ? 'block' : 'none';
+        if (el.style.display === 'block') el.querySelector('input').focus();
+    }
+
+    function deleteKey(keyId) {
+        if (confirm('Revoke this API Key permanently?')) {
+            fetch('/api/keys/' + keyId, { method: 'DELETE' })
+                .then(r => r.json())
+                .then(d => {
+                    if (d.error) alert(d.error);
+                    else location.reload();
+                });
+        }
+    }
+
+    // Copy Button Logic
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            navigator.clipboard.writeText(this.dataset.copy);
+            const icon = this.querySelector('i');
+            // Check if Lucide is loaded
+            if (typeof lucide !== 'undefined') {
+                // Since we can't easily change the icon via setAttribute and re-render without complex logic in vanilla JS with script tags,
+                // we'll just flash button color
+                this.style.color = 'var(--console-success)';
+                setTimeout(() => this.style.color = 'var(--console-text-secondary)', 1000);
+            }
+        });
+    });
+
+    // Form Submit
+    document.getElementById('addKeyForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const fd = new FormData(this);
+        const data = Object.fromEntries(fd.entries());
+
+        fetch('/api/keys', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+            .then(r => r.json())
+            .then(d => {
+                if (d.error) alert(d.error);
+                else location.reload();
+            });
+    });
+</script>
+{% endblock %}

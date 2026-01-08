@@ -1,0 +1,68 @@
+{% extends "layout_console.html" %}
+
+{% block page_title %}Agents{% endblock %}
+
+{% block content %}
+<div style="max-width: 900px;">
+
+    <div class="subtitle">
+        Manage chat agents for your companies.
+    </div>
+
+    <!-- Widgets List -->
+    <div class="console-list">
+        <div class="list-header" style="display:grid; grid-template-columns: 2fr 3fr 1fr 1fr; gap:var(--space-md);">
+            <span>COMPANY</span>
+            <span>ACTIVITY (30d)</span>
+            <span>STATUS</span>
+            <span>ACTIONS</span>
+        </div>
+
+        {% if companies %}
+        {% for company in companies %}
+        <div class="list-item" style="display:grid; grid-template-columns: 2fr 3fr 1fr 1fr; gap:var(--space-md);">
+            <div style="font-weight:500;">
+                {{ company.company_name }}
+                <span style="font-size:11px; color:var(--console-text-tertiary); margin-left:4px;">{{
+                    company.company_slug }}</span>
+            </div>
+            <div style="color:var(--console-text-secondary);">
+                {{ company.total_messages }} msgs · {{ company.total_sessions }} sessions
+            </div>
+            <div>
+                <span class="status-dot {% if company.has_activity %}active{% endif %}"></span>
+                <span style="font-size:11px; color:var(--console-text-secondary); margin-left:4px;">{{ 'Active' if
+                    company.has_activity else 'Idle' }}</span>
+            </div>
+            <div style="display:flex; gap:8px;">
+                <button onclick="copyEmbed('{{ company.company_id }}')"
+                    style="background:transparent; border:none; cursor:pointer; color:var(--console-text-secondary);"
+                    title="Copy Embed Code">
+                    <i data-lucide="code" width="14" height="14"></i>
+                </button>
+                <!-- Detail View (Coming Soon) -->
+                <a href="#"
+                    style="background:transparent; border:none; cursor:pointer; color:var(--console-text-secondary);"
+                    title="Settings (Coming Soon)">
+                    <i data-lucide="settings" width="14" height="14"></i>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div style="padding:var(--space-xl); text-align:center; color:var(--console-text-secondary);">
+            No companies found. Create a company first.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    function copyEmbed(companyId) {
+        const code = `<script src="{{ request.host_url }}widget/embed.js" data-company-id="${companyId}" data-theme="minimal"><\/script>`;
+        navigator.clipboard.writeText(code).then(() => {
+            alert('Embed code copied!');
+        });
+    }
+</script>
+{% endblock %}

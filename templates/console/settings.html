@@ -1,0 +1,105 @@
+{% extends "layout_console.html" %}
+
+{% block page_title %}Settings{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px;">
+
+    <div class="subtitle">
+        Account preferences and security.
+    </div>
+
+    <!-- Profile Section -->
+    <div style="margin-bottom: var(--space-xl);">
+        <h3 style="font-size:13px; font-weight:600; margin-bottom:var(--space-md); color:var(--console-text-primary);">
+            Profile</h3>
+
+        <form id="profileForm" style="display:flex; flex-direction:column; gap:var(--space-md);">
+            <div>
+                <label
+                    style="display:block; font-size:11px; color:var(--console-text-tertiary); margin-bottom:4px;">NAME</label>
+                <input type="text" name="name" value="{{ user.name }}" class="cmd-bar"
+                    style="width:100%; color:var(--console-text-primary);">
+            </div>
+
+            <div>
+                <label
+                    style="display:block; font-size:11px; color:var(--console-text-tertiary); margin-bottom:4px;">ROLE</label>
+                <div style="font-size:13px; color:var(--console-text-secondary); padding:6px 0;">{{ user.get('role',
+                    'user')|upper }}</div>
+            </div>
+
+            <div>
+                <button type="submit"
+                    style="background:var(--console-text-primary); color:var(--console-bg); border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:12px;">Update
+                    Profile</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="rail-sep" style="width:100%; margin:var(--space-xl) 0;"></div>
+
+    <!-- Password Section -->
+    <div>
+        <h3 style="font-size:13px; font-weight:600; margin-bottom:var(--space-md); color:var(--console-text-primary);">
+            Security</h3>
+
+        <form id="passwordForm" style="display:flex; flex-direction:column; gap:var(--space-md);">
+            <div>
+                <label
+                    style="display:block; font-size:11px; color:var(--console-text-tertiary); margin-bottom:4px;">CURRENT
+                    PASSWORD</label>
+                <input type="password" name="current_password" required class="cmd-bar"
+                    style="width:100%; color:var(--console-text-primary);">
+            </div>
+
+            <div style="display:flex; gap:var(--space-md);">
+                <div style="flex:1;">
+                    <label
+                        style="display:block; font-size:11px; color:var(--console-text-tertiary); margin-bottom:4px;">NEW
+                        PASSWORD</label>
+                    <input type="password" name="new_password" required class="cmd-bar"
+                        style="width:100%; color:var(--console-text-primary);">
+                </div>
+                <div style="flex:1;">
+                    <label
+                        style="display:block; font-size:11px; color:var(--console-text-tertiary); margin-bottom:4px;">CONFIRM</label>
+                    <input type="password" name="confirm_password" required class="cmd-bar"
+                        style="width:100%; color:var(--console-text-primary);">
+                </div>
+            </div>
+
+            <div>
+                <button type="submit"
+                    style="background:transparent; border:1px solid var(--console-border); color:var(--console-text-primary); padding:6px 12px; border-radius:4px; cursor:pointer; font-size:12px;">Change
+                    Password</button>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+<script>
+    document.getElementById('profileForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const data = Object.fromEntries(new FormData(this).entries());
+        fetch('/api/user/profile', {
+            method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' }
+        }).then(r => r.json()).then(d => {
+            if (d.error) alert(d.error); else location.reload();
+        });
+    });
+
+    document.getElementById('passwordForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const data = Object.fromEntries(new FormData(this).entries());
+        if (data.new_password !== data.confirm_password) { alert('Passwords match error'); return; }
+
+        fetch('/api/user/password', {
+            method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' }
+        }).then(r => r.json()).then(d => {
+            if (d.error) alert(d.error); else { alert('Password updated'); this.reset(); }
+        });
+    });
+</script>
+{% endblock %}

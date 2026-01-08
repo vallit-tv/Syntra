@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 from dateutil import parser as date_parser
 import auth
 import db
-from knowledge_scraper import SimpleScraper
+
 
 load_dotenv()
 
@@ -344,134 +344,7 @@ def health():
             }
         }), 200
 
-@app.route('/debug/env')
-def debug_env():
-    """Debug endpoint to check environment variables (admin only)"""
-    # Check which critical env vars are set (without exposing full values)
-    env_status = {
-        'SUPABASE_URL': {
-            'set': bool(os.getenv('SUPABASE_URL')),
-            'value_preview': os.getenv('SUPABASE_URL', '')[:30] + '...' if os.getenv('SUPABASE_URL') else None,
-            'length': len(os.getenv('SUPABASE_URL', ''))
-        },
-        'SUPABASE_KEY': {
-            'set': bool(os.getenv('SUPABASE_KEY')),
-            'value_preview': os.getenv('SUPABASE_KEY', '')[:30] + '...' if os.getenv('SUPABASE_KEY') else None,
-            'length': len(os.getenv('SUPABASE_KEY', ''))
-        },
-        'SUPABASE_SERVICE_KEY': {
-            'set': bool(os.getenv('SUPABASE_SERVICE_KEY')),
-            'value_preview': os.getenv('SUPABASE_SERVICE_KEY', '')[:30] + '...' if os.getenv('SUPABASE_SERVICE_KEY') else None,
-            'length': len(os.getenv('SUPABASE_SERVICE_KEY', ''))
-        },
-        'N8N_URL': {
-            'set': bool(os.getenv('N8N_URL')),
-            'value_preview': os.getenv('N8N_URL', '')[:50] + '...' if os.getenv('N8N_URL') else None,
-            'length': len(os.getenv('N8N_URL', ''))
-        },
-        'N8N_API_KEY': {
-            'set': bool(os.getenv('N8N_API_KEY')),
-            'value_preview': os.getenv('N8N_API_KEY', '')[:30] + '...' if os.getenv('N8N_API_KEY') else None,
-            'length': len(os.getenv('N8N_API_KEY', ''))
-        },
-        'VERCEL': os.getenv('VERCEL'),
-        'ENV': os.getenv('ENV'),
-        'N8N_WEBHOOK_URL': {
-            'set': bool(os.getenv('N8N_WEBHOOK_URL')),
-            'value_preview': os.getenv('N8N_WEBHOOK_URL', '')[:30] + '...' if os.getenv('N8N_WEBHOOK_URL') else None,
-            'length': len(os.getenv('N8N_WEBHOOK_URL', ''))
-        },
-    }
-    
-    # Check database configuration
-    db_configured = db.is_db_configured()
-    db_connected, db_error = db.test_db_connection()
-    
-    return jsonify({
-        'environment_variables': env_status,
-        'database': {
-            'configured': db_configured,
-            'connected': db_connected,
-            'error': db_error if not db_connected else None
-        },
-        'note': 'This endpoint shows which environment variables are set. Full values are hidden for security.'
-    }), 200
 
-@app.route('/init-theo', methods=['GET', 'POST'])
-def init_theo_page():
-    """Simple page to initialize Theo - can be accessed via browser"""
-    if request.method == 'POST' or request.args.get('init') == 'true':
-        try:
-            user = auth.create_user_admin('Theo', role='admin')
-            return jsonify({
-                'success': True,
-                'message': 'Theo initialized successfully as Admin',
-                'user': {
-                    'id': user['id'],
-                    'name': user['name'],
-                    'role': user.get('role', 'admin')
-                },
-                'next_step': 'Go to /login and enter "Theo" as username'
-            })
-        except Exception as e:
-            error_msg = str(e)
-            # Check if it's a table not found error
-            if 'table' in error_msg.lower() and 'users' in error_msg.lower():
-                error_msg = (
-                    "Database tables not found! You need to create the tables first. "
-                    "Go to your Supabase Dashboard → SQL Editor and run the contents of "
-                    "'supabase_schema.sql'. See DATABASE_SETUP.md for detailed instructions."
-                )
-            return jsonify({
-                'success': False,
-                'error': error_msg,
-                'message': 'Failed to initialize Theo',
-                'help': 'If you see "table not found", you need to run the SQL schema in Supabase first.'
-            }), 400
-    
-    # GET request - show simple HTML page
-    return '''
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Initialize Theo</title>
-        <style>
-            body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
-            button { padding: 10px 20px; font-size: 16px; background: #2563eb; color: white; border: none; border-radius: 5px; cursor: pointer; }
-            button:hover { background: #1e40af; }
-            .result { margin-top: 20px; padding: 15px; border-radius: 5px; }
-            .success { background: #d1fae5; border: 1px solid #10b981; color: #065f46; }
-            .error { background: #fee2e2; border: 1px solid #ef4444; color: #991b1b; }
-        </style>
-    </head>
-    <body>
-        <h1>Initialize Theo as CEO</h1>
-        <p>Click the button below to create the user "Theo" with CEO/admin privileges.</p>
-        <button onclick="initTheo()">Initialize Theo</button>
-        <div id="result"></div>
-        <script>
-            async function initTheo() {
-                const resultDiv = document.getElementById('result');
-                resultDiv.innerHTML = '<p>Initializing...</p>';
-                try {
-                    const response = await fetch('/init-theo?init=true', { method: 'POST' });
-                    const data = await response.json();
-                    if (data.success) {
-                        resultDiv.className = 'result success';
-                        resultDiv.innerHTML = '<h3>✓ Success!</h3><p>' + data.message + '</p><p><strong>Next:</strong> ' + data.next_step + '</p>';
-                    } else {
-                        resultDiv.className = 'result error';
-                        resultDiv.innerHTML = '<h3>✗ Error</h3><p>' + data.error + '</p>';
-                    }
-                } catch (error) {
-                    resultDiv.className = 'result error';
-                    resultDiv.innerHTML = '<h3>✗ Error</h3><p>Network error: ' + error.message + '</p>';
-                }
-            }
-        </script>
-    </body>
-    </html>
-    '''
 
 # Before request handler to ensure sessions are properly handled
 @app.before_request
@@ -486,14 +359,7 @@ def before_request():
 
 @app.route('/')
 def index():
-    try:
-        return render_template('index.html')
-    except Exception as e:
-        print(f"Index route error: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        # Return a simple error message instead of crashing
-        return "<h1>Error</h1><p>Unable to load page. Please try again later.</p>", 500
+    return redirect(url_for('login'))
 
 @app.route('/login')
 def login():
@@ -507,143 +373,9 @@ def register():
 def setup_password():
     return render_template('setup-password.html')
 
-# ============================================================================
-# PUBLIC PAGES - Features, Pricing, About, Legal
-# ============================================================================
-
-@app.route('/features')
-def features():
-    """Features overview page"""
-    return render_template('features.html')
-
-@app.route('/features/automation')
-def feature_automation():
-    """Intelligent Automation feature page"""
-    return render_template('features/automation.html')
-
-@app.route('/features/analytics')
-def feature_analytics():
-    """Real-time Analytics feature page"""
-    return render_template('features/analytics.html')
-
-@app.route('/features/security')
-def feature_security():
-    """Enterprise Security feature page"""
-    return render_template('features/security.html')
-
-@app.route('/pricing')
-def pricing():
-    """Pricing page"""
-    return render_template('pricing.html')
-
-@app.route('/about')
-def about():
-    """About page"""
-    return render_template('about.html')
-
-@app.route('/impressum')
-def impressum():
-    """Legal notice page (German requirement)"""
-    return render_template('legal/impressum.html')
-
-@app.route('/datenschutz')
-def datenschutz():
-    """Privacy policy page (German requirement)"""
-    return render_template('legal/datenschutz.html')
-
-# ============================================================================
-# CEO DASHBOARD ROUTES
-# ============================================================================
-
-@app.route('/company/dashboard')
-@auth.ceo_required
-def company_dashboard():
-    """CEO dashboard overview"""
-    try:
-        user = auth.current_user()
-        
-        # Check if admin is viewing as company
-        admin_viewing_mode = session.get('admin_viewing_mode', False)
-        admin_viewing_company_id = session.get('admin_viewing_company_id')
-        
-        if admin_viewing_mode and admin_viewing_company_id:
-            # Admin viewing a company
-            company = db.get_company_by_id(admin_viewing_company_id)
-        else:
-            # Regular user accessing their company
-            company = db.get_company_by_id(user.get('company_id'))
-        
-        if not company:
-            return "No company assigned", 403
-        
-        # Get company users
-        company_users = db.get_company_users(company['id'])
-        
-        dashboard_summary = {
-            'team_members': len(company_users),
-            'active_workflows': 0,
-            'pending_workflows': 0,
-            'missing_credentials': 0
-        }
-        
-        return render_template('company/dashboard.html',
-                             user=user,
-                             company=company,
-                             dashboard_summary=dashboard_summary,
-                             admin_viewing_mode=admin_viewing_mode,
-                             company_users=company_users)
-    except Exception as e:
-        print(f"CEO dashboard error: {str(e)}")
-        return redirect(url_for('login'))
 
 
 
-@app.route('/company/workers')
-@auth.ceo_required
-def company_workers():
-    """CEO workers management page"""
-    try:
-        user = auth.current_user()
-        company = db.get_company_by_id(user.get('company_id'))
-        if not company:
-            return "No company assigned", 403
-        
-        workers = db.get_company_users(company['id'])
-        role_counter = Counter((worker.get('role') or 'worker').lower() for worker in workers)
-        password_pending = sum(1 for worker in workers if not worker.get('is_password_set'))
-        worker_stats = {
-            'total': len(workers),
-            'ceos': role_counter.get('ceo', 0),
-            'admins': role_counter.get('admin', 0),
-            'workers': role_counter.get('worker', 0) + role_counter.get('user', 0),
-            'password_pending': password_pending
-        }
-        
-        return render_template('company/workers.html',
-                             user=user,
-                             company=company,
-                             workers=workers,
-                             worker_stats=worker_stats)
-    except Exception as e:
-        print(f"CEO workers error: {str(e)}")
-        return redirect(url_for('company_dashboard'))
-
-@app.route('/company/settings')
-@auth.ceo_required
-def company_settings():
-    """CEO company settings page"""
-    try:
-        user = auth.current_user()
-        company = db.get_company_by_id(user.get('company_id'))
-        if not company:
-            return "No company assigned", 403
-        
-        return render_template('company/settings.html',
-                             user=user,
-                             company=company)
-    except Exception as e:
-        print(f"CEO settings error: {str(e)}")
-        return redirect(url_for('company_dashboard'))
 
 # ============================================================================
 # WORKER DASHBOARD ROUTES
@@ -669,10 +401,20 @@ def dashboard_overview():
         if user and auth.is_admin(user):
             return redirect(url_for('admin_dashboard'))
         api_keys = db.get_api_keys(user['id'])
+
+        from datetime import datetime
+        now_utc = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')
         
-        return render_template('dashboard/overview.html', 
+        # Check integrations (simple count)
+        openai_key = next((k for k in api_keys if k.get('type') == 'OpenAI' and k.get('is_active')), None)
+        notion_key = next((k for k in api_keys if k.get('type') == 'Notion' and k.get('is_active')), None)
+        integrations_count = int(bool(openai_key)) + int(bool(notion_key))
+
+        return render_template('console/home.html', 
                              user=user,
-                             api_keys_count=len(api_keys))
+                             api_keys_count=len(api_keys),
+                             integrations_count=integrations_count,
+                             now_utc=now_utc)
     except Exception as e:
         print(f"Dashboard overview error: {str(e)}")
         return redirect(url_for('register'))
@@ -697,7 +439,7 @@ def dashboard_api_keys():
     try:
         user = auth.current_user()
         api_keys = db.get_api_keys(user['id'])
-        return render_template('dashboard/api-keys.html', user=user, api_keys=api_keys)
+        return render_template('console/keys.html', user=user, api_keys=api_keys)
     except Exception as e:
         print(f"Dashboard API keys error: {str(e)}")
         return redirect(url_for('login'))
@@ -714,7 +456,7 @@ def dashboard_integrations():
         openai_keys = [k for k in db.get_api_keys(user['id']) if k.get('type', '').lower() == 'openai']
         openai_connected = len(openai_keys) > 0
         
-        return render_template('dashboard/integrations.html', 
+        return render_template('console/integrations.html', 
                              user=user,
                              notion_connected=notion_connected,
                              openai_connected=openai_connected)
@@ -730,7 +472,7 @@ def dashboard_settings():
         user = auth.current_user()
         # Placeholder - to be replaced with actual workflow defaults from database
         workflow_defaults = {}
-        return render_template('dashboard/settings.html', user=user, workflow_defaults=workflow_defaults)
+        return render_template('console/settings.html', user=user, workflow_defaults=workflow_defaults)
     except Exception as e:
         print(f"Dashboard settings error: {str(e)}")
         return redirect(url_for('login'))
@@ -790,7 +532,7 @@ def admin_users():
             'last_created': last_created_at
         }
 
-        return render_template('admin/users.html',
+        return render_template('console/users.html',
                              user=user,
                              users=enriched_users,
                              user_stats=user_stats,
@@ -869,7 +611,7 @@ def admin_widgets():
                 if config_result.data and len(config_result.data) > 0:
                     widget_configs[company['company_id']] = config_result.data[0]
         
-        return render_template('admin/widgets.html',
+        return render_template('console/widgets.html',
                              user=user,
                              companies=companies_summaries,
                              widget_configs=widget_configs)
@@ -1090,32 +832,7 @@ def api_delete_company_knowledge(company_id, entry_id):
         print(f"Delete knowledge error: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
-@app.route('/api/admin/companies/<company_id>/scrape', methods=['POST'])
-@auth.admin_required
-def api_scrape_company_website(company_id):
-    """Scrape website and add to knowledge base"""
-    try:
-        data = request.get_json()
-        url = data.get('url')
-        if not url:
-            return jsonify({'error': 'URL is required'}), 400
-            
-        scraper = SimpleScraper()
-        results = scraper.scrape_url(url, max_pages=10, max_depth=1)
-        
-        count = 0
-        for result in results:
-            if result.get('status') == 'success':
-                kb_manager.add_knowledge(
-                    company_id=company_id,
-                    title=result.get('title', url),
-                    content=result.get('content', ''),
-                    source_url=result.get('url'),
-                    category='Website',
-                    tags=['scraped'],
-                    type='webpage'
-                )
-                count += 1
+
                 
         return jsonify({'success': True, 'pages_count': count, 'results': results})
     except Exception as e:

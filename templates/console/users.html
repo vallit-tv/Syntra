@@ -1,0 +1,113 @@
+{% extends "layout_console.html" %}
+
+{% block page_title %}Users{% endblock %}
+
+{% block header_left %}
+<div style="display:flex; align-items:center; gap:10px;">
+    <h1 style="margin:0; font-size:14px; font-weight:600;">Users</h1>
+    <button onclick="openInviteModal()"
+        style="background:var(--console-text-primary); color:var(--console-bg); border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:12px; font-weight:500;">+
+        Invite</button>
+</div>
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 900px;">
+
+    <div class="subtitle">
+        Manage team members and access.
+    </div>
+
+    <!-- Users List -->
+    <div class="console-list">
+        <div class="list-header" style="display:grid; grid-template-columns: 2fr 1fr 2fr 1fr 1fr; gap:var(--space-md);">
+            <span>USER</span>
+            <span>ROLE</span>
+            <span>COMPANY</span>
+            <span>STATUS</span>
+            <span>ACTIONS</span>
+        </div>
+
+        {% if users %}
+        {% for u in users %}
+        <div class="list-item" style="display:grid; grid-template-columns: 2fr 1fr 2fr 1fr 1fr; gap:var(--space-md);">
+            <div style="font-weight:500; display:flex; align-items:center; gap:8px;">
+                <div
+                    style="width:20px; height:20px; background:var(--console-text-tertiary); color:var(--console-bg); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px;">
+                    {{ u.name[0]|upper }}</div>
+                {{ u.name }}
+            </div>
+            <div>
+                <span
+                    style="font-size:11px; padding:2px 6px; border-radius:4px; background:var(--console-bg-active); color:var(--console-text-secondary); text-transform:uppercase;">{{
+                    u.get('role', 'user') }}</span>
+            </div>
+            <div style="color:var(--console-text-secondary);">
+                {{ u.company_name if u.company_name else '—' }}
+            </div>
+            <div>
+                <span class="status-dot {% if u.get('is_password_set') %}active{% endif %}"></span>
+                <span style="font-size:11px; color:var(--console-text-secondary); margin-left:4px;">{{ 'Active' if
+                    u.get('is_password_set') else 'Pending' }}</span>
+            </div>
+            <div>
+                <button
+                    style="background:transparent; border:none; cursor:pointer; color:var(--console-text-secondary);"
+                    title="Edit (Coming Soon)">
+                    <i data-lucide="edit-3" width="14" height="14"></i>
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div style="padding:var(--space-xl); text-align:center; color:var(--console-text-secondary);">
+            No users found.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Invite Modal (Hidden by default, simple overlay) -->
+<div id="inviteModal"
+    style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:999; align-items:center; justify-content:center;">
+    <div
+        style="background:var(--console-bg-panel); border:1px solid var(--console-border); padding:var(--space-lg); width:300px; border-radius:8px;">
+        <h3 style="margin-top:0; font-size:14px; font-weight:600; margin-bottom:var(--space-md);">Invite User</h3>
+        <form id="inviteForm" style="display:flex; flex-direction:column; gap:var(--space-md);">
+            <input type="text" id="userName" placeholder="Username" required class="cmd-bar"
+                style="width:100%; color:var(--console-text-primary);">
+            <select id="userRole" class="cmd-bar" style="width:100%; color:var(--console-text-primary);">
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+            </select>
+            <div style="display:flex; gap:var(--space-sm); margin-top:var(--space-sm);">
+                <button type="submit"
+                    style="flex:1; background:var(--console-text-primary); color:var(--console-bg); border:none; padding:8px; border-radius:4px; cursor:pointer;">Invite</button>
+                <button type="button" onclick="document.getElementById('inviteModal').style.display='none'"
+                    style="flex:1; background:transparent; border:1px solid var(--console-border); color:var(--console-text-primary); padding:8px; border-radius:4px; cursor:pointer;">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openInviteModal() {
+        const el = document.getElementById('inviteModal');
+        el.style.display = 'flex';
+        document.getElementById('userName').focus();
+    }
+
+    document.getElementById('inviteForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const data = {
+            name: document.getElementById('userName').value,
+            role: document.getElementById('userRole').value
+        };
+        fetch('/api/admin/users', {
+            method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' }
+        }).then(r => r.json()).then(d => {
+            if (d.error) alert(d.error); else location.reload();
+        });
+    });
+</script>
+{% endblock %}
