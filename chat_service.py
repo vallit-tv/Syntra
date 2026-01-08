@@ -541,9 +541,10 @@ CRITICAL RULES:
             config = self.get_default_widget_config()
             
             if company_id:
-                settings_result = db_client.table('widget_settings').select('settings').eq('company_id', company_id).execute()
+                # Read from companies table (where Admin UI saves it)
+                settings_result = db_client.table('companies').select('widget_settings').eq('id', company_id).execute()
                 if settings_result.data:
-                    settings = settings_result.data[0].get('settings', {})
+                    settings = settings_result.data[0].get('widget_settings', {})
                     
                     # Support both nested (legacy/planned) and flat (current admin) structures
                     # Flat structure: { bot_name, welcome_message, theme, language, position, primary_color, ... }

@@ -138,7 +138,7 @@
         const apiUrl = "{{ request.host_url }}".replace(/\/$/, "");
     </script>
     <script src="{{ request.host_url }}widget/embed.js" data-company-id="{{ company.id }}"
-        data-api-url="{{ request.host_url }}" data-theme="{{ settings.theme or 'minimal' }}"
+        data-api-url="{{ request.host_url.rstrip('/') }}" data-theme="{{ settings.theme or 'minimal' }}"
         data-language="{{ settings.language or 'en' }}" data-position="{{ settings.position or 'bottom-right' }}"
         data-color="{{ settings.primary_color or '#6366f1' }}" {% if settings.bot_name
         %}data-title="{{ settings.bot_name }}" {% endif %}>

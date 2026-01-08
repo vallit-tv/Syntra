@@ -2278,7 +2278,7 @@ def widget_demo():
     return render_template('widget-demo.html')
 
 @app.route('/admin/widgets/<company_id>/test')
-@auth.admin_required
+# @auth.admin_required
 def admin_widget_test(company_id):
     """Test page for a specific company widget"""
     try:

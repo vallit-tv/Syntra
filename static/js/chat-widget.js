@@ -118,6 +118,12 @@
     class VallitChatWidget {
         constructor(config = {}) {
             this.config = { ...defaultConfig, ...config };
+
+            // Sanitize API URL
+            if (this.config.apiUrl) {
+                this.config.apiUrl = this.config.apiUrl.trim().replace(/\/+$/, '');
+            }
+
             this.sessionId = getStoredSessionId() || generateSessionId();
             this.isOpen = false;
             this.isLoading = false;
@@ -146,6 +152,7 @@
                 const remoteConfig = await response.json();
 
                 // Merge config, preferring remote for editable fields
+                // Update Welcome Message
                 if (remoteConfig.welcome_message) {
                     this.config.welcomeMessage = remoteConfig.welcome_message;
                     // If we haven't started chatting yet (messages empty or just 1 welcome msg), update it
@@ -164,6 +171,17 @@
                             }
                         }
                     }
+                }
+
+                // Update Header Title & Avatar
+                if (remoteConfig.name) {
+                    this.config.headerTitle = remoteConfig.name;
+                    // Update DOM elements
+                    const titleEl = this.container.querySelector('.syntra-header-title');
+                    if (titleEl) titleEl.textContent = this.config.headerTitle;
+
+                    const avatarEl = this.container.querySelector('.syntra-avatar');
+                    if (avatarEl) avatarEl.textContent = this.config.headerTitle.charAt(0);
                 }
 
                 // Update other settings if provided (e.g. theme, title)
@@ -529,7 +547,7 @@
                 this.saveHistory();
 
                 // Call API to reset/close old sessoion
-                const response = await fetch(`${this.config.apiUrl} /api/chat / reset`, {
+                const response = await fetch(`${this.config.apiUrl}/api/chat/reset`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ session_id: this.sessionId })
@@ -585,7 +603,7 @@
             this.showTypingIndicator();
 
             try {
-                const response = await fetch(`${this.config.apiUrl} /api/chat / message`, {
+                const response = await fetch(`${this.config.apiUrl}/api/chat/message`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -1109,10 +1127,10 @@
         scripts.forEach(script => {
             const config = {
                 widgetId: script.getAttribute('data-widget-id'),
-                companyId: script.getAttribute('data-company-id'),  // Multi-tenant
+                companyId: script.getAttribute('data-company-id'),
                 theme: script.getAttribute('data-theme'),
                 position: script.getAttribute('data-position'),
-                apiUrl: script.getAttribute('data-api-url'),
+                apiUrl: script.getAttribute('data-api-url') ? script.getAttribute('data-api-url').trim() : null,
                 welcomeMessage: script.getAttribute('data-welcome-message'),
                 placeholderText: script.getAttribute('data-placeholder'),
                 headerTitle: script.getAttribute('data-title'),
