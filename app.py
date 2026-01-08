@@ -550,8 +550,8 @@ def dashboard_settings():
 @app.route('/admin')
 @auth.admin_required
 def admin_dashboard():
-    """Admin dashboard - redirect to companies"""
-    return redirect(url_for('admin_analytics'))
+    """Admin dashboard - redirect to users (analytics is broken)"""
+    return redirect(url_for('admin_users'))
 
 
 
@@ -1031,7 +1031,7 @@ def admin_analytics():
                              user_lookup=user_lookup)
     except Exception as e:
         print(f"Admin analytics error: {str(e)}")
-        return redirect(url_for('admin_dashboard'))
+        return redirect(url_for('admin_users'))
 
 @app.route('/admin/companies')
 @auth.admin_required
