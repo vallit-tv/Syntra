@@ -595,8 +595,6 @@ def admin_user_detail(user_id):
         print(f"Admin user detail error: {str(e)}")
         return redirect(url_for('admin_users'))
 
-@app.route('/admin/system')
-@auth.admin_required
 @app.route('/admin/widgets')
 @auth.admin_required
 def admin_widgets():
