@@ -247,6 +247,40 @@ def update_user_password(user_id: str, password_hash: str) -> bool:
         return False
 
 
+def update_user(user_id: str, updates: Dict) -> bool:
+    """Update user details (name, role, company_id)"""
+    try:
+        db_client = get_db()
+        if db_client is None:
+            return False
+        
+        # Filter allowed updates
+        allowed_fields = ['name', 'role', 'company_id', 'email']
+        filtered_updates = {k: v for k, v in updates.items() if k in allowed_fields}
+        
+        if not filtered_updates:
+            return False
+            
+        db_client.table('users').update(filtered_updates).eq('id', user_id).execute()
+        return True
+    except Exception as e:
+        print(f"Error updating user {user_id}: {e}")
+        return False
+
+
+def delete_user(user_id: str) -> bool:
+    """Delete a user by ID"""
+    try:
+        db_client = get_db()
+        if db_client is None:
+            return False
+        db_client.table('users').delete().eq('id', user_id).execute()
+        return True
+    except Exception as e:
+        print(f"Error deleting user {user_id}: {e}")
+        return False
+
+
 def hash_token(token: str) -> str:
     """Hash token for storage"""
     return hashlib.sha256(token.encode()).hexdigest()

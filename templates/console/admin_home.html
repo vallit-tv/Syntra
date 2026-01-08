@@ -1,0 +1,155 @@
+{% extends "layout_console_v3.html" %}
+
+{% block page_title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="flex flex-col gap-6">
+
+    <!-- WELCOME HEADER -->
+    <div class="mb-2">
+        <h1 class="heading-xl mb-2">Admin Dashboard</h1>
+        <p class="text-muted">System overview and management tools.</p>
+    </div>
+
+    <!-- STATS GRID -->
+    <div class="stat-grid">
+        <div class="stat-card">
+            <div class="stat-label">Total Users</div>
+            <div class="stat-value">{{ stats.total_users }}</div>
+            <div class="stat-meta">
+                <span>{{ stats.active_users }} active</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Companies</div>
+            <div class="stat-value">{{ stats.total_companies }}</div>
+            <div class="stat-meta">
+                <a href="{{ url_for('admin_companies') }}" style="color: var(--accent);">Manage →</a>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Chat Agents</div>
+            <div class="stat-value">{{ stats.total_widgets }}</div>
+            <div class="stat-meta">
+                <a href="{{ url_for('admin_widgets') }}" style="color: var(--accent);">Configure →</a>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">System</div>
+            <div class="stat-value" style="font-size: 16px; display: flex; align-items: center; gap: 8px;">
+                <span class="status-dot active"></span>
+                Online
+            </div>
+            <div class="stat-meta">
+                All systems operational
+            </div>
+        </div>
+    </div>
+
+    <!-- QUICK ACTIONS -->
+    <div>
+        <h2 class="heading-md mb-4">Admin Actions</h2>
+        <div class="quick-actions">
+            <a href="{{ url_for('admin_users') }}" class="quick-action">
+                <div class="quick-action-icon">
+                    <i data-lucide="users" width="18" height="18"></i>
+                </div>
+                <div class="quick-action-content">
+                    <div class="quick-action-title">Manage Users</div>
+                    <div class="quick-action-description">Create, edit, assign to companies</div>
+                </div>
+                <i data-lucide="chevron-right" width="16" height="16" class="quick-action-arrow"></i>
+            </a>
+
+            <a href="{{ url_for('admin_companies') }}" class="quick-action">
+                <div class="quick-action-icon">
+                    <i data-lucide="building-2" width="18" height="18"></i>
+                </div>
+                <div class="quick-action-content">
+                    <div class="quick-action-title">Manage Companies</div>
+                    <div class="quick-action-description">Create and configure companies</div>
+                </div>
+                <i data-lucide="chevron-right" width="16" height="16" class="quick-action-arrow"></i>
+            </a>
+
+            <a href="{{ url_for('admin_widgets') }}" class="quick-action">
+                <div class="quick-action-icon">
+                    <i data-lucide="bot" width="18" height="18"></i>
+                </div>
+                <div class="quick-action-content">
+                    <div class="quick-action-title">Chat Agents</div>
+                    <div class="quick-action-description">Deploy and customize widgets</div>
+                </div>
+                <i data-lucide="chevron-right" width="16" height="16" class="quick-action-arrow"></i>
+            </a>
+
+            <a href="{{ url_for('dashboard_settings') }}" class="quick-action">
+                <div class="quick-action-icon">
+                    <i data-lucide="settings" width="18" height="18"></i>
+                </div>
+                <div class="quick-action-content">
+                    <div class="quick-action-title">Settings</div>
+                    <div class="quick-action-description">Account and preferences</div>
+                </div>
+                <i data-lucide="chevron-right" width="16" height="16" class="quick-action-arrow"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- RECENT USERS -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="heading-md">Recent Users</h3>
+            <a href="{{ url_for('admin_users') }}" class="btn btn-ghost btn-sm">View all</a>
+        </div>
+        <div class="card-body" style="padding: 0;">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Role</th>
+                        <th>Company</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in recent_users[:5] %}
+                    <tr>
+                        <td>
+                            <div class="flex items-center gap-3">
+                                <div class="user-avatar" style="width: 28px; height: 28px; font-size: 11px;">
+                                    {{ u.name[0]|upper if u.name else 'U' }}
+                                </div>
+                                <span style="font-weight: 500;">{{ u.name }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge {% if u.role == 'admin' %}badge-info{% else %}badge-default{% endif %}">
+                                {{ u.role|upper if u.role else 'USER' }}
+                            </span>
+                        </td>
+                        <td class="text-muted">{{ u.company_name or '—' }}</td>
+                        <td>
+                            <span
+                                class="badge {% if u.is_password_set %}badge-success{% else %}badge-warning{% endif %}">
+                                {{ 'Active' if u.is_password_set else 'Pending' }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-muted text-center" style="padding: var(--space-6);">
+                            No users yet
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

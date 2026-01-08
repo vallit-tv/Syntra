@@ -550,9 +550,46 @@ def dashboard_settings():
 @app.route('/admin')
 @auth.admin_required
 def admin_dashboard():
-    """Admin dashboard - redirect to users (analytics is broken)"""
-    return redirect(url_for('admin_users'))
+    """Admin dashboard - redirect to admin home"""
+    return redirect(url_for('admin_home'))
 
+
+@app.route('/admin/home')
+@auth.admin_required
+def admin_home():
+    """Admin home page with overview stats"""
+    try:
+        user = auth.current_user()
+        
+        # Fetch stats
+        all_users = db.get_all_users()
+        companies = db.get_companies()
+        
+        # Count users with passwords set (active)
+        active_users = len([u for u in all_users if u.get('is_password_set')])
+        
+        # Enrich users with company names
+        company_lookup = {c['id']: c for c in companies}
+        for u in all_users:
+            if u.get('company_id'):
+                company = company_lookup.get(u['company_id'])
+                if company:
+                    u['company_name'] = company.get('name')
+        
+        stats = {
+            'total_users': len(all_users),
+            'active_users': active_users,
+            'total_companies': len(companies),
+            'total_widgets': len(companies)  # Each company has one widget
+        }
+        
+        return render_template('console/admin_home.html',
+                             user=user,
+                             stats=stats,
+                             recent_users=all_users[:10])
+    except Exception as e:
+        print(f"Admin home error: {str(e)}")
+        return redirect(url_for('admin_users'))
 
 
 
@@ -1042,42 +1079,21 @@ def admin_companies():
         companies = db.get_companies()
         all_users = db.get_all_users()
 
-
-        user_summary = defaultdict(lambda: {'total': 0, 'admins': 0, 'ceos': 0, 'workers': 0})
+        # Count users per company
+        user_counts = defaultdict(int)
         for entry in all_users:
             company_id = entry.get('company_id')
-            if not company_id:
-                continue
-            summary = user_summary[company_id]
-            summary['total'] += 1
-            role = (entry.get('role') or 'worker').lower()
-            if role == 'admin':
-                summary['admins'] += 1
-            elif role == 'ceo':
-                summary['ceos'] += 1
-            else:
-                summary['workers'] += 1
+            if company_id:
+                user_counts[company_id] += 1
 
-        enriched_companies = []
+        # Add user_count to each company
         for company in companies:
-            cid = company.get('id')
-            c_stats = user_summary.get(cid, {'total': 0, 'admins': 0, 'ceos': 0, 'workers': 0})
-            company['user_stats'] = c_stats
-            enriched_companies.append(company)
+            company['user_count'] = user_counts.get(company['id'], 0)
 
-        total_companies = len(enriched_companies)
-        companies_with_ceo = sum(1 for company in enriched_companies if company['user_stats']['ceos'] > 0)
-
-        company_stats = {
-            'total': total_companies,
-            'with_ceo': companies_with_ceo,
-            'without_ceo': total_companies - companies_with_ceo
-        }
-
-        return render_template('admin/companies.html',
+        return render_template('console/companies.html',
                              user=user,
-                             companies=enriched_companies,
-                             company_stats=company_stats)
+                             companies=companies,
+                             total_users=len(all_users))
     except Exception as e:
         print(f"Admin companies error: {str(e)}")
         return redirect(url_for('admin_dashboard'))
@@ -1474,9 +1490,13 @@ def api_admin_update_user(user_id):
 @auth.admin_required
 def api_admin_delete_user(user_id):
     """Delete user (admin only)"""
-    # Note: This would require a delete_user function in db.py
-    # For now, return error
-    return jsonify({'error': 'User deletion not yet implemented'}), 501
+    try:
+        success = db.delete_user(user_id)
+        if success:
+            return jsonify({'message': 'User deleted'})
+        return jsonify({'error': 'Failed to delete user'}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/admin/users/<user_id>/activations', methods=['GET'])
 @auth.admin_required
