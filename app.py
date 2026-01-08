@@ -1464,27 +1464,43 @@ def api_admin_create_user():
 @auth.admin_required
 def api_admin_update_user(user_id):
     """Update user (admin only)"""
-    data = request.get_json() or {}
-    role_update = None
-    updated = False
-    
-    if 'role' in data:
-        role = (data['role'] or '').strip()
-        if role in ('user', 'admin', 'ceo', 'worker'):
-            role_update = role
-            if db.update_user_role(user_id, role_update):
-                updated = True
-    
-    if 'company_id' in data:
-        company_id = (data.get('company_id') or '').strip()
-        company_id = company_id or None
-        if db.assign_user_to_company(user_id, company_id):
-            updated = True
-    
-    if updated:
-        return jsonify({'message': 'User updated'})
-    
-    return jsonify({'error': 'No valid updates'}), 400
+    try:
+        data = request.get_json() or {}
+        print(f"DEBUG: Updating user {user_id} with data: {data}")
+        
+        # Build updates dict
+        updates = {}
+        
+        if 'name' in data and data['name']:
+            updates['name'] = data['name'].strip()
+        
+        if 'role' in data:
+            role = (data['role'] or '').strip()
+            if role in ('user', 'admin', 'ceo', 'worker'):
+                updates['role'] = role
+        
+        if 'company_id' in data:
+            company_id = (data.get('company_id') or '').strip()
+            updates['company_id'] = company_id if company_id else None
+        
+        print(f"DEBUG: Updates to apply: {updates}")
+        
+        if not updates:
+            return jsonify({'error': 'No valid updates provided'}), 400
+        
+        # Use db.update_user which handles all fields
+        success = db.update_user(user_id, updates)
+        print(f"DEBUG: Update result: {success}")
+        
+        if success:
+            return jsonify({'message': 'User updated'})
+        
+        return jsonify({'error': 'Failed to update user'}), 500
+    except Exception as e:
+        print(f"Error in api_admin_update_user: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/admin/users/<user_id>', methods=['DELETE'])
 @auth.admin_required
