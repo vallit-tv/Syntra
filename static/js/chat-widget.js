@@ -196,6 +196,8 @@
             document.head.appendChild(link);
         }
 
+        // ... (previous code)
+
         createWidget() {
             // Create container
             this.container = document.createElement('div');
@@ -264,7 +266,7 @@
                 }
                     </div>
 
-                    < !--Overlays: Menu-- >
+                    <!-- Overlays: Menu -->
                     <div class="syntra-overlay syntra-overlay-menu">
                         <div class="syntra-overlay-header">
                             <button class="syntra-back-btn" title="Back to Chat">
@@ -292,23 +294,24 @@
                         </div>
                     </div>
 
-                     <!--Custom Modal Backdrop-- >
-                <div class="syntra-modal-backdrop">
-                    <div class="syntra-modal">
-                        <div class="syntra-modal-title">Confirm</div>
-                        <div class="syntra-modal-text">Are you sure?</div>
-                        <div class="syntra-modal-actions">
-                            <button class="syntra-btn syntra-btn-secondary" data-action="cancel">Cancel</button>
-                            <button class="syntra-btn syntra-btn-primary" data-action="confirm">Confirm</button>
+                    <!-- Custom Modal Backdrop -->
+                    <div class="syntra-modal-backdrop">
+                        <div class="syntra-modal">
+                            <div class="syntra-modal-title">Confirm</div>
+                            <div class="syntra-modal-text">Are you sure?</div>
+                            <div class="syntra-modal-actions">
+                                <button class="syntra-btn syntra-btn-secondary" data-action="cancel">Cancel</button>
+                                <button class="syntra-btn syntra-btn-primary" data-action="confirm">Confirm</button>
+                            </div>
                         </div>
                     </div>
                 </div>
-                </div >
-                `;
+            `;
 
             document.body.appendChild(this.container);
 
-            // Cache DOM references
+            // ... (rest of function)
+
             this.toggleBtn = this.container.querySelector('.syntra-toggle-btn');
             this.chatWindow = this.container.querySelector('.syntra-chat-window');
             this.messagesContainer = this.container.querySelector('.syntra-messages-container');
@@ -658,7 +661,7 @@
 
         renderMessage(message, animate = true) {
             const messageEl = document.createElement('div');
-            messageEl.className = `syntra - message syntra - message - ${message.role} ${animate ? '' : 'no-animate'} `;
+            messageEl.className = `syntra-message syntra-message-${message.role} ${animate ? '' : 'no-animate'}`;
 
             // Format time
             const time = new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -667,9 +670,9 @@
             const contentHtml = message.role === 'assistant' ? parseMarkdown(message.content) : escapeHtml(message.content);
 
             messageEl.innerHTML = `
-                < div class="syntra-message-content" >
+                <div class="syntra-message-content">
                     ${contentHtml}
-                </div >
+                </div>
                 <div class="syntra-message-time">${time}</div>
             `;
 
