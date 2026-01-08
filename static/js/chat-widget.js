@@ -197,105 +197,18 @@
         }
 
         createWidget() {
-            // Container
-            this.container = document.createElement('div');
-            this.container.id = 'syntra-chat-widget';
-            this.container.className = `syntra-widget syntra-theme-${this.config.theme} syntra-position-${this.config.position}`;
-            this.container.setAttribute('data-widget-id', this.config.widgetId);
-
-            this.container.innerHTML = `
-                <!-- Floating Button -->
-                <button class="syntra-toggle-btn" aria-label="Open chat">
-                    <svg class="syntra-icon-chat" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                    </svg>
-                    <svg class="syntra-icon-close" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="6" x2="6" y2="18"/>
-                        <line x1="6" y1="6" x2="18" y2="18"/>
-                    </svg>
-                    <span class="syntra-notification-badge" style="display: none;">1</span>
-                </button>
-
-                <!-- Chat Window -->
-                <div class="syntra-chat-window">
-                    <!-- Header -->
-                    <div class="syntra-header">
-                        <div class="syntra-header-info">
-                            <div class="syntra-avatar">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
-                                </svg>
-                            </div>
-                            <div class="syntra-header-text">
-                                <h4 class="syntra-title">${escapeHtml(this.config.headerTitle)}</h4>
-                                <span class="syntra-status">
-                                    <span class="syntra-status-dot"></span>
-                                    Online
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="syntra-header-actions">
-                            <button class="syntra-reset-btn" aria-label="New chat" title="Start new chat">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
-                                    <path d="M3 3v5h5"></path>
-                                </svg>
-                            </button>
-                            <button class="syntra-close-btn" aria-label="Close chat">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <line x1="18" y1="6" x2="6" y2="18"/>
-                                    <line x1="6" y1="6" x2="18" y2="18"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Messages Area -->
-                    <div class="syntra-messages">
-                        <div class="syntra-messages-container"></div>
-                    </div>
-
-                    <!-- History Area (Hidden by default) -->
-                    <div class="syntra-history-view" style="display: none;">
-                        <div class="syntra-history-header">
-                            <h3>Chat History</h3>
-                            <button class="syntra-close-history-btn" aria-label="Close history">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <line x1="18" y1="6" x2="6" y2="18"/>
-                                    <line x1="6" y1="6" x2="18" y2="18"/>
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="syntra-history-list"></div>
-                        <div class="syntra-empty-history" style="display: none;">No previous chats found.</div>
-                    </div>
-
-                    <!-- Input Area -->
-                    <div class="syntra-input-area">
-                        <form class="syntra-input-form">
-                            <textarea 
-                                class="syntra-input" 
-                                placeholder="${escapeHtml(this.config.placeholderText)}"
-                                rows="1"
-                                maxlength="2000"
-                            ></textarea>
-                            <button type="submit" class="syntra-send-btn" aria-label="Send message">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-                                </svg>
-                            </button>
-                        </form>
-                        ${this.config.showBranding || this.config.privacyPolicyUrl ? `
+                        ${
+                this.config.showBranding || this.config.privacyPolicyUrl ? `
                         <div class="vallit-branding">
                             ${this.config.showBranding ? 'Powered by <a href="https://vallit.net" target="_blank" rel="noopener">Vallit</a>' : ''}
                             ${this.config.showBranding && this.config.privacyPolicyUrl ? ' • ' : ''}
                             ${this.config.privacyPolicyUrl ? '<a href="' + this.config.privacyPolicyUrl + '" target="_blank" rel="noopener">Privacy & Data Protection</a>' : ''}
                         </div>
-                        ` : ''}
-                    </div>
+                        ` : ''
+            }
+                    </div >
 
-                    <!-- Overlays: Menu -->
+                    < !--Overlays: Menu-- >
                     <div class="syntra-overlay syntra-overlay-menu">
                         <div class="syntra-overlay-header">
                             <button class="syntra-back-btn" title="Back to Chat">
@@ -323,19 +236,19 @@
                         </div>
                     </div>
 
-                     <!-- Custom Modal Backdrop -->
-                    <div class="syntra-modal-backdrop">
-                        <div class="syntra-modal">
-                            <div class="syntra-modal-title">Confirm</div>
-                            <div class="syntra-modal-text">Are you sure?</div>
-                            <div class="syntra-modal-actions">
-                                <button class="syntra-btn syntra-btn-secondary" data-action="cancel">Cancel</button>
-                                <button class="syntra-btn syntra-btn-primary" data-action="confirm">Confirm</button>
-                            </div>
+                     <!--Custom Modal Backdrop-- >
+                <div class="syntra-modal-backdrop">
+                    <div class="syntra-modal">
+                        <div class="syntra-modal-title">Confirm</div>
+                        <div class="syntra-modal-text">Are you sure?</div>
+                        <div class="syntra-modal-actions">
+                            <button class="syntra-btn syntra-btn-secondary" data-action="cancel">Cancel</button>
+                            <button class="syntra-btn syntra-btn-primary" data-action="confirm">Confirm</button>
                         </div>
                     </div>
                 </div>
-            `;
+                </div >
+                `;
 
             document.body.appendChild(this.container);
 
@@ -546,7 +459,7 @@
                 this.saveHistory();
 
                 // Call API to reset/close old sessoion
-                const response = await fetch(`${this.config.apiUrl}/api/chat/reset`, {
+                const response = await fetch(`${ this.config.apiUrl } /api/chat / reset`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ session_id: this.sessionId })
@@ -602,7 +515,7 @@
             this.showTypingIndicator();
 
             try {
-                const response = await fetch(`${this.config.apiUrl}/api/chat/message`, {
+                const response = await fetch(`${ this.config.apiUrl } /api/chat / message`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -646,7 +559,7 @@
                 }
 
                 try {
-                    const response = await fetch(`${this.config.apiUrl}/api/chat/history/${this.sessionId}`);
+                    const response = await fetch(`${ this.config.apiUrl } /api/chat / history / ${ this.sessionId } `);
                     const data = await response.json();
                     const history = data.history || data.messages || [];
 
@@ -689,7 +602,7 @@
 
         renderMessage(message, animate = true) {
             const messageEl = document.createElement('div');
-            messageEl.className = `syntra-message syntra-message-${message.role} ${animate ? '' : 'no-animate'}`;
+            messageEl.className = `syntra - message syntra - message - ${ message.role } ${ animate ? '' : 'no-animate' } `;
 
             // Format time
             const time = new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -698,9 +611,9 @@
             const contentHtml = message.role === 'assistant' ? parseMarkdown(message.content) : escapeHtml(message.content);
 
             messageEl.innerHTML = `
-                <div class="syntra-message-content">
-                    ${contentHtml}
-                </div>
+                < div class="syntra-message-content" >
+                    ${ contentHtml }
+                </div >
                 <div class="syntra-message-time">${time}</div>
             `;
 
@@ -713,10 +626,10 @@
             const indicator = document.createElement('div');
             indicator.className = 'syntra-typing-indicator';
             indicator.innerHTML = `
-                <div class="syntra-typing-dots">
+                < div class="syntra-typing-dots" >
                     <span></span><span></span><span></span>
-                </div>
-            `;
+                </div >
+                `;
             this.messagesContainer.appendChild(indicator);
             this.scrollToBottom();
             this.typingIndicator = indicator;
@@ -737,7 +650,7 @@
         async loadHistory() {
             try {
                 if (!this.sessionId) return;
-                const response = await fetch(`${this.config.apiUrl}/api/chat/history/${this.sessionId}`);
+                const response = await fetch(`${ this.config.apiUrl } /api/chat / history / ${ this.sessionId } `);
                 const data = await response.json();
                 const msgs = data.history || data.messages;
 
@@ -839,13 +752,13 @@
                     new Date(session.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
                 item.innerHTML = `
-                    <div class="syntra-history-meta">
-                        <span>${date}</span>
-                    </div>
-                    <div class="syntra-history-preview">
-                        ${escapeHtml(session.preview)}
-                    </div>
-                `;
+                < div class="syntra-history-meta" >
+                    <span>${date}</span>
+                    </div >
+                <div class="syntra-history-preview">
+                    ${escapeHtml(session.preview)}
+                </div>
+            `;
 
                 item.addEventListener('click', () => {
                     this.loadSession(session);
@@ -901,14 +814,101 @@
             }
         }
 
-        // =====================================================================
+    // =====================================================================
         // Public API
         // =====================================================================
 
+        /**
+         * Set the language for the chat
+         * @param {string} lang - Language code (e.g., 'en', 'de', 'es')
+         */
+        setLanguage(lang) {
+            this.config.language = lang;
+            console.log(`Language set to: ${ lang } `);
+            // Logic to update UI strings would go here
+            // implementing a simple mapping for common UI elements could be next
+        }
+
+        /**
+         * Toggle Database Transparency View
+         */
+        toggleDbView() {
+            const modalId = 'syntra-db-view-modal';
+            let modal = document.getElementById(modalId);
+            
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = modalId;
+                Object.assign(modal.style, {
+                    position: 'absolute',
+                    top: '0',
+                    left: '0',
+                    width: '100%',
+                    height: '100%',
+                    backgroundColor: 'rgba(255,255,255,0.98)',
+                    zIndex: '20',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    padding: '24px',
+                });
+                
+                modal.innerHTML = `
+                < div style = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;" >
+                        <h3 style="font-size: 18px; font-weight: 600; margin: 0;">Data Transparency</h3>
+                        <button id="${modalId}-close" style="background: none; border: none; cursor: pointer; padding: 4px;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>
+                    </div >
+                    
+                    <div style="flex: 1; overflow-y: auto;">
+                        <div style="background: #f4f4f5; padding: 16px; border-radius: 12px; margin-bottom: 16px;">
+                            <h4 style="font-size: 13px; font-weight: 600; color: #666; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Session Metadata</h4>
+                            <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; font-size: 14px;">
+                                <span style="color: #666;">Session ID:</span>
+                                <span style="font-family: monospace;">${this.sessionId}</span>
+                                
+                                <span style="color: #666;">Created:</span>
+                                <span>${new Date().toLocaleDateString()}</span>
+                                
+                                <span style="color: #666;">Language:</span>
+                                <span>${this.config.language || 'en'}</span>
+                            </div>
+                        </div>
+
+                        <div style="background: #f4f4f5; padding: 16px; border-radius: 12px;">
+                            <h4 style="font-size: 13px; font-weight: 600; color: #666; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Storage & Privacy</h4>
+                             <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; font-size: 14px;">
+                                <span style="color: #666;">Storage:</span>
+                                <span>Encrypted Postgres (EU West)</span>
+                                
+                                <span style="color: #666;">Retention:</span>
+                                <span>30 Days Rolling</span>
+                                
+                                <span style="color: #666;">Model:</span>
+                                <span>GPT-4o (OpenAI)</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 24px; text-align: center; font-size: 12px; color: #888;">
+                        Data processing adheres to GDPR standards.
+                    </div>
+            `;
+                
+                this.elements.chatWindow.appendChild(modal);
+                
+                document.getElementById(`${ modalId } -close`).onclick = () => {
+                    modal.remove();
+                };
+            } else {
+                modal.remove();
+            }
+        }
+
         setTheme(theme) {
-            this.container.classList.remove(`syntra-theme-${this.config.theme}`);
+            this.container.classList.remove(`syntra - theme - ${ this.config.theme } `);
             this.config.theme = theme;
-            this.container.classList.add(`syntra-theme-${theme}`);
+            this.container.classList.add(`syntra - theme - ${ theme } `);
         }
 
         clearHistory() {
@@ -916,6 +916,109 @@
             this.messagesContainer.innerHTML = '';
             this.sessionId = generateSessionId();
             storeSessionId(this.sessionId);
+        }
+
+        /**
+         * Set the language for the chat
+         * @param {string} lang - Language code (e.g., 'en', 'de', 'es')
+         */
+        setLanguage(lang) {
+            this.config.language = lang;
+            console.log(`Language set to: ${ lang } `);
+            const privacyText = this.container.querySelector('.syntra-privacy-text');
+            if (privacyText) {
+                // Example translation logic
+                if (lang === 'de') {
+                    privacyText.innerHTML = 'Durch die Nutzung dieses Assistenten stimmen Sie der Verarbeitung Ihrer Daten gemäß unserer <a href="/datenschutz" target="_blank">Datenschutzerklärung</a> zu.';
+                } else if (lang === 'es') {
+                    privacyText.innerHTML = 'Al usar este asistente, acepta que sus datos sean procesados según nuestra <a href="/privacy" target="_blank">Política de Privacidad</a>.';
+                } else {
+                    privacyText.innerHTML = 'By using this virtual assistant, you agree to your data being processed by third parties as described in our <a href="/privacy" target="_blank">Privacy Policy</a>.';
+                }
+            }
+        }
+
+        /**
+         * Toggle Database Transparency View
+         */
+        toggleDbView() {
+            const modalId = 'syntra-db-view-modal';
+            let modal = document.getElementById(modalId);
+            
+            if (!modal) {
+                // Create modal container
+                modal = document.createElement('div');
+                modal.id = modalId;
+                Object.assign(modal.style, {
+                    position: 'absolute',
+                    top: '0',
+                    left: '0',
+                    width: '100%',
+                    height: '100%',
+                    backgroundColor: 'rgba(255,255,255,0.98)',
+                    zIndex: '20',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    padding: '24px',
+                });
+                
+                // Content
+                modal.innerHTML = `
+                < div style = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;" >
+                        <h3 style="font-size: 18px; font-weight: 600; margin: 0; color: #000;">Data Transparency</h3>
+                        <button id="${modalId}-close" type="button" style="background: none; border: none; cursor: pointer; padding: 4px; color: #000;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>
+                    </div >
+                    
+                    <div style="flex: 1; overflow-y: auto;">
+                        <div style="background: #f4f4f5; padding: 16px; border-radius: 12px; margin-bottom: 16px;">
+                            <h4 style="font-size: 11px; font-weight: 600; color: #666; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Session Metadata</h4>
+                            <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; font-size: 13px;">
+                                <span style="color: #666;">Session ID:</span>
+                                <span style="font-family: monospace; color: #000;">${this.sessionId.substring(0, 12)}...</span>
+                                
+                                <span style="color: #666;">Date:</span>
+                                <span style="color: #000;">${new Date().toLocaleDateString()}</span>
+                                
+                                <span style="color: #666;">Language:</span>
+                                <span style="color: #000;">${this.config.language || 'en'}</span>
+                            </div>
+                        </div>
+
+                        <div style="background: #f4f4f5; padding: 16px; border-radius: 12px;">
+                            <h4 style="font-size: 11px; font-weight: 600; color: #666; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Storage & Privacy</h4>
+                             <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; font-size: 13px;">
+                                <span style="color: #666;">Storage:</span>
+                                <span style="color: #000;">Encrypted Postgres</span>
+                                
+                                <span style="color: #666;">Region:</span>
+                                <span style="color: #000;">EU West (Frankfurt)</span>
+                                
+                                <span style="color: #666;">Model:</span>
+                                <span style="color: #000;">GPT-4o</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 24px; text-align: center; font-size: 11px; color: #999;">
+                        We prioritize your data privacy.
+                        <br>Processed in accordance with GDPR.
+                    </div>
+            `;
+                
+                this.elements.chatWindow.appendChild(modal);
+                
+                const closeBtn = document.getElementById(`${ modalId } -close`);
+                if(closeBtn) {
+                     closeBtn.onclick = (e) => {
+                        e.stopPropagation(); // prevent closing chat window if event bubbles
+                        modal.remove();
+                    };
+                }
+            } else {
+                modal.remove();
+            }
         }
 
         destroy() {

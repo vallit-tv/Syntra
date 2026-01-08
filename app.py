@@ -1468,34 +1468,45 @@ def api_admin_update_user(user_id):
         data = request.get_json() or {}
         print(f"DEBUG: Updating user {user_id} with data: {data}")
         
-        # Build updates dict
-        updates = {}
+        success_count = 0
+        db_client = db.get_db()
         
+        # Try updating each field individually to handle missing columns
+        # Update name
         if 'name' in data and data['name']:
-            updates['name'] = data['name'].strip()
+            try:
+                db_client.table('users').update({'name': data['name'].strip()}).eq('id', user_id).execute()
+                success_count += 1
+                print(f"DEBUG: Updated name")
+            except Exception as e:
+                print(f"DEBUG: Failed to update name: {e}")
         
+        # Update role (may not exist in DB)
         if 'role' in data:
             role = (data['role'] or '').strip()
             if role in ('user', 'admin', 'ceo', 'worker'):
-                updates['role'] = role
+                try:
+                    db_client.table('users').update({'role': role}).eq('id', user_id).execute()
+                    success_count += 1
+                    print(f"DEBUG: Updated role to {role}")
+                except Exception as e:
+                    print(f"DEBUG: Failed to update role (column may not exist): {e}")
         
+        # Update company_id
         if 'company_id' in data:
             company_id = (data.get('company_id') or '').strip()
-            updates['company_id'] = company_id if company_id else None
+            company_id = company_id if company_id else None
+            try:
+                db_client.table('users').update({'company_id': company_id}).eq('id', user_id).execute()
+                success_count += 1
+                print(f"DEBUG: Updated company_id to {company_id}")
+            except Exception as e:
+                print(f"DEBUG: Failed to update company_id (column may not exist): {e}")
         
-        print(f"DEBUG: Updates to apply: {updates}")
-        
-        if not updates:
-            return jsonify({'error': 'No valid updates provided'}), 400
-        
-        # Use db.update_user which handles all fields
-        success = db.update_user(user_id, updates)
-        print(f"DEBUG: Update result: {success}")
-        
-        if success:
+        if success_count > 0:
             return jsonify({'message': 'User updated'})
         
-        return jsonify({'error': 'Failed to update user'}), 500
+        return jsonify({'error': 'No updates could be applied. Some database columns may be missing.'}), 500
     except Exception as e:
         print(f"Error in api_admin_update_user: {str(e)}")
         import traceback
