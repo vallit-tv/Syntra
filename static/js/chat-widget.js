@@ -146,7 +146,7 @@
                 // Only fetch if we have an API URL
                 if (!this.config.apiUrl) return;
 
-                const response = await fetch(`${this.config.apiUrl}/api/chat/config?widget_id=${this.config.widgetId}`);
+                const response = await fetch(`${this.config.apiUrl}/api/chat/config?widget_id=${this.config.widgetId}&company_id=${this.config.companyId || ''}`);
                 if (!response.ok) return;
 
                 const remoteConfig = await response.json();
@@ -164,10 +164,14 @@
                         } else if (this.messages.length === 1 && this.messages[0].role === 'assistant') {
                             // Replace the existing welcome message
                             this.messages[0].content = this.config.welcomeMessage;
-                            // Re-render if open
-                            if (this.isOpen) {
-                                this.messagesContainer.innerHTML = '';
-                                this.renderMessage(this.messages[0], false);
+
+                            // Re-render DOM regardless of open state
+                            this.messagesContainer.innerHTML = '';
+                            this.renderMessage(this.messages[0], false);
+
+                            // Resume rest of messages if any (unlikely here but safe)
+                            for (let i = 1; i < this.messages.length; i++) {
+                                this.renderMessage(this.messages[i], false);
                             }
                         }
                     }
@@ -608,6 +612,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         widget_id: this.config.widgetId,
+                        company_id: this.config.companyId,
                         session_id: this.sessionId,
                         message: message,
                         company_id: this.config.companyId
