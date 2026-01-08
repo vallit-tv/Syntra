@@ -714,9 +714,9 @@
             const indicator = document.createElement('div');
             indicator.className = 'syntra-typing-indicator';
             indicator.innerHTML = `
-                < div class="syntra-typing-dots" >
+                <div class="syntra-typing-dots">
                     <span></span><span></span><span></span>
-                </div >
+                </div>
                 `;
             this.messagesContainer.appendChild(indicator);
             this.scrollToBottom();

@@ -98,491 +98,498 @@
     pointer-events: none;
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     border: 1px solid var(--syntra-border);
-    position: relative;
+    position: absolute;
+    bottom: 80px;
+    right: 0;
 }
 
-/* Open State */
-.syntra-widget.syntra-open .syntra-chat-window {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    pointer-events: auto;
-}
+.syntra-position-bottom-left .syntra-chat-window {
+    right: auto;
+    left: 0;
 
-.syntra-widget.syntra-open .syntra-toggle-btn .syntra-icon-chat {
-    display: none;
-}
-
-.syntra-widget.syntra-open .syntra-toggle-btn .syntra-icon-close {
-    display: block;
-}
-
-/* Header */
-.syntra-header {
-    height: 72px;
-    /* Slightly taller for avatar */
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 20px;
-    flex-shrink: 0;
-    border-bottom: 1px solid var(--syntra-border);
-}
-
-.syntra-header-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.syntra-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: #f0f0f0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    font-weight: 600;
-    color: #333;
-    flex-shrink: 0;
-}
-
-.syntra-header-text {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.syntra-header-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--syntra-text);
-    line-height: 1.2;
-}
-
-.syntra-header-status {
-    font-size: 12px;
-    color: var(--syntra-text-muted);
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.syntra-status-dot {
-    width: 6px;
-    height: 6px;
-    background: #22c55e;
-    border-radius: 50%;
-}
-
-/* Header Actions */
-.syntra-header-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.syntra-reset-btn,
-.syntra-close-btn,
-.syntra-back-btn {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    color: var(--syntra-text);
-    opacity: 0.6;
-    padding: 8px;
-    border-radius: 50%;
-    transition: opacity 0.2s, background 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.syntra-reset-btn:hover,
-.syntra-close-btn:hover,
-.syntra-back-btn:hover {
-    opacity: 1;
-    background: rgba(0, 0, 0, 0.05);
-}
-
-/* Messages Area */
-.syntra-messages {
-    flex: 1;
-    overflow-y: auto;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    background: #fff;
-}
-
-.syntra-messages-container {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    flex: 1;
-    padding: 20px;
-    overflow-y: auto;
-}
-
-/* Message Bubbles */
-.syntra-message {
-    max-width: 85%;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    animation: syntra-fade-in 0.3s ease;
-}
-
-.syntra-message-user {
-    align-self: flex-end;
-}
-
-.syntra-message-assistant {
-    align-self: flex-start;
-}
-
-.syntra-message-content {
-    padding: 12px 16px;
-    border-radius: 12px;
-    font-size: 15px;
-    line-height: 1.5;
-    word-wrap: break-word;
-}
-
-/* User Bubble: Dark/Black */
-.syntra-message-user .syntra-message-content {
-    background: #111;
-    color: #fff;
-    border-bottom-right-radius: 4px;
-}
-
-/* Assistant Bubble: Light Gray */
-.syntra-message-assistant .syntra-message-content {
-    background: #f4f4f4;
-    color: #111;
-    border-bottom-left-radius: 4px;
-}
-
-.syntra-message-time {
-    font-size: 11px;
-    color: #999;
-    margin-left: 4px;
-}
-
-.syntra-message-user .syntra-message-time {
-    align-self: flex-end;
-    margin-right: 4px;
-}
-
-/* Markdown Styles inside bubbles */
-.syntra-message-content p {
-    margin-bottom: 8px;
-}
-
-.syntra-message-content p:last-child {
-    margin-bottom: 0;
-}
-
-.syntra-message-content ul,
-.syntra-message-content ol {
-    margin-left: 20px;
-    margin-bottom: 8px;
-}
-
-.syntra-message-content code {
-    background: rgba(0, 0, 0, 0.1);
-    padding: 2px 4px;
-    border-radius: 4px;
-    font-family: monospace;
-    font-size: 0.9em;
-}
-
-/* Input Area & Footer */
-.syntra-input-area {
-    padding: 16px 20px 20px;
-    /* Adjusted padding */
-    background: #fff;
-    border-top: 1px solid var(--syntra-border);
-}
-
-.syntra-input-form {
-    position: relative;
-    display: flex;
-    align-items: flex-end;
-    gap: 8px;
-    background: #fff;
-    border: 1px solid var(--syntra-border);
-    border-radius: 24px;
-    padding: 6px;
-    margin-bottom: 12px;
-}
-
-.syntra-input {
-    flex: 1;
-    border: none;
-    outline: none;
-    background: transparent;
-    padding: 10px 14px;
-    font-size: 15px;
-    resize: none;
-    max-height: 100px;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-}
-
-.syntra-input::-webkit-scrollbar {
-    display: none;
-}
-
-.syntra-send-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: var(--syntra-primary);
-    color: #fff;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: opacity 0.2s;
-    flex-shrink: 0;
-}
-
-.syntra-send-btn:disabled {
-    opacity: 0.3;
-    cursor: default;
-}
-
-.syntra-footer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-}
-
-.syntra-privacy-text a,
-.vallit-branding a {
-    transition: color 0.2s;
-}
-
-.syntra-privacy-text a:hover,
-.vallit-branding a:hover {
-    color: #333;
-}
-
-/* Animations */
-@keyframes syntra-fade-in {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-
-    to {
+    /* Open State */
+    .syntra-widget.syntra-open .syntra-chat-window {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
     }
-}
 
-/* ==========================================================================
+    .syntra-widget.syntra-open .syntra-toggle-btn .syntra-icon-chat {
+        display: none;
+    }
+
+    .syntra-widget.syntra-open .syntra-toggle-btn .syntra-icon-close {
+        display: block;
+    }
+
+    /* Header */
+    .syntra-header {
+        height: 72px;
+        /* Slightly taller for avatar */
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 20px;
+        flex-shrink: 0;
+        border-bottom: 1px solid var(--syntra-border);
+    }
+
+    .syntra-header-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .syntra-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+        flex-shrink: 0;
+    }
+
+    .syntra-header-text {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .syntra-header-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--syntra-text);
+        line-height: 1.2;
+    }
+
+    .syntra-header-status {
+        font-size: 12px;
+        color: var(--syntra-text-muted);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .syntra-status-dot {
+        width: 6px;
+        height: 6px;
+        background: #22c55e;
+        border-radius: 50%;
+    }
+
+    /* Header Actions */
+    .syntra-header-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .syntra-reset-btn,
+    .syntra-close-btn,
+    .syntra-back-btn {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        color: var(--syntra-text);
+        opacity: 0.6;
+        padding: 8px;
+        border-radius: 50%;
+        transition: opacity 0.2s, background 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .syntra-reset-btn:hover,
+    .syntra-close-btn:hover,
+    .syntra-back-btn:hover {
+        opacity: 1;
+        background: rgba(0, 0, 0, 0.05);
+    }
+
+    /* Messages Area */
+    .syntra-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        background: #fff;
+    }
+
+    .syntra-messages-container {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+    }
+
+    /* Message Bubbles */
+    .syntra-message {
+        max-width: 85%;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        animation: syntra-fade-in 0.3s ease;
+    }
+
+    .syntra-message-user {
+        align-self: flex-end;
+    }
+
+    .syntra-message-assistant {
+        align-self: flex-start;
+    }
+
+    .syntra-message-content {
+        padding: 12px 16px;
+        border-radius: 12px;
+        font-size: 15px;
+        line-height: 1.5;
+        word-wrap: break-word;
+    }
+
+    /* User Bubble: Dark/Black */
+    .syntra-message-user .syntra-message-content {
+        background: #111;
+        color: #fff;
+        border-bottom-right-radius: 4px;
+    }
+
+    /* Assistant Bubble: Light Gray */
+    .syntra-message-assistant .syntra-message-content {
+        background: #f4f4f4;
+        color: #111;
+        border-bottom-left-radius: 4px;
+    }
+
+    .syntra-message-time {
+        font-size: 11px;
+        color: #999;
+        margin-left: 4px;
+    }
+
+    .syntra-message-user .syntra-message-time {
+        align-self: flex-end;
+        margin-right: 4px;
+    }
+
+    /* Markdown Styles inside bubbles */
+    .syntra-message-content p {
+        margin-bottom: 8px;
+    }
+
+    .syntra-message-content p:last-child {
+        margin-bottom: 0;
+    }
+
+    .syntra-message-content ul,
+    .syntra-message-content ol {
+        margin-left: 20px;
+        margin-bottom: 8px;
+    }
+
+    .syntra-message-content code {
+        background: rgba(0, 0, 0, 0.1);
+        padding: 2px 4px;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 0.9em;
+    }
+
+    /* Input Area & Footer */
+    .syntra-input-area {
+        padding: 16px 20px 20px;
+        /* Adjusted padding */
+        background: #fff;
+        border-top: 1px solid var(--syntra-border);
+    }
+
+    .syntra-input-form {
+        position: relative;
+        display: flex;
+        align-items: flex-end;
+        gap: 8px;
+        background: #fff;
+        border: 1px solid var(--syntra-border);
+        border-radius: 24px;
+        padding: 6px;
+        margin-bottom: 12px;
+    }
+
+    .syntra-input {
+        flex: 1;
+        border: none;
+        outline: none;
+        background: transparent;
+        padding: 10px 14px;
+        font-size: 15px;
+        resize: none;
+        max-height: 100px;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    .syntra-input::-webkit-scrollbar {
+        display: none;
+    }
+
+    .syntra-send-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--syntra-primary);
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 0.2s;
+        flex-shrink: 0;
+    }
+
+    .syntra-send-btn:disabled {
+        opacity: 0.3;
+        cursor: default;
+    }
+
+    .syntra-footer {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .syntra-privacy-text a,
+    .vallit-branding a {
+        transition: color 0.2s;
+    }
+
+    .syntra-privacy-text a:hover,
+    .vallit-branding a:hover {
+        color: #333;
+    }
+
+    /* Animations */
+    @keyframes syntra-fade-in {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* ==========================================================================
    Overlays & Modals
    ========================================================================== */
 
-/* Overlays (e.g. Menu) */
-.syntra-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: var(--syntra-bg);
-    z-index: 10;
-    display: none;
-    flex-direction: column;
-}
-
-.syntra-overlay.active {
-    display: flex;
-    animation: syntra-fade-in 0.2s ease;
-}
-
-.syntra-overlay-header {
-    height: 72px;
-    border-bottom: 1px solid var(--syntra-border);
-    display: flex;
-    align-items: center;
-    padding: 0 16px;
-    gap: 12px;
-    font-weight: 600;
-    color: var(--syntra-text);
-}
-
-.syntra-menu-list {
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.syntra-menu-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.2s;
-    font-size: 14px;
-    color: var(--syntra-text);
-}
-
-.syntra-menu-item:hover {
-    background: rgba(0, 0, 0, 0.05);
-}
-
-/* Modals (e.g. Confirm) */
-.syntra-modal-backdrop {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.4);
-    z-index: 20;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.2s;
-}
-
-.syntra-modal-backdrop.active {
-    display: flex;
-    opacity: 1;
-}
-
-.syntra-modal {
-    background: var(--syntra-bg);
-    padding: 24px;
-    border-radius: 16px;
-    width: 80%;
-    max-width: 300px;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
-    transform: scale(0.95);
-    transition: transform 0.2s;
-}
-
-.syntra-modal-backdrop.active .syntra-modal {
-    transform: scale(1);
-}
-
-.syntra-modal-title {
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 8px;
-    color: var(--syntra-text);
-}
-
-.syntra-modal-text {
-    font-size: 14px;
-    color: var(--syntra-text-muted);
-    margin-bottom: 24px;
-    line-height: 1.5;
-}
-
-.syntra-modal-actions {
-    display: flex;
-    gap: 12px;
-}
-
-.syntra-btn {
-    flex: 1;
-    padding: 10px;
-    border: none;
-    border-radius: 8px;
-    font-weight: 500;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-.syntra-btn-primary {
-    background: var(--syntra-primary);
-    color: #fff;
-}
-
-.syntra-btn-secondary {
-    background: rgba(0, 0, 0, 0.05);
-    color: var(--syntra-text);
-}
-
-.syntra-btn-secondary:hover {
-    background: rgba(0, 0, 0, 0.1);
-}
-
-/* Typing Indicator */
-.syntra-typing-indicator {
-    padding: 12px 16px;
-    background: #f4f4f4;
-    border-radius: 12px;
-    align-self: flex-start;
-    border-bottom-left-radius: 4px;
-    display: flex;
-    align-items: center;
-    width: fit-content;
-    margin-bottom: 4px;
-}
-
-.syntra-typing-dots {
-    display: flex;
-    gap: 4px;
-}
-
-.syntra-typing-dots span {
-    width: 6px;
-    height: 6px;
-    background: #999;
-    border-radius: 50%;
-    animation: syntra-bounce 1.4s infinite ease-in-out both;
-}
-
-.syntra-typing-dots span:nth-child(1) {
-    animation-delay: -0.32s;
-}
-
-.syntra-typing-dots span:nth-child(2) {
-    animation-delay: -0.16s;
-}
-
-@keyframes syntra-bounce {
-
-    0%,
-    80%,
-    100% {
-        transform: scale(0);
-    }
-
-    40% {
-        transform: scale(1);
-    }
-}
-
-
-/* Media Queries */
-@media (max-width: 480px) {
-    .syntra-chat-window {
-        width: 100%;
-        height: 100%;
-        max-height: 100%;
+    /* Overlays (e.g. Menu) */
+    .syntra-overlay {
+        position: absolute;
         top: 0;
         left: 0;
-        right: 0;
-        bottom: 0;
-        border-radius: 0;
-        transform: translateY(20px);
+        width: 100%;
+        height: 100%;
+        background: var(--syntra-bg);
+        z-index: 10;
+        display: none;
+        flex-direction: column;
     }
 
-    .syntra-widget.syntra-open .syntra-chat-window {
-        transform: translateY(0);
+    .syntra-overlay.active {
+        display: flex;
+        animation: syntra-fade-in 0.2s ease;
     }
-}
+
+    .syntra-overlay-header {
+        height: 72px;
+        border-bottom: 1px solid var(--syntra-border);
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+        gap: 12px;
+        font-weight: 600;
+        color: var(--syntra-text);
+    }
+
+    .syntra-menu-list {
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .syntra-menu-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.2s;
+        font-size: 14px;
+        color: var(--syntra-text);
+    }
+
+    .syntra-menu-item:hover {
+        background: rgba(0, 0, 0, 0.05);
+    }
+
+    /* Modals (e.g. Confirm) */
+    .syntra-modal-backdrop {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 20;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+
+    .syntra-modal-backdrop.active {
+        display: flex;
+        opacity: 1;
+    }
+
+    .syntra-modal {
+        background: var(--syntra-bg);
+        padding: 24px;
+        border-radius: 16px;
+        width: 80%;
+        max-width: 300px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+        transform: scale(0.95);
+        transition: transform 0.2s;
+    }
+
+    .syntra-modal-backdrop.active .syntra-modal {
+        transform: scale(1);
+    }
+
+    .syntra-modal-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: var(--syntra-text);
+    }
+
+    .syntra-modal-text {
+        font-size: 14px;
+        color: var(--syntra-text-muted);
+        margin-bottom: 24px;
+        line-height: 1.5;
+    }
+
+    .syntra-modal-actions {
+        display: flex;
+        gap: 12px;
+    }
+
+    .syntra-btn {
+        flex: 1;
+        padding: 10px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .syntra-btn-primary {
+        background: var(--syntra-primary);
+        color: #fff;
+    }
+
+    .syntra-btn-secondary {
+        background: rgba(0, 0, 0, 0.05);
+        color: var(--syntra-text);
+    }
+
+    .syntra-btn-secondary:hover {
+        background: rgba(0, 0, 0, 0.1);
+    }
+
+    /* Typing Indicator */
+    .syntra-typing-indicator {
+        padding: 12px 16px;
+        background: #f4f4f4;
+        border-radius: 12px;
+        align-self: flex-start;
+        border-bottom-left-radius: 4px;
+        display: flex;
+        align-items: center;
+        width: fit-content;
+        margin-bottom: 4px;
+    }
+
+    .syntra-typing-dots {
+        display: flex;
+        gap: 4px;
+    }
+
+    .syntra-typing-dots span {
+        width: 6px;
+        height: 6px;
+        background: #999;
+        border-radius: 50%;
+        animation: syntra-bounce 1.4s infinite ease-in-out both;
+    }
+
+    .syntra-typing-dots span:nth-child(1) {
+        animation-delay: -0.32s;
+    }
+
+    .syntra-typing-dots span:nth-child(2) {
+        animation-delay: -0.16s;
+    }
+
+    @keyframes syntra-bounce {
+
+        0%,
+        80%,
+        100% {
+            transform: scale(0);
+        }
+
+        40% {
+            transform: scale(1);
+        }
+    }
+
+
+    /* Media Queries */
+    @media (max-width: 480px) {
+        .syntra-chat-window {
+            width: 100vw;
+            height: 100vh;
+            max-height: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 0;
+            transform: translateY(20px);
+        }
+
+        .syntra-widget.syntra-open .syntra-chat-window {
+            transform: translateY(0);
+        }
+    }
