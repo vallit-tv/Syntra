@@ -743,7 +743,7 @@
         async loadHistory() {
             try {
                 if (!this.sessionId) return;
-                const response = await fetch(`${this.config.apiUrl} /api/chat / history / ${this.sessionId} `);
+                const response = await fetch(`${this.config.apiUrl}/api/chat/history/${this.sessionId}`);
                 const data = await response.json();
                 const msgs = data.history || data.messages;
 
