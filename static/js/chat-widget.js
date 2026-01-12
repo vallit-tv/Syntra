@@ -59,7 +59,7 @@
         apiUrl: DEFAULT_API_URL,
         welcomeMessage: "Hi! I'm Kian, your AI Agent. How can I help you today?",
         placeholderText: 'Type your message...',
-        primaryColor: '#6366f1',
+        primaryColor: '#3D7A77',
         headerTitle: 'Kian',
         showBranding: true,
         privacyPolicyUrl: 'https://vallit.net/datenschutz'  // Privacy policy link

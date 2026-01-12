@@ -3,15 +3,37 @@
  * Version: 2.1.0 (Updated Header & Footer)
  */
 
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Source+Sans+Pro:wght@400;600&display=swap');
+
 :root {
-    --syntra-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --syntra-bg: #ffffff;
-    --syntra-text: #000000;
-    --syntra-text-muted: #666666;
-    --syntra-border: #e6e6e6;
-    --syntra-primary: #000000;
+    /* WTM Consulting Design System */
+    --syntra-heading-font: 'Libre Baskerville', 'Georgia', serif;
+    --syntra-font-family: 'Source Sans Pro', 'Helvetica Neue', sans-serif;
+
+    --syntra-bg: #FFFFFF;
+    --syntra-bg-secondary: #F5F5F3;
+    /* Cream for assistant bubbles */
+
+    --syntra-text: #3A3A38;
+    --syntra-text-muted: #6B6B5A;
+    --syntra-text-light: #FFFFFF;
+    /* High contrast text */
+
+    --syntra-border: #E6E6E6;
+
+    /* Primary Colors */
+    --syntra-primary: #3D7A77;
+    /* Dark Teal for active elements/user bubbles */
+    --syntra-primary-light: #9DD4D0;
+    /* Light Teal for accents */
+    --syntra-secondary: #2C3E50;
+    /* Dark Blue for headers */
+
     --syntra-radius: 12px;
+    --syntra-radius-blob: 24px;
+
     --syntra-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+    /* Soft shadow */
     --syntra-z-index: 2147483647;
 }
 
@@ -162,8 +184,10 @@
 }
 
 .syntra-header-title {
-    font-size: 16px;
-    font-weight: 600;
+    font-size: 18px;
+    /* Slightly larger for serif */
+    font-family: var(--syntra-heading-font);
+    font-weight: 700;
     color: var(--syntra-text);
     line-height: 1.2;
 }
@@ -257,17 +281,18 @@
     word-wrap: break-word;
 }
 
-/* User Bubble: Dark/Black */
+/* User Bubble: Dark Teal */
 .syntra-message-user .syntra-message-content {
-    background: #111;
-    color: #fff;
+    background: var(--syntra-primary);
+    color: var(--syntra-text-light);
+    /* White text */
     border-bottom-right-radius: 4px;
 }
 
-/* Assistant Bubble: Light Gray */
+/* Assistant Bubble: Cream/Light Grey */
 .syntra-message-assistant .syntra-message-content {
-    background: #f4f4f4;
-    color: #111;
+    background: var(--syntra-bg-secondary);
+    color: var(--syntra-text);
     border-bottom-left-radius: 4px;
 }
 
@@ -530,7 +555,7 @@
 /* Typing Indicator */
 .syntra-typing-indicator {
     padding: 12px 16px;
-    background: #f4f4f4;
+    background: var(--syntra-bg-secondary);
     border-radius: 12px;
     align-self: flex-start;
     border-bottom-left-radius: 4px;
