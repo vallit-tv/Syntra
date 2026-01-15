@@ -679,8 +679,48 @@
         }
 
         addMessage(role, content, animate = true) {
+            // Check for multi-message delimiter (|||)
+            if (role === 'assistant' && content && content.includes('|||')) {
+                const parts = content.split('|||').map(p => p.trim()).filter(p => p);
+
+                if (parts.length > 0) {
+                    // Render first part immediately
+                    this.doAddMessage(role, parts[0], animate);
+
+                    // Render subsequent parts with delay simulation
+                    let cumulativeDelay = 0;
+
+                    parts.slice(1).forEach((part, index) => {
+                        // Calculate a natural reading/typing pause
+                        const typingDelay = 600 + Math.min(part.length * 15, 2000);
+                        const pause = 400; // Pause before starting to type next message
+
+                        cumulativeDelay += pause;
+
+                        setTimeout(() => {
+                            this.showTypingIndicator();
+                            this.scrollToBottom();
+                            // Lock input during "typing" if desired, but WhatsApp allows parallel typing.
+                            // We'll keep it simple.
+                        }, cumulativeDelay);
+
+                        cumulativeDelay += typingDelay;
+
+                        setTimeout(() => {
+                            this.removeTypingIndicator();
+                            this.doAddMessage(role, part, animate);
+                        }, cumulativeDelay);
+                    });
+                }
+                return;
+            }
+
+            this.doAddMessage(role, content, animate);
+        }
+
+        doAddMessage(role, content, animate) {
             const message = {
-                id: Date.now(),
+                id: Date.now() + Math.random(),
                 role: role,
                 content: content,
                 timestamp: new Date().toISOString()

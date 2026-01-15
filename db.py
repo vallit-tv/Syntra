@@ -606,6 +606,76 @@ def get_active_chat_session(user_identifier: str, company_id: str) -> Optional[D
     except:
         return None
 
+def get_seminar_context(query_text: str) -> str:
+    """
+    Get seminar Q&A context based on query text using basic keyword matching.
+    In a production env with pgvector, this would be a vector similarity search.
+    """
+    try:
+        if not query_text:
+            return ""
+            
+        db_client = get_db()
+        if not db_client:
+            return ""
+            
+        # Basic keyword search using ILIKE
+        # We search matching keywords or seminar names
+        # Note: This is simple and can be improved with full text search
+        
+        # Clean query for basic search
+        import re
+        clean_query = re.sub(r'[^\w\s]', '', query_text).lower()
+        search_terms = clean_query.split()
+        
+        # We pull all Q&A items and filter in python for this MVP phase 
+        # (assuming table size < 1000 rows, this is fast enough)
+        # For larger datasets, use .textSearch() or RPC
+        result = db_client.table('seminar_qa').select('*').execute()
+        
+        if not result.data:
+            return ""
+            
+        matched_items = []
+        for item in result.data:
+            score = 0
+            
+            # Check seminar name match
+            if item.get('seminar_name', '').lower() in clean_query:
+                score += 10
+                
+            # Check keywords match
+            keywords = item.get('keywords', []) or []
+            for kw in keywords:
+                if kw.lower() in clean_query:
+                    score += 5
+                    
+            if score > 0:
+                matched_items.append((score, item))
+                
+        # Sort by score desc
+        matched_items.sort(key=lambda x: x[0], reverse=True)
+        
+        if not matched_items:
+            return ""
+            
+        # Take top 3 matches to build context
+        top_matches = matched_items[:3]
+        
+        context_str = "### Seminar Knowledge Base:\n\n"
+        for _, item in top_matches:
+            context_str += f"Seminar: {item.get('seminar_name')}\n"
+            context_str += f"Q: {item.get('question')}\n"
+            context_str += f"A: {item.get('answer')}\n"
+            context_str += "---\n"
+            
+        return context_str
+        
+    except Exception as e:
+        print(f"Error getting seminar context: {e}")
+        return ""
+
+
 def save_chat_message(session_id: str, role: str, content: str, metadata: Dict = None) -> bool:
     """Save a message to the chat session"""
     message = {

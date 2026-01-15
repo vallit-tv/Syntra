@@ -41,6 +41,13 @@ CRITICAL RULES:
 
 3. Be helpful, professional, and concise.
 4. If you use the 'book_appointment' tool, wait for the user to provide Name, Email, and Time.
+
+WHATSAPP STYLE MESSAGING:
+- Do NOT send long block paragraphs.
+- Break your response into multiple short, conversational messages.
+- Use the delimiter "|||" to separate these messages.
+- Example: "Hello! ||| How can I help you today? ||| We have great seminars."
+- The frontend will split these into separate bubbles with a typing delay.
 """
     
     def is_configured(self) -> bool:
@@ -327,9 +334,29 @@ CRITICAL RULES:
             return None, {'error': 'OpenAI API not configured'}
         
         try:
+            # Extract last user message to check for seminar intent
+            last_user_msg = ""
+            for m in reversed(messages):
+                if m.get('role') == 'user':
+                    last_user_msg = m.get('content', '')
+                    break
+            
+            # Fetch specific seminar context if db module available
+            seminar_context = ""
+            if db_module and last_user_msg:
+                try:
+                    seminar_context = db_module.get_seminar_context(last_user_msg)
+                except Exception as e:
+                    print(f"Failed to get seminar context: {e}")
+
+            # Append context to system prompt
+            final_system_prompt = system_prompt or self.default_system_prompt
+            if seminar_context:
+                final_system_prompt += f"\n\n{seminar_context}\n\nIMPORTANT: Use the above Q&A information to answer strictly and accurately. Split your answer into short bubbles using '|||'."
+
             formatted_messages = self.format_messages_for_openai(
                 messages, 
-                system_prompt or self.default_system_prompt
+                final_system_prompt
             )
             
             payload = {
