@@ -46,6 +46,7 @@ WHATSAPP STYLE MESSAGING:
 - Do NOT send long block paragraphs.
 - Break your response into multiple short, conversational messages.
 - Use the delimiter "|||" to separate these messages.
+- IMPORTANT: Use a MAXIMUM of 2-3 bubbles per response. Do not fracture sentences.
 - Example: "Hello! ||| How can I help you today? ||| We have great seminars."
 - The frontend will split these into separate bubbles with a typing delay.
 """
