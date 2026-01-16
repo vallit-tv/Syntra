@@ -6,191 +6,347 @@
 
 {% block content %}
 <!-- ============================================================================
-     HERO SECTION
+     HERO SECTION – Premium with Kian UI Mock
      ============================================================================ -->
 <section class="hero">
     <div class="hero-bg">
+        <div class="hero-grid"></div>
         <div class="hero-gradient hero-gradient-1"></div>
         <div class="hero-gradient hero-gradient-2"></div>
     </div>
 
     <div class="container">
-        <div class="hero-content">
-            <span class="badge badge-light hero-badge">
-                <span class="badge-dot"></span>
-                AI-Automation Platform
-            </span>
+        <div class="hero-layout">
+            <div class="hero-content">
+                <span class="badge badge-accent hero-badge">
+                    <span class="badge-dot"></span>
+                    AI-Automation Platform
+                </span>
 
-            <h1>Dein Business.<br>Automatisiert.</h1>
+                <h1 class="display">Dein Business.<br><span class="text-gradient-accent">Automatisiert.</span></h1>
 
-            <p class="hero-subtitle">
-                Vallit liefert AI-Automation und <strong>Kian</strong> – dein intelligentes AI-System
-                für Support, Scheduling und Workflows. Weniger manuelle Arbeit, mehr Zeit fürs Wesentliche.
-            </p>
+                <p class="hero-subtitle lead">
+                    Vallit liefert AI-Automation und <strong>Kian</strong> – dein intelligentes AI-System
+                    für Support, Scheduling und Workflows.
+                </p>
 
-            <div class="hero-ctas">
-                <a href="{{ url_for('pricing') }}#contact" class="btn btn-primary btn-lg">
-                    Kontakt aufnehmen
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M5 12h14M12 5l7 7-7 7" />
-                    </svg>
-                </a>
-                <a href="{{ url_for('features') }}" class="btn btn-secondary btn-lg">
-                    Features ansehen
-                </a>
+                <div class="hero-ctas">
+                    <a href="{{ url_for('pricing') }}#contact" class="btn btn-primary btn-lg">
+                        Kontakt aufnehmen
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                    </a>
+                    <a href="{{ url_for('features') }}" class="btn btn-secondary btn-lg">
+                        Features ansehen
+                    </a>
+                </div>
+            </div>
+
+            <!-- Kian UI Mock -->
+            <div class="hero-visual">
+                <div class="kian-mock">
+                    <div class="mock-header">
+                        <div class="mock-dots">
+                            <span></span><span></span><span></span>
+                        </div>
+                        <span class="mock-title">Kian Assistant</span>
+                    </div>
+                    <div class="mock-body">
+                        <div class="mock-message mock-message-user">
+                            <span>Hallo, wann ist mein nächster Termin mit der Buchhaltung?</span>
+                        </div>
+                        <div class="mock-message mock-message-ai">
+                            <div class="mock-ai-avatar">K</div>
+                            <div class="mock-ai-content">
+                                <span class="mock-typing">Prüfe Kalender...</span>
+                                <p>Dein nächster Termin mit Felix aus der Buchhaltung ist am <strong>Donnerstag, 15:30
+                                        Uhr</strong>. Soll ich eine Erinnerung senden?</p>
+                            </div>
+                        </div>
+                        <div class="mock-actions">
+                            <button class="mock-action-btn active">Ja, erinnere mich</button>
+                            <button class="mock-action-btn">Termin verschieben</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </section>
 
 <!-- ============================================================================
-     SOCIAL PROOF - Logo Marquee
+     SOCIAL PROOF - Monochrome Logo Wall
      ============================================================================ -->
 <section class="section-sm social-proof">
     <div class="container">
-        <p class="text-center text-muted text-sm mb-8">Vertrauen von innovativen Teams</p>
-        <div class="logo-marquee">
-            <div class="logo-track">
-                <div class="logo-item">TechStart</div>
-                <div class="logo-item">DataFlow</div>
-                <div class="logo-item">CloudSync</div>
-                <div class="logo-item">InnovateLabs</div>
-                <div class="logo-item">SmartOps</div>
-                <div class="logo-item">ScaleUp</div>
-                <div class="logo-item">TechStart</div>
-                <div class="logo-item">DataFlow</div>
-                <div class="logo-item">CloudSync</div>
-                <div class="logo-item">InnovateLabs</div>
+        <p class="text-center text-muted text-sm mb-6">Beispielkunden – Platzhalter für echte Logos</p>
+        <div class="logo-wall">
+            <div class="logo-item">
+                <svg viewBox="0 0 120 24" fill="currentColor"><text x="0" y="18" font-size="14"
+                        font-weight="600">TechStart</text></svg>
+            </div>
+            <div class="logo-item">
+                <svg viewBox="0 0 120 24" fill="currentColor"><text x="0" y="18" font-size="14"
+                        font-weight="600">DataFlow</text></svg>
+            </div>
+            <div class="logo-item">
+                <svg viewBox="0 0 120 24" fill="currentColor"><text x="0" y="18" font-size="14"
+                        font-weight="600">CloudSync</text></svg>
+            </div>
+            <div class="logo-item">
+                <svg viewBox="0 0 120 24" fill="currentColor"><text x="0" y="18" font-size="14"
+                        font-weight="600">InnoLabs</text></svg>
+            </div>
+            <div class="logo-item">
+                <svg viewBox="0 0 120 24" fill="currentColor"><text x="0" y="18" font-size="14"
+                        font-weight="600">SmartOps</text></svg>
             </div>
         </div>
     </div>
 </section>
 
 <!-- ============================================================================
-     CORE BENEFITS
+     CORE BENEFITS – 3x2 Grid with Micro-Visuals
      ============================================================================ -->
 <section class="section benefits-section">
     <div class="container">
         <div class="section-header">
             <span class="badge">Vorteile</span>
             <h2>Warum Unternehmen Vallit wählen</h2>
-            <p>Konkrete Ergebnisse statt leerer Versprechen. Das liefern wir.</p>
+            <p>Konkrete Ergebnisse statt leerer Versprechen.</p>
         </div>
 
         <div class="grid grid-3">
-            <div class="card feature-card reveal">
-                <div class="feature-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10" />
-                        <path d="M12 16v-4M12 8h.01" />
+            <!-- Card 1: Chat/Support -->
+            <div class="card card-glow feature-card reveal">
+                <div class="card-visual">
+                    <svg class="micro-visual" viewBox="0 0 120 80" fill="none">
+                        <rect class="mv-bubble mv-bubble-1" x="8" y="8" width="60" height="24" rx="12"
+                            stroke="currentColor" stroke-width="1.5" />
+                        <rect class="mv-bubble mv-bubble-2" x="52" y="40" width="60" height="24" rx="12"
+                            stroke="currentColor" stroke-width="1.5" />
+                        <circle class="mv-dot" cx="24" cy="20" r="3" fill="currentColor" />
+                        <circle class="mv-dot mv-dot-2" cx="36" cy="20" r="3" fill="currentColor" />
+                        <circle class="mv-dot mv-dot-3" cx="48" cy="20" r="3" fill="currentColor" />
                     </svg>
                 </div>
                 <h4>Kontextverständnis</h4>
                 <p>Kian kennt dein Unternehmen – Prozesse, Produkte, Ansprechpartner. Keine generischen Antworten.</p>
             </div>
 
-            <div class="card feature-card reveal delay-1">
-                <div class="feature-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                        <line x1="16" y1="2" x2="16" y2="6" />
-                        <line x1="8" y1="2" x2="8" y2="6" />
-                        <line x1="3" y1="10" x2="21" y2="10" />
+            <!-- Card 2: Calendar -->
+            <div class="card card-glow feature-card reveal delay-1">
+                <div class="card-visual">
+                    <svg class="micro-visual" viewBox="0 0 120 80" fill="none">
+                        <rect x="10" y="16" width="100" height="56" rx="4" stroke="currentColor" stroke-width="1.5" />
+                        <line x1="10" y1="32" x2="110" y2="32" stroke="currentColor" stroke-width="1.5" />
+                        <rect class="mv-cal-block" x="18" y="40" width="16" height="12" rx="2" fill="currentColor"
+                            opacity="0.3" />
+                        <rect class="mv-cal-block mv-cal-active" x="42" y="40" width="16" height="12" rx="2"
+                            fill="currentColor" />
+                        <rect class="mv-cal-block" x="66" y="40" width="16" height="12" rx="2" fill="currentColor"
+                            opacity="0.3" />
+                        <rect class="mv-cal-block" x="90" y="40" width="16" height="12" rx="2" fill="currentColor"
+                            opacity="0.3" />
                     </svg>
                 </div>
                 <h4>Intelligentes Scheduling</h4>
-                <p>Meetings automatisch koordiniert. Kian findet Termine, sendet Einladungen, erinnert alle Beteiligten.
-                </p>
+                <p>Meetings automatisch koordiniert. Kian findet Termine, sendet Einladungen, erinnert.</p>
             </div>
 
-            <div class="card feature-card reveal delay-2">
-                <div class="feature-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            <!-- Card 3: Workflow Graph -->
+            <div class="card card-glow feature-card reveal delay-2">
+                <div class="card-visual">
+                    <svg class="micro-visual" viewBox="0 0 120 80" fill="none">
+                        <circle class="mv-node mv-node-1" cx="24" cy="40" r="8" stroke="currentColor"
+                            stroke-width="1.5" />
+                        <circle class="mv-node mv-node-2" cx="60" cy="24" r="8" stroke="currentColor"
+                            stroke-width="1.5" />
+                        <circle class="mv-node mv-node-3" cx="60" cy="56" r="8" stroke="currentColor"
+                            stroke-width="1.5" />
+                        <circle class="mv-node mv-node-4" cx="96" cy="40" r="8" stroke="currentColor" stroke-width="1.5"
+                            fill="currentColor" />
+                        <line class="mv-line" x1="32" y1="36" x2="52" y2="28" stroke="currentColor"
+                            stroke-width="1.5" />
+                        <line class="mv-line" x1="32" y1="44" x2="52" y2="52" stroke="currentColor"
+                            stroke-width="1.5" />
+                        <line class="mv-line" x1="68" y1="28" x2="88" y2="36" stroke="currentColor"
+                            stroke-width="1.5" />
+                        <line class="mv-line" x1="68" y1="52" x2="88" y2="44" stroke="currentColor"
+                            stroke-width="1.5" />
+                    </svg>
+                </div>
+                <h4>Workflow-Integration</h4>
+                <p>CRM, E-Mail, Slack, Notion – Kian verbindet deine Tools und automatisiert Abläufe.</p>
+            </div>
+
+            <!-- Card 4: Dashboard -->
+            <div class="card card-glow feature-card reveal delay-3">
+                <div class="card-visual">
+                    <svg class="micro-visual" viewBox="0 0 120 80" fill="none">
+                        <rect x="10" y="8" width="100" height="64" rx="4" stroke="currentColor" stroke-width="1.5" />
+                        <rect class="mv-bar mv-bar-1" x="20" y="48" width="12" height="16" rx="2" fill="currentColor"
+                            opacity="0.4" />
+                        <rect class="mv-bar mv-bar-2" x="38" y="36" width="12" height="28" rx="2" fill="currentColor"
+                            opacity="0.6" />
+                        <rect class="mv-bar mv-bar-3" x="56" y="28" width="12" height="36" rx="2" fill="currentColor"
+                            opacity="0.8" />
+                        <rect class="mv-bar mv-bar-4" x="74" y="20" width="12" height="44" rx="2" fill="currentColor" />
+                        <line x1="20" y1="16" x2="40" y2="16" stroke="currentColor" stroke-width="1.5" />
+                    </svg>
+                </div>
+                <h4>Live Analytics</h4>
+                <p>Dashboard mit allen Aktionen. Sehe genau, was Kian macht und wie viel Zeit du sparst.</p>
+            </div>
+
+            <!-- Card 5: Ticket Queue -->
+            <div class="card card-glow feature-card reveal delay-4">
+                <div class="card-visual">
+                    <svg class="micro-visual" viewBox="0 0 120 80" fill="none">
+                        <rect class="mv-ticket mv-ticket-1" x="10" y="8" width="80" height="18" rx="4"
+                            stroke="currentColor" stroke-width="1.5" />
+                        <rect class="mv-ticket mv-ticket-2" x="10" y="31" width="80" height="18" rx="4"
+                            stroke="currentColor" stroke-width="1.5" fill="currentColor" opacity="0.1" />
+                        <rect class="mv-ticket mv-ticket-3" x="10" y="54" width="80" height="18" rx="4"
+                            stroke="currentColor" stroke-width="1.5" />
+                        <path class="mv-check" d="M96 17L100 21L108 13" stroke="currentColor" stroke-width="2" />
+                        <circle cx="102" cy="40" r="8" stroke="currentColor" stroke-width="1.5" />
+                        <circle cx="102" cy="63" r="8" stroke="currentColor" stroke-width="1.5"
+                            stroke-dasharray="3 2" />
                     </svg>
                 </div>
                 <h4>Support-Automation</h4>
                 <p>Kunden- und interner Support. Level-1-Anfragen beantwortet, komplexe Fälle eskaliert.</p>
             </div>
 
-            <div class="card feature-card reveal delay-3">
-                <div class="feature-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M18 20V10M12 20V4M6 20v-6" />
-                    </svg>
-                </div>
-                <h4>Workflow-Integration</h4>
-                <p>CRM, E-Mail, Slack, Notion, Google Workspace – Kian verbindet deine Tools und automatisiert Abläufe.
-                </p>
-            </div>
-
-            <div class="card feature-card reveal delay-4">
-                <div class="feature-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <!-- Card 6: Security Shield -->
+            <div class="card card-glow feature-card reveal delay-5">
+                <div class="card-visual">
+                    <svg class="micro-visual" viewBox="0 0 120 80" fill="none">
+                        <path class="mv-shield" d="M60 8L100 20V44C100 60 80 72 60 76C40 72 20 60 20 44V20L60 8Z"
+                            stroke="currentColor" stroke-width="1.5" />
+                        <path class="mv-check-big" d="M44 40L54 50L76 28" stroke="currentColor" stroke-width="2.5"
+                            stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
                 </div>
                 <h4>Enterprise-ready</h4>
-                <p>GDPR-konform, verschlüsselt, in Deutschland gehostet. Sicherheit und Compliance inklusive.</p>
+                <p>GDPR-aware, verschlüsselt, EU-Hosting verfügbar. Security-first Architektur.</p>
             </div>
         </div>
     </div>
 </section>
 
 <!-- ============================================================================
-     KIAN IN 60 SECONDS
+     KIAN IN 60 SECONDS – Sticky Stepper
      ============================================================================ -->
-<section class="section kian-section">
+<section class="section kian-section" id="kian-stepper">
     <div class="container">
         <div class="section-header">
-            <span class="badge badge-light">Kian</span>
+            <span class="badge badge-accent">Kian</span>
             <h2>Dein AI-System in 60 Sekunden</h2>
             <p>So funktioniert Kian – von der Anfrage bis zum Ergebnis.</p>
         </div>
 
-        <div class="kian-flow">
-            <div class="kian-step reveal">
-                <div class="step-number">1</div>
-                <div class="step-content">
-                    <h4>Input</h4>
-                    <p>Kunde schreibt, Mitarbeiter fragt, Workflow triggert – Kian empfängt die Anfrage.</p>
-                </div>
+        <div class="stepper-layout">
+            <div class="stepper-nav">
+                <button class="stepper-step active" data-step="1">
+                    <span class="stepper-num">1</span>
+                    <span class="stepper-label">Input</span>
+                </button>
+                <div class="stepper-line"></div>
+                <button class="stepper-step" data-step="2">
+                    <span class="stepper-num">2</span>
+                    <span class="stepper-label">Kontext</span>
+                </button>
+                <div class="stepper-line"></div>
+                <button class="stepper-step" data-step="3">
+                    <span class="stepper-num">3</span>
+                    <span class="stepper-label">Aktion</span>
+                </button>
+                <div class="stepper-line"></div>
+                <button class="stepper-step" data-step="4">
+                    <span class="stepper-num">4</span>
+                    <span class="stepper-label">Ergebnis</span>
+                </button>
             </div>
 
-            <div class="kian-connector"></div>
-
-            <div class="kian-step reveal delay-1">
-                <div class="step-number">2</div>
-                <div class="step-content">
-                    <h4>Kontext</h4>
-                    <p>Kian prüft Unternehmens-Knowledge, Policies, bisherige Interaktionen.</p>
+            <div class="stepper-content">
+                <div class="stepper-panel active" data-panel="1">
+                    <div class="panel-text">
+                        <h3>Input empfangen</h3>
+                        <p>Kunde schreibt, Mitarbeiter fragt, Workflow triggert – Kian empfängt die Anfrage über jeden
+                            Kanal: Chat, E-Mail, Slack, API.</p>
+                    </div>
+                    <div class="panel-visual">
+                        <div class="visual-input">
+                            <div class="input-channels">
+                                <span class="channel">💬 Chat</span>
+                                <span class="channel">📧 E-Mail</span>
+                                <span class="channel">💼 Slack</span>
+                            </div>
+                            <div class="input-arrow">→</div>
+                            <div class="input-kian">K</div>
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="kian-connector"></div>
-
-            <div class="kian-step reveal delay-2">
-                <div class="step-number">3</div>
-                <div class="step-content">
-                    <h4>Aktion</h4>
-                    <p>Antwort senden, Meeting buchen, Ticket erstellen, Task zuweisen – Kian handelt.</p>
+                <div class="stepper-panel" data-panel="2">
+                    <div class="panel-text">
+                        <h3>Kontext laden</h3>
+                        <p>Kian prüft Unternehmens-Knowledge, Policies, bisherige Interaktionen. Versteht den Kontext
+                            und entscheidet über die beste Aktion.</p>
+                    </div>
+                    <div class="panel-visual">
+                        <div class="visual-context">
+                            <div class="context-box">📚 Knowledge Base</div>
+                            <div class="context-box">📋 Policies</div>
+                            <div class="context-box">👤 User History</div>
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="kian-connector"></div>
+                <div class="stepper-panel" data-panel="3">
+                    <div class="panel-text">
+                        <h3>Aktion ausführen</h3>
+                        <p>Antwort senden, Meeting buchen, Ticket erstellen, Task zuweisen – Kian handelt selbstständig
+                            oder eskaliert bei Bedarf.</p>
+                    </div>
+                    <div class="panel-visual">
+                        <div class="visual-actions">
+                            <div class="action-item done">✓ Antwort gesendet</div>
+                            <div class="action-item done">✓ Termin gebucht</div>
+                            <div class="action-item pending">⋯ Task erstellt</div>
+                        </div>
+                    </div>
+                </div>
 
-            <div class="kian-step reveal delay-3">
-                <div class="step-number">4</div>
-                <div class="step-content">
-                    <h4>Ergebnis</h4>
-                    <p>Logging, Analytics, Feedback-Loop. Du behältst volle Transparenz.</p>
+                <div class="stepper-panel" data-panel="4">
+                    <div class="panel-text">
+                        <h3>Ergebnis & Transparenz</h3>
+                        <p>Logging, Analytics, Feedback-Loop. Du behältst volle Transparenz über alle Aktionen mit
+                            detaillierten Berichten.</p>
+                    </div>
+                    <div class="panel-visual">
+                        <div class="visual-result">
+                            <div class="result-stat">
+                                <span class="stat-num">247</span>
+                                <span class="stat-label">Anfragen heute</span>
+                            </div>
+                            <div class="result-stat">
+                                <span class="stat-num">94%</span>
+                                <span class="stat-label">Automatisiert</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="text-center mt-8">
+        <div class="text-center mt-12">
             <a href="{{ url_for('features') }}" class="btn btn-secondary">
-                Mehr über Kian erfahren
+                Alle Features erkunden
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M5 12h14M12 5l7 7-7 7" />
                 </svg>
@@ -200,44 +356,47 @@
 </section>
 
 <!-- ============================================================================
-     USE CASES TEASER
+     USE CASES – Cards with hover preview
      ============================================================================ -->
 <section class="section usecases-section">
     <div class="container">
         <div class="section-header">
             <span class="badge">Use Cases</span>
             <h2>Wo Kian den Unterschied macht</h2>
-            <p>Von Sales über Support bis Operations – konkrete Anwendungsfälle.</p>
+            <p>Von Sales über Support bis Operations.</p>
         </div>
 
         <div class="grid grid-3">
-            <a href="{{ url_for('solutions') }}" class="card usecase-card reveal">
+            <a href="{{ url_for('solutions') }}" class="card card-glow usecase-card reveal">
+                <div class="usecase-icon">📊</div>
                 <h4>Sales Ops</h4>
-                <p>Lead-Qualifizierung automatisiert. 60% schnellere Response-Zeit.</p>
+                <p>Lead-Qualifizierung, Follow-ups, Terminbuchung – automatisiert.</p>
                 <span class="card-link">
-                    Mehr erfahren
+                    Case Study lesen
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M5 12h14M12 5l7 7-7 7" />
                     </svg>
                 </span>
             </a>
 
-            <a href="{{ url_for('solutions') }}" class="card usecase-card reveal delay-1">
+            <a href="{{ url_for('solutions') }}" class="card card-glow usecase-card reveal delay-1">
+                <div class="usecase-icon">🎧</div>
                 <h4>Customer Support</h4>
-                <p>70% der Tickets automatisiert beantwortet. Eskalation bei Bedarf.</p>
+                <p>Level-1 Support automatisiert. Eskalation nur bei komplexen Fällen.</p>
                 <span class="card-link">
-                    Mehr erfahren
+                    Case Study lesen
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M5 12h14M12 5l7 7-7 7" />
                     </svg>
                 </span>
             </a>
 
-            <a href="{{ url_for('solutions') }}" class="card usecase-card reveal delay-2">
+            <a href="{{ url_for('solutions') }}" class="card card-glow usecase-card reveal delay-2">
+                <div class="usecase-icon">⚙️</div>
                 <h4>Operations</h4>
-                <p>Fragmentierte Tools verbunden. 10+ Stunden pro Woche gespart.</p>
+                <p>Tools verbunden, Prozesse synchronisiert, manuelle Arbeit eliminiert.</p>
                 <span class="card-link">
-                    Mehr erfahren
+                    Case Study lesen
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M5 12h14M12 5l7 7-7 7" />
                     </svg>
@@ -248,19 +407,21 @@
 </section>
 
 <!-- ============================================================================
-     SECURITY TEASER
+     SECURITY & COMPLIANCE
      ============================================================================ -->
 <section class="section-sm security-section">
     <div class="container container-narrow">
         <div class="security-banner reveal">
+            <div class="security-icon">🛡️</div>
             <div class="security-content">
                 <h3>Sicherheit & Compliance</h3>
-                <p>GDPR-konform. Ende-zu-Ende-Verschlüsselung. Deutsche Server. Deine Daten bleiben deine Daten.</p>
+                <p>Security-first Architektur. GDPR-aware. EU-Hosting verfügbar. Verschlüsselung in Transit und at Rest.
+                </p>
             </div>
             <div class="security-badges">
-                <span class="security-badge">🔒 GDPR</span>
-                <span class="security-badge">🇩🇪 German Hosting</span>
-                <span class="security-badge">🛡️ Encrypted</span>
+                <span class="security-badge">GDPR-ready</span>
+                <span class="security-badge">EU Hosting</span>
+                <span class="security-badge">Encrypted</span>
             </div>
         </div>
     </div>
@@ -271,11 +432,12 @@
      ============================================================================ -->
 <section class="section cta-section">
     <div class="container container-narrow text-center">
+        <div class="cta-glow"></div>
         <div class="reveal">
-            <span class="badge badge-light">Bereit?</span>
-            <h2>Bereit für intelligente Automation?</h2>
-            <p class="text-lg mb-8">Lass uns sprechen. Wir analysieren deine Prozesse und zeigen dir, was möglich ist –
-                unverbindlich.</p>
+            <span class="badge badge-accent">Bereit?</span>
+            <h2 class="display-sm mt-6">Bereit für intelligente<br>Automation?</h2>
+            <p class="lead mt-4 mb-10">Lass uns sprechen. Wir analysieren deine Prozesse und zeigen dir, was möglich
+                ist.</p>
 
             <div class="hero-ctas justify-center">
                 <a href="{{ url_for('pricing') }}#contact" class="btn btn-primary btn-lg">
@@ -296,28 +458,254 @@
 {% block extra_css %}
 <style>
     /* ==========================================================================
-   HOME PAGE SPECIFIC STYLES
+   HOMEPAGE PREMIUM STYLES
    ========================================================================== */
 
-    /* Hero adjustments */
+    /* Hero Layout */
     .hero {
         min-height: 100vh;
-        padding-top: 120px;
+        padding-top: 140px;
+    }
+
+    .hero-layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-16);
+        align-items: center;
     }
 
     .hero-subtitle strong {
+        color: var(--color-accent-light);
+    }
+
+    @media (max-width: 1024px) {
+        .hero-layout {
+            grid-template-columns: 1fr;
+            gap: var(--space-12);
+        }
+
+        .hero-visual {
+            order: -1;
+        }
+    }
+
+    /* Kian Mock UI */
+    .kian-mock {
+        background: var(--color-bg-card);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-xl);
+        overflow: hidden;
+        box-shadow: var(--shadow-xl), var(--shadow-glow-accent);
+    }
+
+    .mock-header {
+        display: flex;
+        align-items: center;
+        gap: var(--space-4);
+        padding: var(--space-3) var(--space-4);
+        background: var(--color-bg-card-solid);
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .mock-dots {
+        display: flex;
+        gap: 6px;
+    }
+
+    .mock-dots span {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--color-gray-700);
+    }
+
+    .mock-title {
+        font-size: var(--font-size-xs);
+        color: var(--color-text-muted);
+        font-weight: var(--font-weight-medium);
+    }
+
+    .mock-body {
+        padding: var(--space-6);
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-4);
+    }
+
+    .mock-message {
+        max-width: 85%;
+    }
+
+    .mock-message-user {
+        align-self: flex-end;
+        background: var(--color-accent-soft);
+        border: 1px solid var(--color-accent-border);
+        padding: var(--space-3) var(--space-4);
+        border-radius: var(--radius-lg) var(--radius-lg) var(--radius-sm) var(--radius-lg);
+        font-size: var(--font-size-sm);
+    }
+
+    .mock-message-ai {
+        display: flex;
+        gap: var(--space-3);
+    }
+
+    .mock-ai-avatar {
+        width: 28px;
+        height: 28px;
+        background: var(--color-accent);
+        color: var(--color-gray-950);
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: var(--font-size-xs);
+        font-weight: var(--font-weight-bold);
+        flex-shrink: 0;
+    }
+
+    .mock-ai-content {
+        flex: 1;
+    }
+
+    .mock-typing {
+        font-size: var(--font-size-xs);
+        color: var(--color-accent);
+        margin-bottom: var(--space-2);
+        display: block;
+    }
+
+    .mock-ai-content p {
+        font-size: var(--font-size-sm);
         color: var(--color-text);
     }
 
-    .badge-dot {
-        width: 6px;
-        height: 6px;
-        background: #22c55e;
-        border-radius: 50%;
-        animation: pulse 2s infinite;
+    .mock-ai-content strong {
+        color: var(--color-accent-light);
     }
 
-    @keyframes pulse {
+    .mock-actions {
+        display: flex;
+        gap: var(--space-2);
+        margin-top: var(--space-2);
+    }
+
+    .mock-action-btn {
+        padding: var(--space-2) var(--space-4);
+        font-size: var(--font-size-xs);
+        background: var(--color-bg-hover);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        color: var(--color-text-secondary);
+        cursor: pointer;
+        transition: all var(--transition-micro);
+    }
+
+    .mock-action-btn.active {
+        background: var(--color-accent-soft);
+        border-color: var(--color-accent-border);
+        color: var(--color-accent);
+    }
+
+    /* Social Proof */
+    .social-proof {
+        border-top: 1px solid var(--color-border);
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .logo-wall {
+        display: flex;
+        justify-content: center;
+        gap: var(--space-12);
+        flex-wrap: wrap;
+    }
+
+    .logo-item {
+        color: var(--color-text-muted);
+        opacity: 0.5;
+        transition: opacity var(--transition-micro);
+    }
+
+    .logo-item:hover {
+        opacity: 1;
+    }
+
+    .logo-item svg {
+        height: 24px;
+        width: auto;
+    }
+
+    /* Card Visuals */
+    .card-visual {
+        height: 80px;
+        margin-bottom: var(--space-4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .micro-visual {
+        width: 100%;
+        max-width: 120px;
+        height: auto;
+        color: var(--color-text-muted);
+        transition: color var(--transition-normal);
+    }
+
+    .card:hover .micro-visual {
+        color: var(--color-accent);
+    }
+
+    /* Micro-visual animations */
+    .card:hover .mv-bubble-1 {
+        animation: bubble-pop 0.5s ease forwards;
+    }
+
+    .card:hover .mv-bubble-2 {
+        animation: bubble-pop 0.5s ease 0.1s forwards;
+    }
+
+    .card:hover .mv-dot {
+        animation: dot-pulse 0.6s ease infinite;
+    }
+
+    .card:hover .mv-dot-2 {
+        animation: dot-pulse 0.6s ease 0.1s infinite;
+    }
+
+    .card:hover .mv-dot-3 {
+        animation: dot-pulse 0.6s ease 0.2s infinite;
+    }
+
+    .card:hover .mv-cal-active {
+        animation: cal-pulse 0.8s ease infinite;
+    }
+
+    .card:hover .mv-node {
+        animation: node-pulse 1s ease infinite;
+    }
+
+    .card:hover .mv-bar {
+        animation: bar-grow 0.6s ease forwards;
+    }
+
+    .card:hover .mv-shield {
+        animation: shield-glow 1s ease infinite;
+    }
+
+    @keyframes bubble-pop {
+
+        0%,
+        100% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.05);
+        }
+    }
+
+    @keyframes dot-pulse {
 
         0%,
         100% {
@@ -325,114 +713,298 @@
         }
 
         50% {
-            opacity: 0.5;
+            opacity: 0.4;
         }
     }
 
-    /* Social Proof */
-    .social-proof {
-        border-top: 1px solid var(--color-border-subtle);
-        border-bottom: 1px solid var(--color-border-subtle);
-    }
+    @keyframes cal-pulse {
 
-    .logo-marquee {
-        overflow: hidden;
-        mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
-    }
-
-    .logo-track {
-        display: flex;
-        gap: var(--space-12);
-        animation: marquee 30s linear infinite;
-    }
-
-    .logo-item {
-        flex-shrink: 0;
-        font-size: var(--font-size-lg);
-        font-weight: var(--font-weight-medium);
-        color: var(--color-text-muted);
-        letter-spacing: var(--letter-spacing-wide);
-    }
-
-    @keyframes marquee {
-        0% {
-            transform: translateX(0);
-        }
-
+        0%,
         100% {
-            transform: translateX(-50%);
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.6;
         }
     }
 
-    /* Kian Flow */
-    .kian-flow {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: var(--space-4);
-        flex-wrap: wrap;
+    @keyframes node-pulse {
+
+        0%,
+        100% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.1);
+        }
+    }
+
+    @keyframes bar-grow {
+        from {
+            transform: scaleY(0.8);
+        }
+
+        to {
+            transform: scaleY(1);
+        }
+    }
+
+    @keyframes shield-glow {
+
+        0%,
+        100% {
+            filter: drop-shadow(0 0 0 transparent);
+        }
+
+        50% {
+            filter: drop-shadow(0 0 4px currentColor);
+        }
+    }
+
+    /* Stepper Layout */
+    .stepper-layout {
+        display: grid;
+        grid-template-columns: 200px 1fr;
+        gap: var(--space-12);
         margin-top: var(--space-12);
     }
 
-    .kian-step {
+    .stepper-nav {
         display: flex;
-        align-items: flex-start;
-        gap: var(--space-4);
-        padding: var(--space-6);
-        background: var(--color-bg-card);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-lg);
-        max-width: 220px;
+        flex-direction: column;
+        gap: var(--space-2);
+        position: sticky;
+        top: 120px;
+        height: fit-content;
     }
 
-    .step-number {
-        width: 32px;
-        height: 32px;
+    .stepper-step {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        padding: var(--space-3) var(--space-4);
+        background: none;
+        border: 1px solid transparent;
+        border-radius: var(--radius-lg);
+        cursor: pointer;
+        transition: all var(--transition-normal);
+        text-align: left;
+    }
+
+    .stepper-step:hover {
+        background: var(--color-bg-hover);
+    }
+
+    .stepper-step.active {
+        background: var(--color-bg-card);
+        border-color: var(--color-accent-border);
+    }
+
+    .stepper-num {
+        width: 28px;
+        height: 28px;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: var(--color-white);
-        color: var(--color-black);
+        background: var(--color-bg-hover);
         border-radius: var(--radius-md);
-        font-weight: var(--font-weight-bold);
         font-size: var(--font-size-sm);
-        flex-shrink: 0;
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-text-secondary);
+        transition: all var(--transition-normal);
     }
 
-    .step-content h4 {
-        margin-bottom: var(--space-2);
-        font-size: var(--font-size-base);
+    .stepper-step.active .stepper-num {
+        background: var(--color-accent);
+        color: var(--color-gray-950);
     }
 
-    .step-content p {
+    .stepper-label {
         font-size: var(--font-size-sm);
-        line-height: var(--line-height-normal);
+        color: var(--color-text-secondary);
+        font-weight: var(--font-weight-medium);
     }
 
-    .kian-connector {
-        width: 40px;
-        height: 2px;
+    .stepper-step.active .stepper-label {
+        color: var(--color-text);
+    }
+
+    .stepper-line {
+        width: 2px;
+        height: 20px;
         background: var(--color-border);
+        margin-left: 17px;
     }
 
-    @media (max-width: 1024px) {
-        .kian-flow {
-            flex-direction: column;
+    .stepper-content {
+        min-height: 300px;
+    }
+
+    .stepper-panel {
+        display: none;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-8);
+        align-items: center;
+        opacity: 0;
+        animation: panel-fade-in 0.4s ease forwards;
+    }
+
+    .stepper-panel.active {
+        display: grid;
+    }
+
+    @keyframes panel-fade-in {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
         }
 
-        .kian-connector {
-            width: 2px;
-            height: 24px;
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .panel-text h3 {
+        margin-bottom: var(--space-4);
+    }
+
+    .panel-visual {
+        background: var(--color-bg-card);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-xl);
+        padding: var(--space-8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Visual panels */
+    .visual-input {
+        display: flex;
+        align-items: center;
+        gap: var(--space-4);
+    }
+
+    .input-channels {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+    }
+
+    .channel {
+        font-size: var(--font-size-sm);
+        padding: var(--space-2) var(--space-3);
+        background: var(--color-bg-hover);
+        border-radius: var(--radius-md);
+    }
+
+    .input-arrow {
+        font-size: var(--font-size-2xl);
+        color: var(--color-accent);
+    }
+
+    .input-kian {
+        width: 48px;
+        height: 48px;
+        background: var(--color-accent);
+        color: var(--color-gray-950);
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: var(--font-weight-bold);
+        font-size: var(--font-size-xl);
+    }
+
+    .visual-context {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+    }
+
+    .context-box {
+        padding: var(--space-3);
+        background: var(--color-bg-hover);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        font-size: var(--font-size-sm);
+    }
+
+    .visual-actions {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+    }
+
+    .action-item {
+        padding: var(--space-3);
+        border-radius: var(--radius-md);
+        font-size: var(--font-size-sm);
+    }
+
+    .action-item.done {
+        background: var(--color-accent-soft);
+        color: var(--color-accent);
+    }
+
+    .action-item.pending {
+        background: var(--color-bg-hover);
+        color: var(--color-text-muted);
+    }
+
+    .visual-result {
+        display: flex;
+        gap: var(--space-8);
+    }
+
+    .result-stat {
+        text-align: center;
+    }
+
+    .stat-num {
+        display: block;
+        font-size: var(--font-size-3xl);
+        font-weight: var(--font-weight-bold);
+        color: var(--color-accent);
+    }
+
+    .stat-label {
+        font-size: var(--font-size-xs);
+        color: var(--color-text-muted);
+    }
+
+    @media (max-width: 768px) {
+        .stepper-layout {
+            grid-template-columns: 1fr;
         }
 
-        .kian-step {
-            max-width: 100%;
+        .stepper-nav {
+            flex-direction: row;
+            overflow-x: auto;
+            position: static;
+            gap: var(--space-1);
+        }
+
+        .stepper-line {
+            display: none;
+        }
+
+        .stepper-panel {
+            grid-template-columns: 1fr;
         }
     }
 
     /* Use Case Cards */
     .usecase-card {
         text-decoration: none;
+    }
+
+    .usecase-icon {
+        font-size: 2rem;
+        margin-bottom: var(--space-4);
     }
 
     .usecase-card h4 {
@@ -445,24 +1017,28 @@
         gap: var(--space-2);
         margin-top: var(--space-4);
         font-size: var(--font-size-sm);
-        color: var(--color-text);
+        color: var(--color-accent);
         font-weight: var(--font-weight-medium);
     }
 
-    .usecase-card:hover .card-link {
-        gap: var(--space-3);
+    .usecase-card:hover .card-link svg {
+        transform: translateX(4px);
     }
 
     /* Security Banner */
     .security-banner {
-        display: flex;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: var(--space-6);
         align-items: center;
-        justify-content: space-between;
-        gap: var(--space-8);
         padding: var(--space-8);
         background: var(--color-bg-card);
         border: 1px solid var(--color-border);
         border-radius: var(--radius-xl);
+    }
+
+    .security-icon {
+        font-size: 2.5rem;
     }
 
     .security-content h3 {
@@ -475,41 +1051,109 @@
 
     .security-badges {
         display: flex;
-        gap: var(--space-3);
+        gap: var(--space-2);
     }
 
     .security-badge {
         padding: var(--space-2) var(--space-4);
         background: var(--color-bg-hover);
+        border: 1px solid var(--color-border);
         border-radius: var(--radius-md);
-        font-size: var(--font-size-sm);
-        white-space: nowrap;
+        font-size: var(--font-size-xs);
+        font-weight: var(--font-weight-medium);
+        color: var(--color-text-secondary);
     }
 
     @media (max-width: 768px) {
         .security-banner {
-            flex-direction: column;
+            grid-template-columns: 1fr;
             text-align: center;
         }
 
         .security-badges {
-            flex-wrap: wrap;
             justify-content: center;
+            flex-wrap: wrap;
         }
     }
 
     /* CTA Section */
     .cta-section {
-        background: linear-gradient(to bottom, transparent, var(--color-gray-950));
+        position: relative;
+        overflow: hidden;
     }
 
-    .cta-section h2 {
-        margin-top: var(--space-4);
-        margin-bottom: var(--space-4);
+    .cta-glow {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 600px;
+        height: 600px;
+        background: var(--color-accent);
+        border-radius: 50%;
+        filter: blur(200px);
+        opacity: 0.08;
+        pointer-events: none;
     }
 
     .justify-center {
         justify-content: center;
     }
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Stepper functionality
+    document.addEventListener('DOMContentLoaded', function () {
+        const steps = document.querySelectorAll('.stepper-step');
+        const panels = document.querySelectorAll('.stepper-panel');
+
+        steps.forEach(step => {
+            step.addEventListener('click', function () {
+                const targetStep = this.dataset.step;
+
+                // Update active step
+                steps.forEach(s => s.classList.remove('active'));
+                this.classList.add('active');
+
+                // Update active panel
+                panels.forEach(p => {
+                    p.classList.remove('active');
+                    if (p.dataset.panel === targetStep) {
+                        p.classList.add('active');
+                    }
+                });
+            });
+        });
+
+        // Scroll-triggered step activation
+        const stepperSection = document.querySelector('#kian-stepper');
+        if (stepperSection) {
+            const sectionTop = stepperSection.offsetTop;
+            const sectionHeight = stepperSection.offsetHeight;
+
+            window.addEventListener('scroll', function () {
+                const scrollPos = window.scrollY - sectionTop + (window.innerHeight / 2);
+                const progress = Math.max(0, Math.min(1, scrollPos / sectionHeight));
+                const currentStep = Math.min(4, Math.floor(progress * 5) + 1);
+
+                if (currentStep >= 1 && currentStep <= 4) {
+                    const targetStep = steps[currentStep - 1];
+                    if (targetStep && !targetStep.classList.contains('active')) {
+                        steps.forEach(s => s.classList.remove('active'));
+                        targetStep.classList.add('active');
+
+                        panels.forEach(p => {
+                            p.classList.remove('active');
+                            if (p.dataset.panel == currentStep) {
+                                p.classList.add('active');
+                            }
+                        });
+                    }
+                }
+            }, { passive: true });
+        }
+    });
+</script>
 {% endblock %}

@@ -321,7 +321,7 @@
 {% block extra_css %}
 <style>
     /* ==========================================================================
-   PRICING PAGE STYLES
+   PRICING PAGE – PREMIUM STYLES
    ========================================================================== */
 
     .page-hero {
@@ -349,23 +349,41 @@
         }
     }
 
-    /* Pricing Card */
+    /* Pricing Card – Premium Glassmorphism */
     .pricing-card {
         position: relative;
         padding: var(--space-8);
         background: var(--color-bg-card);
+        backdrop-filter: blur(12px);
         border: 1px solid var(--color-border);
         border-radius: var(--radius-xl);
         transition: all var(--transition-smooth);
     }
 
-    .pricing-card:hover {
-        border-color: var(--color-gray-700);
+    .pricing-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, transparent 50%);
+        pointer-events: none;
     }
 
+    .pricing-card:hover {
+        transform: translateY(-4px);
+        border-color: var(--color-border-hover);
+        box-shadow: var(--shadow-card-hover);
+    }
+
+    /* Featured Card – Accent Glow */
     .pricing-card.featured {
-        border-color: var(--color-gray-600);
-        background: var(--color-gray-900);
+        border-color: var(--color-accent-border);
+        background: linear-gradient(135deg, var(--color-bg-card-solid), rgba(0, 212, 170, 0.03));
+        box-shadow: 0 0 0 1px var(--color-accent-border), var(--shadow-glow-accent);
+    }
+
+    .pricing-card.featured:hover {
+        box-shadow: 0 0 0 1px var(--color-accent-border), var(--shadow-glow-accent), 0 16px 48px rgba(0, 0, 0, 0.4);
     }
 
     .pricing-badge {
@@ -374,13 +392,13 @@
         left: 50%;
         transform: translateX(-50%);
         padding: var(--space-1) var(--space-4);
-        background: var(--color-white);
-        color: var(--color-black);
+        background: var(--color-accent);
+        color: var(--color-gray-950);
         font-size: var(--font-size-xs);
-        font-weight: var(--font-weight-semibold);
+        font-weight: var(--font-weight-bold);
         border-radius: var(--radius-full);
         text-transform: uppercase;
-        letter-spacing: var(--letter-spacing-wide);
+        letter-spacing: var(--letter-spacing-wider);
     }
 
     .pricing-header {
@@ -399,12 +417,20 @@
     .pricing-price {
         margin-bottom: var(--space-6);
         padding-bottom: var(--space-6);
-        border-bottom: 1px solid var(--color-border-subtle);
+        border-bottom: 1px solid var(--color-border);
     }
 
     .price-amount {
         font-size: var(--font-size-4xl);
         font-weight: var(--font-weight-bold);
+        letter-spacing: var(--letter-spacing-tight);
+    }
+
+    .pricing-card.featured .price-amount {
+        background: linear-gradient(135deg, var(--color-accent-light), var(--color-accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
 
     .price-period {
@@ -429,7 +455,7 @@
     .pricing-features svg {
         flex-shrink: 0;
         margin-top: 2px;
-        color: var(--color-text);
+        color: var(--color-accent);
     }
 
     .pricing-cta {
@@ -444,7 +470,7 @@
     .comparison-table {
         background: var(--color-bg-card);
         border: 1px solid var(--color-border);
-        border-radius: var(--radius-lg);
+        border-radius: var(--radius-xl);
         overflow: hidden;
     }
 
@@ -464,8 +490,13 @@
 
     .comparison-row {
         padding: var(--space-4) var(--space-6);
-        border-top: 1px solid var(--color-border-subtle);
+        border-top: 1px solid var(--color-border);
         font-size: var(--font-size-sm);
+        transition: background var(--transition-micro);
+    }
+
+    .comparison-row:hover {
+        background: var(--color-bg-hover);
     }
 
     .comparison-feature {
@@ -479,7 +510,7 @@
     }
 
     .comparison-check {
-        color: var(--color-text);
+        color: var(--color-accent);
     }
 
     .comparison-value {
@@ -496,48 +527,75 @@
         }
     }
 
-    /* Contact Form */
+    /* Contact Form – Premium Styling */
     .contact-form-wrapper {
         background: var(--color-bg-card);
         border: 1px solid var(--color-border);
-        border-radius: var(--radius-xl);
-        padding: var(--space-8);
+        border-radius: var(--radius-2xl);
+        padding: var(--space-10);
+        position: relative;
+    }
+
+    .contact-form-wrapper::before {
+        content: '';
+        position: absolute;
+        inset: -1px;
+        border-radius: inherit;
+        padding: 1px;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent 50%);
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        pointer-events: none;
     }
 
     .form-row {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: var(--space-4);
+        gap: var(--space-5);
     }
 
     @media (max-width: 600px) {
         .form-row {
             grid-template-columns: 1fr;
         }
+
+        .contact-form-wrapper {
+            padding: var(--space-6);
+        }
+    }
+
+    /* Form Input Focus Glow */
+    .form-group.focused .form-label {
+        color: var(--color-accent);
     }
 
     .form-input.error,
     .form-select.error,
     .form-textarea.error {
         border-color: #ef4444;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
     }
 
     /* Success State */
     .form-success {
         text-align: center;
-        padding: var(--space-12);
+        padding: var(--space-16);
     }
 
     .success-icon {
-        width: 64px;
-        height: 64px;
+        width: 72px;
+        height: 72px;
         display: flex;
         align-items: center;
         justify-content: center;
         margin: 0 auto var(--space-6);
-        background: var(--color-bg-hover);
+        background: var(--color-accent-soft);
+        border: 1px solid var(--color-accent-border);
         border-radius: 50%;
         font-size: var(--font-size-2xl);
+        color: var(--color-accent);
+        box-shadow: var(--shadow-glow-accent);
     }
 
     .form-success h3 {
@@ -546,11 +604,35 @@
 
     .form-error-message {
         padding: var(--space-4);
-        background: rgba(239, 68, 68, 0.1);
+        background: rgba(239, 68, 68, 0.08);
         border: 1px solid rgba(239, 68, 68, 0.3);
-        border-radius: var(--radius-md);
+        border-radius: var(--radius-lg);
         color: #ef4444;
         margin-top: var(--space-4);
+        font-size: var(--font-size-sm);
+    }
+
+    /* Loading State */
+    .btn .loading {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-2);
+    }
+
+    .btn .loading::before {
+        content: '';
+        width: 16px;
+        height: 16px;
+        border: 2px solid transparent;
+        border-top-color: currentColor;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
     }
 </style>
 {% endblock %}
