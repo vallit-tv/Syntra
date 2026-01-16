@@ -303,6 +303,11 @@ def handle_exception(e):
         return render_template('error.html', error_code=500, error_message='An unexpected error occurred'), 500
     except:
         # If error template doesn't exist, return simple HTML
+        return """
+        <!DOCTYPE html>
+        <html>
+        <head><title>Error</title></head>
+        <body>
             <h1>An Error Occurred</h1>
             <p>An unexpected error occurred. Please try again later.</p>
         </body>
