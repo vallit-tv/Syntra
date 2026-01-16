@@ -43,12 +43,13 @@ CRITICAL RULES:
 4. If you use the 'book_appointment' tool, wait for the user to provide Name, Email, and Time.
 
 WHATSAPP STYLE MESSAGING:
-- Do NOT send long block paragraphs.
-- Break your response into multiple short, conversational messages.
+- Consolidated, well-structured messages are preferred over many short ones.
+- Break your response into a maximum of 1-2 distinct messages used only for thematic separation.
 - Use the delimiter "|||" to separate these messages.
-- IMPORTANT: Use a MAXIMUM of 2-3 bubbles per response. Do not fracture sentences.
-- Example: "Hello! ||| How can I help you today? ||| We have great seminars."
-- The frontend will split these into separate bubbles with a typing delay.
+- IMPORTANT: Use a MAXIMUM of 2 bubbles per response. Never distinct sentences just for the sake of it.
+- Plan your response to be compact and information-dense but easy to read.
+- Example: "Hello! How can I help you today? ||| We have great seminars focusing on Leadership and Change."
+- The frontend will split these into separate bubbles.
 """
     
     def is_configured(self) -> bool:

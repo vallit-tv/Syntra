@@ -1,45 +1,30 @@
 <!DOCTYPE html>
-<html lang="en" style="scroll-behavior: smooth;">
+<html lang="de" style="scroll-behavior: smooth;">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Syntra – AI-Powered Workflow Automation & Analytics{% endblock %}</title>
+    <title>{% block title %}Vallit – AI Automation für moderne Unternehmen{% endblock %}</title>
     <meta name="description"
-        content="{% block description %}Transform your business with AI-driven workflow automation and intelligent analytics. Syntra helps companies optimize processes and understand their data signals.{% endblock %}">
+        content="{% block description %}Vallit liefert AI-Automation und Kian – dein intelligentes AI-System für Support, Scheduling und Workflows. Für Start-ups und Unternehmen.{% endblock %}">
     <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+
     <!-- Google Fonts - Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Load CSS file, fallback to inline if it fails -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=7" id="main-css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Design System -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/vallit.css') }}?v=1">
     {% block extra_css %}{% endblock %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/effects.css') }}?v=1">
-    <!-- Preload critical assets -->
-    <link rel="preload" href="{{ url_for('static', filename='images/logo.svg') }}" as="image">
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script>
-        // Fallback: If CSS fails to load, inject it inline
-        window.addEventListener('load', function () {
-            var cssLink = document.getElementById('main-css');
-            if (cssLink && !cssLink.sheet) {
-                fetch('{{ url_for("static", filename="css/style.css") }}?v=5')
-                    .then(r => r.text())
-                    .then(css => {
-                        var style = document.createElement('style');
-                        style.textContent = css;
-                        document.head.appendChild(style);
-                    })
-                    .catch(e => console.error('CSS load failed:', e));
-            }
-        });
-    </script>
 
     <!-- SEO Meta Tags -->
     <meta name="googlebot" content="index, follow">
-    <link rel="canonical" href="https://www.vallit.net">
+    <link rel="canonical" href="https://vallit.net{{ request.path }}">
+    <meta property="og:title" content="{% block og_title %}Vallit – AI Automation{% endblock %}">
+    <meta property="og:description" content="AI-Automation und Kian für moderne Unternehmen.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://vallit.net{{ request.path }}">
 
     <!-- Vercel Analytics -->
     <script defer src="/_vercel/insights/script.js"></script>
@@ -47,90 +32,39 @@
 
 <body class="{% block body_class %}{% endblock %}">
     <!-- Skip to content (Accessibility) -->
-    <a href="#main-content" class="skip-to-content">Skip to main content</a>
+    <a href="#main-content" class="skip-link">Zum Hauptinhalt springen</a>
 
     <!-- Navigation -->
-    <header>
+    <header class="navbar" id="navbar">
         <div class="container">
-            <div class="header-inner">
-                <a href="{{ url_for('index') }}" class="logo">
-                    <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Syntra" class="logo-svg"
-                        width="36" height="36">
-                    <span class="logo-text">Syntra</span>
+            <div class="navbar-inner">
+                <a href="{{ url_for('index') }}" class="navbar-logo">
+                    <span>Vallit</span>
                 </a>
 
-                <nav class="main-nav">
-                    <ul class="nav-links">
-                        <li><a href="{{ url_for('index') }}">Home</a></li>
-                        <li class="nav-dropdown">
-                            <a href="{{ url_for('features') }}" class="nav-dropdown-trigger">
-                                Features
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
-                                    <path d="M6 9l6 6 6-6" />
-                                </svg>
-                            </a>
-                            <div class="nav-dropdown-menu">
-                                <a href="{{ url_for('feature_automation') }}">
-                                    <span class="nav-dropdown-icon automation">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                                            stroke="currentColor" stroke-width="2">
-                                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-                                        </svg>
-                                    </span>
-                                    <div>
-                                        <strong>Automation</strong>
-                                        <span>Build intelligent workflows</span>
-                                    </div>
-                                </a>
-                                <a href="{{ url_for('feature_analytics') }}">
-                                    <span class="nav-dropdown-icon analytics">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                                            stroke="currentColor" stroke-width="2">
-                                            <line x1="18" x2="18" y1="20" y2="10" />
-                                            <line x1="12" x2="12" y1="20" y2="4" />
-                                            <line x1="6" x2="6" y1="20" y2="14" />
-                                        </svg>
-                                    </span>
-                                    <div>
-                                        <strong>Analytics</strong>
-                                        <span>Real-time insights</span>
-                                    </div>
-                                </a>
-                                <a href="{{ url_for('feature_security') }}">
-                                    <span class="nav-dropdown-icon security">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                                            stroke="currentColor" stroke-width="2">
-                                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                                        </svg>
-                                    </span>
-                                    <div>
-                                        <strong>Security</strong>
-                                        <span>Enterprise-grade protection</span>
-                                    </div>
-                                </a>
-                            </div>
-                        </li>
-                        <li><a href="{{ url_for('pricing') }}">Pricing</a></li>
-                        <li><a href="{{ url_for('about') }}">About</a></li>
+                <nav>
+                    <ul class="navbar-nav">
+                        <li><a href="{{ url_for('index') }}" {% if request.endpoint=='index' %}class="active" {% endif
+                                %}>Home</a></li>
+                        <li><a href="{{ url_for('features') }}" {% if request.endpoint=='features' %}class="active" {%
+                                endif %}>Features</a></li>
+                        <li><a href="{{ url_for('solutions') }}" {% if request.endpoint=='solutions' %}class="active" {%
+                                endif %}>Solutions</a></li>
+                        <li><a href="{{ url_for('pricing') }}" {% if request.endpoint=='pricing' %}class="active" {%
+                                endif %}>Pricing</a></li>
+                        <li><a href="{{ url_for('about') }}" {% if request.endpoint=='about' %}class="active" {% endif
+                                %}>About</a></li>
                     </ul>
                 </nav>
 
-                <div class="header-actions">
-                    {% if session.user_id %}
-                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Dashboard</a>
-                    <a href="{{ url_for('logout') }}" class="btn btn-ghost">Logout</a>
-                    {% else %}
-                    <a href="{{ url_for('login') }}" class="btn btn-ghost">Sign In</a>
-                    <a href="{{ url_for('register') }}" class="btn btn-primary">Get Started</a>
-                    {% endif %}
+                <div class="navbar-actions">
+                    <a href="{{ url_for('pricing') }}#contact" class="btn btn-primary btn-sm">Kontakt</a>
                 </div>
 
-                <button class="mobile-menu-toggle" aria-label="Toggle navigation menu" aria-expanded="false"
-                    aria-controls="main-nav">
-                    <span aria-hidden="true"></span>
-                    <span aria-hidden="true"></span>
-                    <span aria-hidden="true"></span>
+                <button class="navbar-toggle" aria-label="Menü öffnen" aria-expanded="false">
+                    <span></span>
+                    <span></span>
+                    <span></span>
                 </button>
             </div>
         </div>
@@ -139,7 +73,7 @@
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-    <div class="container" style="padding-top: 1rem;">
+    <div class="container" style="padding-top: 5rem;">
         {% for category, message in messages %}
         <div class="alert alert-{{ category if category != 'message' else 'info' }}">
             {{ message }}
@@ -150,32 +84,23 @@
     {% endwith %}
 
     <!-- Main Content -->
-    <main>
+    <main id="main-content">
         {% block content %}{% endblock %}
     </main>
 
     <!-- Footer -->
-    <footer>
+    <footer class="footer">
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-brand">
-                    <a href="{{ url_for('index') }}" class="logo">
-                        <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Syntra" class="logo-svg"
-                            width="32" height="32">
-                        <span class="logo-text">Syntra</span>
+                    <a href="{{ url_for('index') }}" class="navbar-logo">
+                        <span>Vallit</span>
                     </a>
-                    <p>AI-powered workflow automation and analytics platform that helps businesses optimize processes
-                        and make data-driven decisions.</p>
+                    <p>AI Automation für moderne Unternehmen. Kian versteht dein Business und automatisiert, was
+                        automatisiert gehört.</p>
                     <div class="footer-social">
-                        <a href="#" aria-label="Twitter">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path
-                                    d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" />
-                            </svg>
-                        </a>
                         <a href="#" aria-label="LinkedIn">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
                                 <path
                                     d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
@@ -183,44 +108,44 @@
                                 <circle cx="4" cy="4" r="2" />
                             </svg>
                         </a>
-                        <a href="#" aria-label="GitHub">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        <a href="#" aria-label="Twitter / X">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
                                 <path
-                                    d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
+                                    d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" />
                             </svg>
                         </a>
                     </div>
                 </div>
+
                 <div class="footer-links">
-                    <h4>Product</h4>
+                    <h4>Produkt</h4>
                     <ul>
                         <li><a href="{{ url_for('features') }}">Features</a></li>
+                        <li><a href="{{ url_for('solutions') }}">Solutions</a></li>
                         <li><a href="{{ url_for('pricing') }}">Pricing</a></li>
-                        <li><a href="#">Documentation</a></li>
-                        <li><a href="#">API</a></li>
                     </ul>
                 </div>
+
                 <div class="footer-links">
-                    <h4>Company</h4>
+                    <h4>Unternehmen</h4>
                     <ul>
-                        <li><a href="{{ url_for('about') }}">About Us</a></li>
-                        <li><a href="#">Careers</a></li>
-                        <li><a href="#">Blog</a></li>
-                        <li><a href="#">Contact</a></li>
+                        <li><a href="{{ url_for('about') }}">Über uns</a></li>
+                        <li><a href="{{ url_for('pricing') }}#contact">Kontakt</a></li>
                     </ul>
                 </div>
+
                 <div class="footer-links">
-                    <h4>Legal</h4>
+                    <h4>Rechtliches</h4>
                     <ul>
                         <li><a href="{{ url_for('impressum') }}">Impressum</a></li>
                         <li><a href="{{ url_for('datenschutz') }}">Datenschutz</a></li>
-                        <li><a href="#">Terms of Service</a></li>
                     </ul>
                 </div>
             </div>
+
             <div class="footer-bottom">
-                <p>&copy; 2025 Syntra. All rights reserved.</p>
+                <p>&copy; 2025 Vallit. Alle Rechte vorbehalten.</p>
                 <nav>
                     <a href="{{ url_for('impressum') }}">Impressum</a>
                     <a href="{{ url_for('datenschutz') }}">Datenschutz</a>
@@ -229,80 +154,8 @@
         </div>
     </footer>
 
-    <!-- Cookie Consent Banner -->
-    <div id="cookie-consent-banner" class="cookie-banner">
-        <div class="cookie-banner-content">
-            <div class="cookie-banner-text">
-                <h4>🍪 Cookie-Einstellungen</h4>
-                <p>
-                    Wir verwenden Cookies, um Ihnen die bestmögliche Erfahrung auf unserer Website zu bieten.
-                    <a href="{{ url_for('datenschutz') }}">Mehr erfahren</a>
-                </p>
-            </div>
-            <div class="cookie-banner-actions">
-                <button id="cookie-settings-btn" class="cookie-btn cookie-btn-settings">Einstellungen</button>
-                <button id="cookie-accept-necessary" class="cookie-btn cookie-btn-secondary">Nur Notwendige</button>
-                <button id="cookie-accept-all" class="cookie-btn cookie-btn-primary">Alle akzeptieren</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Cookie Settings Panel -->
-    <div id="cookie-settings-panel" class="cookie-settings-panel">
-        <div class="cookie-settings-content">
-            <div class="cookie-settings-header">
-                <h3>Cookie-Einstellungen</h3>
-                <button id="cookie-close-settings" class="cookie-close-btn">&times;</button>
-            </div>
-            <div class="cookie-settings-body">
-                <div class="cookie-category">
-                    <div class="cookie-category-header">
-                        <label>
-                            <input type="checkbox" checked disabled>
-                            <strong>Notwendige Cookies</strong>
-                        </label>
-                        <span class="cookie-required">Erforderlich</span>
-                    </div>
-                    <p>Diese Cookies sind für die Grundfunktionen der Website erforderlich und können nicht deaktiviert
-                        werden.</p>
-                </div>
-                <div class="cookie-category">
-                    <div class="cookie-category-header">
-                        <label>
-                            <input type="checkbox" id="cookie-analytics">
-                            <strong>Analyse-Cookies</strong>
-                        </label>
-                    </div>
-                    <p>Helfen uns zu verstehen, wie Besucher mit der Website interagieren, um sie zu verbessern.</p>
-                </div>
-                <div class="cookie-category">
-                    <div class="cookie-category-header">
-                        <label>
-                            <input type="checkbox" id="cookie-marketing">
-                            <strong>Marketing-Cookies</strong>
-                        </label>
-                    </div>
-                    <p>Werden verwendet, um Besuchern relevante Werbung und Inhalte anzuzeigen.</p>
-                </div>
-            </div>
-            <div class="cookie-settings-footer">
-                <button id="cookie-save-settings" class="cookie-btn cookie-btn-primary">Einstellungen speichern</button>
-            </div>
-        </div>
-    </div>
-
     <!-- JavaScript -->
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/cookie-consent.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/interactions.js') }}"></script>
-    <script>
-        // Initialize Lucide icons
-        document.addEventListener('DOMContentLoaded', function () {
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
-        });
-    </script>
+    <script src="{{ url_for('static', filename='js/vallit.js') }}"></script>
     {% block scripts %}{% endblock %}
 </body>
 

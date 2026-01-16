@@ -1,307 +1,442 @@
 {% extends "base.html" %}
 
-{% block title %}What We Do – Syntra{% endblock %}
+{% block title %}Features – Vallit{% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}?v=7">
-{% endblock %}
-
-{% block body_class %}landing-page{% endblock %}
+{% block body_class %}page-features{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<section class="page-hero" id="main-content">
-    <div class="hero-orbs" aria-hidden="true">
-        <div class="hero-orb hero-orb-1"></div>
-        <div class="hero-orb hero-orb-2"></div>
-        <div class="hero-orb hero-orb-3"></div>
+<!-- ============================================================================
+     HERO SECTION
+     ============================================================================ -->
+<section class="page-hero">
+    <div class="hero-bg">
+        <div class="hero-gradient hero-gradient-1"></div>
     </div>
+
     <div class="container">
         <div class="page-hero-content">
-            <span class="section-badge">🚀 What We Do</span>
-            <h1 class="page-hero-title">
-                We make your business<br>
-                <span class="gradient-text">run itself</span>
-            </h1>
-            <p class="page-hero-subtitle">
-                No technical headaches. No complicated setups. Just tell us what you need,
-                and we'll build the automation that saves your team hours every day.
+            <span class="badge badge-light">Features</span>
+            <h1>Kian. Dein AI-System.</h1>
+            <p class="hero-subtitle">
+                Modulare AI-Automation, die dein Business versteht. Von Chatbot bis komplexe Workflow-Automation.
             </p>
-            <div class="hero-stats">
-                <div class="hero-stat">
-                    <span class="stat-number">10+</span>
-                    <span class="stat-label">Hours saved weekly</span>
-                </div>
-                <div class="hero-stat-divider"></div>
-                <div class="hero-stat">
-                    <span class="stat-number">100%</span>
-                    <span class="stat-label">Client retention</span>
-                </div>
-                <div class="hero-stat-divider"></div>
-                <div class="hero-stat">
-                    <span class="stat-number">48h</span>
-                    <span class="stat-label">Response time</span>
-                </div>
-            </div>
         </div>
     </div>
 </section>
 
-<!-- Main Services -->
-<section class="features-detail-section">
+<!-- ============================================================================
+     FEATURE CATEGORIES
+     ============================================================================ -->
+<section class="section">
     <div class="container">
-        <div class="section-header">
-            <span class="section-badge" style="background: rgba(255,255,255,0.1); color: white;">Our Services</span>
-            <h2 class="section-title">Three pillars of your digital transformation</h2>
+
+        <!-- Kian Core -->
+        <div class="feature-module reveal">
+            <div class="feature-module-header">
+                <span class="module-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="12 2 2 7 12 12 22 7 12 2" />
+                        <polyline points="2 17 12 22 22 17" />
+                        <polyline points="2 12 12 17 22 12" />
+                    </svg>
+                </span>
+                <div>
+                    <h2>Kian Core</h2>
+                    <p>Das Fundament: Knowledge, Kontext, Reasoning</p>
+                </div>
+            </div>
+
+            <div class="grid grid-3 mt-8">
+                <div class="card feature-card">
+                    <h4>Knowledge Base</h4>
+                    <p>Kian lernt dein Unternehmen – Produkte, Prozesse, FAQs, Policies. Alles zentral, immer aktuell.
+                    </p>
+                </div>
+
+                <div class="card feature-card">
+                    <h4>Context Engine</h4>
+                    <p>Bisherige Gespräche, Kundenhistorie, aktuelle Anfragen – Kian versteht den Zusammenhang.</p>
+                </div>
+
+                <div class="card feature-card">
+                    <h4>Policy Layer</h4>
+                    <p>Definiere Regeln: Wann eskalieren, was autonom entscheiden, welche Grenzen gelten.</p>
+                </div>
+            </div>
         </div>
 
-        <div class="features-detail-grid">
-            <!-- Automation -->
-            <a href="{{ url_for('feature_automation') }}" class="feature-detail-card">
-                <div class="feature-detail-icon automation">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <!-- Automation -->
+        <div class="feature-module reveal">
+            <div class="feature-module-header">
+                <span class="module-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
                     </svg>
+                </span>
+                <div>
+                    <h2>Automation</h2>
+                    <p>Workflows, die arbeiten, während du schläfst</p>
                 </div>
-                <div class="feature-detail-content">
-                    <span class="feature-tag">Most Popular</span>
-                    <h3>Workflow Automation</h3>
-                    <p>We connect your tools and automate the boring stuff. From data entry to report generation — if
-                        it's repetitive, we can automate it.</p>
-                    <ul class="feature-detail-list">
-                        <li>✓ Custom-built for your specific processes</li>
-                        <li>✓ Works with any tool you already use</li>
-                        <li>✓ We set it up — you just enjoy the results</li>
-                    </ul>
-                    <div class="feature-metrics">
-                        <span class="metric"><strong>3x</strong> faster processes</span>
-                        <span class="metric"><strong>85%</strong> less manual work</span>
-                    </div>
-                    <span class="feature-detail-link">
-                        Learn how it works
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                    </span>
-                </div>
-            </a>
+            </div>
 
-            <!-- Analytics -->
-            <a href="{{ url_for('feature_analytics') }}" class="feature-detail-card">
-                <div class="feature-detail-icon analytics">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <div class="grid grid-3 mt-8">
+                <div class="card feature-card">
+                    <h4>Trigger & Actions</h4>
+                    <p>E-Mail empfangen → Antwort senden. Formular ausgefüllt → CRM updaten. Beliebige Ketten.</p>
+                </div>
+
+                <div class="card feature-card">
+                    <h4>Conditional Logic</h4>
+                    <p>If-Then-Else für komplexe Entscheidungen. Kian trifft die richtige Wahl basierend auf Daten.</p>
+                </div>
+
+                <div class="card feature-card">
+                    <h4>Scheduled Tasks</h4>
+                    <p>Tägliche Reports, wöchentliche Zusammenfassungen, monatliche Analysen – automatisch.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Integrationen -->
+        <div class="feature-module reveal">
+            <div class="feature-module-header">
+                <span class="module-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="6" width="4" height="12" rx="1" />
+                        <rect x="10" y="6" width="4" height="12" rx="1" />
+                        <rect x="18" y="6" width="4" height="12" rx="1" />
+                        <path d="M6 12h4M14 12h4" />
+                    </svg>
+                </span>
+                <div>
+                    <h2>Integrationen</h2>
+                    <p>50+ Tools out-of-the-box. Custom APIs auf Anfrage.</p>
+                </div>
+            </div>
+
+            <div class="integrations-grid mt-8">
+                <div class="integration-item">
+                    <span>Slack</span>
+                </div>
+                <div class="integration-item">
+                    <span>Notion</span>
+                </div>
+                <div class="integration-item">
+                    <span>Google Workspace</span>
+                </div>
+                <div class="integration-item">
+                    <span>Microsoft 365</span>
+                </div>
+                <div class="integration-item">
+                    <span>Salesforce</span>
+                </div>
+                <div class="integration-item">
+                    <span>HubSpot</span>
+                </div>
+                <div class="integration-item">
+                    <span>Zendesk</span>
+                </div>
+                <div class="integration-item">
+                    <span>Jira</span>
+                </div>
+                <div class="integration-item">
+                    <span>Airtable</span>
+                </div>
+                <div class="integration-item">
+                    <span>Zapier</span>
+                </div>
+                <div class="integration-item">
+                    <span>Webhooks</span>
+                </div>
+                <div class="integration-item">
+                    <span>REST APIs</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics -->
+        <div class="feature-module reveal">
+            <div class="feature-module-header">
+                <span class="module-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M18 20V10M12 20V4M6 20v-6" />
                     </svg>
+                </span>
+                <div>
+                    <h2>Analytics</h2>
+                    <p>Verstehe, was Kian tut – und wie gut</p>
                 </div>
-                <div class="feature-detail-content">
-                    <h3>Clear Insights</h3>
-                    <p>See exactly what's happening in your business. We build dashboards that show you what matters —
-                        in plain language, updated in real-time.</p>
-                    <ul class="feature-detail-list">
-                        <li>✓ Dashboards designed around YOUR questions</li>
-                        <li>✓ Automatic alerts when something needs attention</li>
-                        <li>✓ No spreadsheet headaches</li>
-                    </ul>
-                    <div class="feature-metrics">
-                        <span class="metric"><strong>Real-time</strong> updates</span>
-                        <span class="metric"><strong>1 screen</strong> for everything</span>
-                    </div>
-                    <span class="feature-detail-link">
-                        See the possibilities
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                    </span>
-                </div>
-            </a>
+            </div>
 
-            <!-- Security -->
-            <a href="{{ url_for('feature_security') }}" class="feature-detail-card">
-                <div class="feature-detail-icon security">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <div class="grid grid-3 mt-8">
+                <div class="card feature-card">
+                    <h4>Dashboard</h4>
+                    <p>Alle Metriken auf einen Blick: Anfragen, Antwortzeiten, Erfolgsraten, Eskalationen.</p>
+                </div>
+
+                <div class="card feature-card">
+                    <h4>Conversation Logs</h4>
+                    <p>Jede Interaktion nachvollziehbar. Suche, Filter, Export für Compliance und Training.</p>
+                </div>
+
+                <div class="card feature-card">
+                    <h4>Performance Reports</h4>
+                    <p>Wöchentliche Zusammenfassung: Was lief gut, wo gibt es Optimierungspotenzial.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Human-in-the-loop -->
+        <div class="feature-module reveal">
+            <div class="feature-module-header">
+                <span class="module-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
                     </svg>
+                </span>
+                <div>
+                    <h2>Human-in-the-Loop</h2>
+                    <p>AI + Mensch = beste Ergebnisse</p>
                 </div>
-                <div class="feature-detail-content">
-                    <h3>Enterprise Security</h3>
-                    <p>Your data stays safe. We handle all the compliance and security so you can focus on your
-                        business, not regulations.</p>
-                    <ul class="feature-detail-list">
-                        <li>✓ Bank-level encryption for all data</li>
-                        <li>✓ GDPR and German compliance handled</li>
-                        <li>✓ Regular security audits</li>
-                    </ul>
-                    <div class="feature-metrics">
-                        <span class="metric"><strong>100%</strong> GDPR compliant</span>
-                        <span class="metric"><strong>🇩🇪</strong> German hosting</span>
-                    </div>
-                    <span class="feature-detail-link">
-                        Learn about our standards
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                    </span>
+            </div>
+
+            <div class="grid grid-3 mt-8">
+                <div class="card feature-card">
+                    <h4>Smart Escalation</h4>
+                    <p>Kian erkennt Grenzen und eskaliert automatisch an die richtige Person.</p>
                 </div>
-            </a>
+
+                <div class="card feature-card">
+                    <h4>Approval Workflows</h4>
+                    <p>Kritische Aktionen benötigen menschliche Freigabe. Du behältst die Kontrolle.</p>
+                </div>
+
+                <div class="card feature-card">
+                    <h4>Training Feedback</h4>
+                    <p>Korrigiere Kian bei Fehlern. Das System lernt und verbessert sich kontinuierlich.</p>
+                </div>
+            </div>
         </div>
+
     </div>
 </section>
 
-<!-- Integrations Showcase -->
-<section class="integrations-section">
-    <div class="container">
+<!-- ============================================================================
+     HOW KIAN WORKS - Diagram
+     ============================================================================ -->
+<section class="section-sm kian-diagram-section">
+    <div class="container container-narrow">
         <div class="section-header">
-            <span class="section-badge" style="background: rgba(255,255,255,0.1); color: white;">🔗 Integrations</span>
-            <h2 class="section-title">Connects with your existing tools</h2>
-            <p class="section-subtitle">
-                We integrate with 500+ tools. If you use it, we can probably connect to it.
-            </p>
+            <span class="badge">Architektur</span>
+            <h2>So arbeitet Kian</h2>
         </div>
 
-        <div class="integration-logos">
-            <div class="integration-logo">
-                <span class="integration-icon">📧</span>
-                <span>Gmail</span>
-            </div>
-            <div class="integration-logo">
-                <span class="integration-icon">💼</span>
-                <span>Salesforce</span>
-            </div>
-            <div class="integration-logo">
-                <span class="integration-icon">💬</span>
-                <span>Slack</span>
-            </div>
-            <div class="integration-logo">
-                <span class="integration-icon">📊</span>
-                <span>Excel</span>
-            </div>
-            <div class="integration-logo">
-                <span class="integration-icon">📁</span>
-                <span>Google Drive</span>
-            </div>
-            <div class="integration-logo">
-                <span class="integration-icon">🔗</span>
-                <span>Zapier</span>
-            </div>
-            <div class="integration-logo">
-                <span class="integration-icon">📋</span>
-                <span>Notion</span>
-            </div>
-            <div class="integration-logo">
-                <span class="integration-icon">🎯</span>
-                <span>HubSpot</span>
-            </div>
-        </div>
-        <p class="integrations-note">+ 500 more integrations available</p>
-    </div>
-</section>
-
-<!-- How We Work -->
-<section class="how-we-work-section">
-    <div class="container">
-        <div class="section-header">
-            <span class="section-badge" style="background: rgba(255,255,255,0.1); color: white;">📋 Our Process</span>
-            <h2 class="section-title">How we work with you</h2>
-            <p class="section-subtitle">
-                It's simple: You tell us what's slowing you down. We fix it.
-            </p>
-        </div>
-
-        <div class="process-steps">
-            <div class="process-step">
-                <div class="step-number-big">1</div>
-                <h4>Free Consultation</h4>
-                <p>We start with a conversation. What's frustrating? What's slow? What keeps you up at night?</p>
-                <span class="step-duration">30 min call</span>
-            </div>
-            <div class="process-connector">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
-            </div>
-            <div class="process-step">
-                <div class="step-number-big">2</div>
-                <h4>We Design the Solution</h4>
-                <p>We create a custom plan showing exactly what we'll automate and how much time you'll save.</p>
-                <span class="step-duration">1-2 days</span>
-            </div>
-            <div class="process-connector">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
-            </div>
-            <div class="process-step">
-                <div class="step-number-big">3</div>
-                <h4>We Build & Launch</h4>
-                <p>We handle everything — setup, testing, training. You don't lift a finger until it's working
-                    perfectly.</p>
-                <span class="step-duration">1-4 weeks</span>
-            </div>
-            <div class="process-connector">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
-            </div>
-            <div class="process-step">
-                <div class="step-number-big">4</div>
-                <h4>Ongoing Partnership</h4>
-                <p>Monthly check-ins, continuous improvements, instant support. We grow with your business.</p>
-                <span class="step-duration">Forever</span>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Testimonial -->
-<section class="testimonial-highlight-section">
-    <div class="container">
-        <div class="testimonial-highlight">
-            <div class="testimonial-quote-mark">"</div>
-            <blockquote>
-                Syntra didn't just automate our workflows — they transformed how we work.
-                What used to take our team 3 hours every day now happens automatically.
-                The best part? We didn't have to learn any new software.
-            </blockquote>
-            <div class="testimonial-author">
-                <div class="author-avatar">MK</div>
-                <div class="author-info">
-                    <strong>Michael Krause</strong>
-                    <span>Operations Director, Enterprise Client</span>
+        <div class="kian-diagram reveal">
+            <div class="diagram-step">
+                <div class="diagram-box">
+                    <h4>Input</h4>
+                    <p>Chat, E-Mail, Webhook, API</p>
                 </div>
             </div>
-            <div class="testimonial-rating">
-                ★★★★★
+            <div class="diagram-arrow">→</div>
+            <div class="diagram-step">
+                <div class="diagram-box highlight">
+                    <h4>Kian Engine</h4>
+                    <p>Knowledge · Context · Policy</p>
+                </div>
+            </div>
+            <div class="diagram-arrow">→</div>
+            <div class="diagram-step">
+                <div class="diagram-box">
+                    <h4>Action</h4>
+                    <p>Reply, Create, Update, Notify</p>
+                </div>
+            </div>
+            <div class="diagram-arrow">→</div>
+            <div class="diagram-step">
+                <div class="diagram-box">
+                    <h4>Logging</h4>
+                    <p>Analytics · Audit · Feedback</p>
+                </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- CTA Section -->
-<section class="final-cta-section">
-    <div class="container">
-        <div class="final-cta-content">
-            <span class="cta-badge">Ready to start?</span>
-            <h2 class="final-cta-title">Curious what we could automate for you?</h2>
-            <p class="final-cta-subtitle">
-                Let's have a conversation. We'll identify your biggest time-wasters and show you what's possible — no
-                strings attached.
-            </p>
-            <div class="cta-buttons">
-                <a href="{{ url_for('pricing') }}#contact" class="btn-cta-primary">
-                    Book a Free Consultation
+<!-- ============================================================================
+     CTA
+     ============================================================================ -->
+<section class="section cta-section">
+    <div class="container container-narrow text-center">
+        <div class="reveal">
+            <h2>Überzeugt?</h2>
+            <p class="text-lg mb-8">Lass uns über deine Use Cases sprechen.</p>
+
+            <div class="hero-ctas justify-center">
+                <a href="{{ url_for('pricing') }}#contact" class="btn btn-primary btn-lg">
+                    Kontakt aufnehmen
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M5 12h14M12 5l7 7-7 7" />
                     </svg>
                 </a>
-                <a href="{{ url_for('pricing') }}" class="btn-cta-secondary">
-                    View Pricing
+                <a href="{{ url_for('solutions') }}" class="btn btn-secondary btn-lg">
+                    Use Cases ansehen
                 </a>
             </div>
-            <p class="cta-note">✓ Free 30-min consultation · ✓ No commitment required</p>
         </div>
     </div>
 </section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ==========================================================================
+   FEATURES PAGE STYLES
+   ========================================================================== */
+
+    .page-hero {
+        padding: 160px 0 80px;
+        position: relative;
+    }
+
+    .page-hero-content {
+        max-width: 700px;
+    }
+
+    .page-hero-content h1 {
+        margin: var(--space-4) 0;
+    }
+
+    .hero-subtitle {
+        font-size: var(--font-size-xl);
+        color: var(--color-text-secondary);
+    }
+
+    /* Feature Modules */
+    .feature-module {
+        padding: var(--space-16) 0;
+        border-bottom: 1px solid var(--color-border-subtle);
+    }
+
+    .feature-module:last-child {
+        border-bottom: none;
+    }
+
+    .feature-module-header {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--space-4);
+    }
+
+    .module-icon {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--color-bg-hover);
+        border-radius: var(--radius-md);
+        flex-shrink: 0;
+    }
+
+    .feature-module-header h2 {
+        margin-bottom: var(--space-1);
+    }
+
+    .feature-module-header p {
+        font-size: var(--font-size-lg);
+    }
+
+    /* Integrations Grid */
+    .integrations-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: var(--space-3);
+    }
+
+    .integration-item {
+        padding: var(--space-4);
+        background: var(--color-bg-card);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        text-align: center;
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-medium);
+        transition: all var(--transition-fast);
+    }
+
+    .integration-item:hover {
+        border-color: var(--color-gray-600);
+        background: var(--color-bg-hover);
+    }
+
+    /* Kian Diagram */
+    .kian-diagram {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-4);
+        flex-wrap: wrap;
+        margin-top: var(--space-8);
+    }
+
+    .diagram-step {
+        flex: 1;
+        min-width: 150px;
+        max-width: 200px;
+    }
+
+    .diagram-box {
+        padding: var(--space-6);
+        background: var(--color-bg-card);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        text-align: center;
+    }
+
+    .diagram-box.highlight {
+        background: var(--color-gray-900);
+        border-color: var(--color-gray-700);
+    }
+
+    .diagram-box h4 {
+        margin-bottom: var(--space-2);
+        font-size: var(--font-size-base);
+    }
+
+    .diagram-box p {
+        font-size: var(--font-size-xs);
+        line-height: var(--line-height-snug);
+    }
+
+    .diagram-arrow {
+        font-size: var(--font-size-2xl);
+        color: var(--color-text-muted);
+    }
+
+    @media (max-width: 768px) {
+        .kian-diagram {
+            flex-direction: column;
+        }
+
+        .diagram-arrow {
+            transform: rotate(90deg);
+        }
+
+        .diagram-step {
+            max-width: 100%;
+        }
+    }
+
+    /* CTA */
+    .cta-section {
+        background: linear-gradient(to bottom, transparent, var(--color-gray-950));
+    }
+
+    .justify-center {
+        justify-content: center;
+    }
+</style>
 {% endblock %}

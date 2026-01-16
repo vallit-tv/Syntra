@@ -1,0 +1,384 @@
+{% extends "base.html" %}
+
+{% block title %}Solutions – Vallit{% endblock %}
+
+{% block body_class %}page-solutions{% endblock %}
+
+{% block content %}
+<!-- ============================================================================
+     HERO SECTION
+     ============================================================================ -->
+<section class="page-hero">
+    <div class="hero-bg">
+        <div class="hero-gradient hero-gradient-1"></div>
+    </div>
+
+    <div class="container">
+        <div class="page-hero-content">
+            <span class="badge badge-light">Solutions</span>
+            <h1>Für jede Herausforderung<br>die passende Lösung</h1>
+            <p class="hero-subtitle">
+                Sales, Support, Operations, HR – wo auch immer Zeit verloren geht, kann Kian helfen.
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================================
+     USE CASES
+     ============================================================================ -->
+<section class="section">
+    <div class="container">
+
+        <!-- Sales Ops -->
+        <div class="usecase-module reveal" id="sales">
+            <div class="usecase-header">
+                <span class="usecase-icon">💼</span>
+                <h2>Sales Ops</h2>
+            </div>
+
+            <div class="usecase-grid">
+                <div class="usecase-problem">
+                    <h4>Das Problem</h4>
+                    <p>Leads kommen rein, aber die Qualifizierung dauert. Sales-Team verbringt Stunden mit E-Mails, die
+                        automatisiert sein könnten. Response-Zeit leidet.</p>
+                </div>
+
+                <div class="usecase-solution">
+                    <h4>Die Lösung</h4>
+                    <p>Kian qualifiziert eingehende Leads automatisch basierend auf deinen Kriterien. Erste Antwort
+                        innerhalb von Minuten. Nur heiße Leads landen bei deinem Team.</p>
+                </div>
+
+                <div class="usecase-result">
+                    <h4>Das Ergebnis</h4>
+                    <ul>
+                        <li>60% schnellere Response-Zeit</li>
+                        <li>Lead-Qualifizierung in Sekunden</li>
+                        <li>Mehr Zeit für echte Gespräche</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="usecase-integrations">
+                <span class="integration-label">Typische Integrationen:</span>
+                <span class="integration-tag">HubSpot</span>
+                <span class="integration-tag">Salesforce</span>
+                <span class="integration-tag">Pipedrive</span>
+                <span class="integration-tag">Gmail</span>
+            </div>
+        </div>
+
+        <!-- Customer Support -->
+        <div class="usecase-module reveal" id="support">
+            <div class="usecase-header">
+                <span class="usecase-icon">💬</span>
+                <h2>Customer Support</h2>
+            </div>
+
+            <div class="usecase-grid">
+                <div class="usecase-problem">
+                    <h4>Das Problem</h4>
+                    <p>Support-Team ist überlastet. Viele Anfragen sind Standardfragen. Lange Wartezeiten frustrieren
+                        Kunden.</p>
+                </div>
+
+                <div class="usecase-solution">
+                    <h4>Die Lösung</h4>
+                    <p>Kian beantwortet Level-1-Anfragen sofort und korrekt. Kennt deine Knowledge Base, Produkte, FAQs.
+                        Eskaliert komplexe Fälle automatisch.</p>
+                </div>
+
+                <div class="usecase-result">
+                    <h4>Das Ergebnis</h4>
+                    <ul>
+                        <li>70% der Tickets automatisiert</li>
+                        <li>Instant Response, 24/7</li>
+                        <li>Support-Team für komplexe Fälle</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="usecase-integrations">
+                <span class="integration-label">Typische Integrationen:</span>
+                <span class="integration-tag">Zendesk</span>
+                <span class="integration-tag">Intercom</span>
+                <span class="integration-tag">Freshdesk</span>
+                <span class="integration-tag">Notion</span>
+            </div>
+        </div>
+
+        <!-- Operations -->
+        <div class="usecase-module reveal" id="operations">
+            <div class="usecase-header">
+                <span class="usecase-icon">⚙️</span>
+                <h2>Operations</h2>
+            </div>
+
+            <div class="usecase-grid">
+                <div class="usecase-problem">
+                    <h4>Das Problem</h4>
+                    <p>Tools sind fragmentiert. Informationen liegen in 10 verschiedenen Systemen. Jemand muss sie
+                        manuell verbinden.</p>
+                </div>
+
+                <div class="usecase-solution">
+                    <h4>Die Lösung</h4>
+                    <p>Kian verbindet deine Tools und automatisiert den Datenfluss. Neue Aufgaben werden automatisch
+                        erstellt, Updates synchronisiert, Reports generiert.</p>
+                </div>
+
+                <div class="usecase-result">
+                    <h4>Das Ergebnis</h4>
+                    <ul>
+                        <li>10+ Stunden pro Woche gespart</li>
+                        <li>Keine manuellen Datenübertragungen</li>
+                        <li>Single Source of Truth</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="usecase-integrations">
+                <span class="integration-label">Typische Integrationen:</span>
+                <span class="integration-tag">Slack</span>
+                <span class="integration-tag">Asana</span>
+                <span class="integration-tag">Jira</span>
+                <span class="integration-tag">Google Sheets</span>
+            </div>
+        </div>
+
+        <!-- Finance/Admin -->
+        <div class="usecase-module reveal" id="finance">
+            <div class="usecase-header">
+                <span class="usecase-icon">📊</span>
+                <h2>Finance & Admin</h2>
+            </div>
+
+            <div class="usecase-grid">
+                <div class="usecase-problem">
+                    <h4>Das Problem</h4>
+                    <p>Rechnungen tracken, Deadlines überwachen, Reports erstellen – zeitintensive Routine, die vom
+                        Kerngeschäft ablenkt.</p>
+                </div>
+
+                <div class="usecase-solution">
+                    <h4>Die Lösung</h4>
+                    <p>Kian überwacht Zahlungseingänge, erinnert an offene Rechnungen, erstellt automatische
+                        Auswertungen. Du behältst den Überblick ohne Aufwand.</p>
+                </div>
+
+                <div class="usecase-result">
+                    <h4>Das Ergebnis</h4>
+                    <ul>
+                        <li>Keine vergessenen Deadlines</li>
+                        <li>Automatische Mahnungen</li>
+                        <li>Reports auf Knopfdruck</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="usecase-integrations">
+                <span class="integration-label">Typische Integrationen:</span>
+                <span class="integration-tag">DATEV</span>
+                <span class="integration-tag">Stripe</span>
+                <span class="integration-tag">Excel</span>
+                <span class="integration-tag">Google Sheets</span>
+            </div>
+        </div>
+
+        <!-- HR/Onboarding -->
+        <div class="usecase-module reveal" id="hr">
+            <div class="usecase-header">
+                <span class="usecase-icon">👥</span>
+                <h2>HR & Onboarding</h2>
+            </div>
+
+            <div class="usecase-grid">
+                <div class="usecase-problem">
+                    <h4>Das Problem</h4>
+                    <p>Neue Mitarbeiter brauchen Zugang zu Tools, Infos, Ansprechpartnern. HR verbringt viel Zeit mit
+                        repetitiven Aufgaben.</p>
+                </div>
+
+                <div class="usecase-solution">
+                    <h4>Die Lösung</h4>
+                    <p>Kian führt neue Mitarbeiter durch den Onboarding-Prozess. Beantwortet Fragen, stellt Ressourcen
+                        bereit, koordiniert Termine mit Teams.</p>
+                </div>
+
+                <div class="usecase-result">
+                    <h4>Das Ergebnis</h4>
+                    <ul>
+                        <li>Konsistentes Onboarding-Erlebnis</li>
+                        <li>HR-Team entlastet</li>
+                        <li>Schnellere Einarbeitung</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="usecase-integrations">
+                <span class="integration-label">Typische Integrationen:</span>
+                <span class="integration-tag">Personio</span>
+                <span class="integration-tag">Notion</span>
+                <span class="integration-tag">Slack</span>
+                <span class="integration-tag">Google Calendar</span>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- ============================================================================
+     CTA
+     ============================================================================ -->
+<section class="section cta-section">
+    <div class="container container-narrow text-center">
+        <div class="reveal">
+            <h2>Dein Use Case dabei?</h2>
+            <p class="text-lg mb-8">Wenn nicht: Lass uns sprechen. Wir finden eine Lösung.</p>
+
+            <div class="hero-ctas justify-center">
+                <a href="{{ url_for('pricing') }}#contact" class="btn btn-primary btn-lg">
+                    Kontakt aufnehmen
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                </a>
+                <a href="{{ url_for('pricing') }}" class="btn btn-secondary btn-lg">
+                    Pricing ansehen
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ==========================================================================
+   SOLUTIONS PAGE STYLES
+   ========================================================================== */
+
+    .page-hero {
+        padding: 160px 0 80px;
+        position: relative;
+    }
+
+    .page-hero-content {
+        max-width: 700px;
+    }
+
+    .page-hero-content h1 {
+        margin: var(--space-4) 0;
+    }
+
+    .hero-subtitle {
+        font-size: var(--font-size-xl);
+        color: var(--color-text-secondary);
+    }
+
+    /* Use Case Modules */
+    .usecase-module {
+        padding: var(--space-12) 0;
+        border-bottom: 1px solid var(--color-border-subtle);
+    }
+
+    .usecase-module:last-child {
+        border-bottom: none;
+    }
+
+    .usecase-header {
+        display: flex;
+        align-items: center;
+        gap: var(--space-4);
+        margin-bottom: var(--space-8);
+    }
+
+    .usecase-icon {
+        font-size: var(--font-size-3xl);
+    }
+
+    .usecase-header h2 {
+        margin: 0;
+    }
+
+    /* Use Case Grid */
+    .usecase-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--space-6);
+    }
+
+    .usecase-problem,
+    .usecase-solution,
+    .usecase-result {
+        padding: var(--space-6);
+        background: var(--color-bg-card);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+    }
+
+    .usecase-problem h4,
+    .usecase-solution h4,
+    .usecase-result h4 {
+        margin-bottom: var(--space-3);
+        font-size: var(--font-size-sm);
+        text-transform: uppercase;
+        letter-spacing: var(--letter-spacing-wide);
+        color: var(--color-text-muted);
+    }
+
+    .usecase-result ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .usecase-result li {
+        padding: var(--space-2) 0;
+        color: var(--color-text-secondary);
+        font-size: var(--font-size-sm);
+    }
+
+    .usecase-result li::before {
+        content: "✓ ";
+        color: var(--color-text);
+    }
+
+    @media (max-width: 1024px) {
+        .usecase-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Integrations */
+    .usecase-integrations {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        margin-top: var(--space-6);
+        flex-wrap: wrap;
+    }
+
+    .integration-label {
+        font-size: var(--font-size-sm);
+        color: var(--color-text-muted);
+    }
+
+    .integration-tag {
+        padding: var(--space-1) var(--space-3);
+        background: var(--color-bg-hover);
+        border-radius: var(--radius-sm);
+        font-size: var(--font-size-xs);
+        color: var(--color-text-secondary);
+    }
+
+    /* CTA */
+    .cta-section {
+        background: linear-gradient(to bottom, transparent, var(--color-gray-950));
+    }
+
+    .justify-center {
+        justify-content: center;
+    }
+</style>
+{% endblock %}

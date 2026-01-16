@@ -399,6 +399,10 @@ def index():
 def features():
     return render_template('features.html')
 
+@app.route('/solutions')
+def solutions():
+    return render_template('solutions.html')
+
 @app.route('/features/automation')
 def feature_automation():
     return render_template('features/automation.html')

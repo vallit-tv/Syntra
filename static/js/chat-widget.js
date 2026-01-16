@@ -692,8 +692,9 @@
 
                     parts.slice(1).forEach((part, index) => {
                         // Calculate a natural reading/typing pause
-                        const typingDelay = 600 + Math.min(part.length * 15, 2000);
-                        const pause = 400; // Pause before starting to type next message
+                        // Increased delay to avoid "spamming" feel
+                        const typingDelay = 800 + Math.min(part.length * 30, 3000);
+                        const pause = 800; // Pause before starting to type next message
 
                         cumulativeDelay += pause;
 

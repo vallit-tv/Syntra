@@ -2,482 +2,186 @@
 
 {% block title %}Datenschutz – Vallit{% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}?v=7">
-{% endblock %}
-
-{% block body_class %}landing-page{% endblock %}
+{% block body_class %}page-legal{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<section class="page-hero legal-hero" id="main-content">
-    <div class="hero-orbs">
-        <div class="hero-orb hero-orb-1"></div>
-        <div class="hero-orb hero-orb-2"></div>
-    </div>
-    <div class="container">
-        <div class="page-hero-content">
-            <span class="section-badge">🔒 Ihre Daten sind sicher</span>
-            <h1 class="page-hero-title">
-                Datenschutz<span class="gradient-text-cyan">erklärung</span>
-            </h1>
-            <p class="page-hero-subtitle">Informationen zur Verarbeitung Ihrer personenbezogenen Daten</p>
-        </div>
-    </div>
-</section>
+<section class="legal-section">
+    <div class="container container-narrow">
+        <h1>Datenschutzerklärung</h1>
 
-<!-- Quick Navigation -->
-<section class="legal-nav-section">
-    <div class="container">
-        <div class="legal-nav-grid">
-            <a href="#verantwortlicher" class="legal-nav-item">
-                <span class="legal-nav-icon">👤</span>
-                <span>Verantwortlicher</span>
-            </a>
-            <a href="#ki-chatbot" class="legal-nav-item">
-                <span class="legal-nav-icon">🤖</span>
-                <span>KI-Chatbot</span>
-            </a>
-            <a href="#cookies" class="legal-nav-item">
-                <span class="legal-nav-icon">🍪</span>
-                <span>Cookies</span>
-            </a>
-            <a href="#rechte" class="legal-nav-item">
-                <span class="legal-nav-icon">⚖️</span>
-                <span>Ihre Rechte</span>
-            </a>
-            <a href="#kontakt" class="legal-nav-item">
-                <span class="legal-nav-icon">📧</span>
-                <span>Kontakt</span>
-            </a>
-        </div>
-    </div>
-</section>
+        <!-- ZU ERSETZEN: Bitte mit vollständiger, rechtlich geprüfter Datenschutzerklärung ersetzen -->
 
-<!-- Legal Content -->
-<section class="legal-content-section">
-    <div class="container">
         <div class="legal-content">
-            <div class="legal-section" id="verantwortlicher">
-                <h2>1. Verantwortlicher</h2>
-                <div class="legal-info-card">
-                    <p>
-                        <strong>Vallit Network</strong><br>
-                        Parkstraße 1<br>
-                        76131 Karlsruhe<br>
-                        Deutschland<br><br>
-                        <strong>E-Mail:</strong> info@vallit.net
-                    </p>
-                </div>
-            </div>
+            <h2>1. Datenschutz auf einen Blick</h2>
 
-            <div class="legal-section">
-                <h2>2. Übersicht der Verarbeitungen</h2>
-                <p>
-                    Die nachfolgende Übersicht fasst die Arten der verarbeiteten Daten und die Zwecke
-                    ihrer Verarbeitung zusammen.
-                </p>
-                <h3>Arten der verarbeiteten Daten</h3>
-                <ul class="legal-list">
-                    <li><span class="legal-bullet">•</span> Bestandsdaten (z.B. Namen, Adressen)</li>
-                    <li><span class="legal-bullet">•</span> Kontaktdaten (z.B. E-Mail, Telefonnummern)</li>
-                    <li><span class="legal-bullet">•</span> Inhaltsdaten (z.B. Eingaben in Formularen)</li>
-                    <li><span class="legal-bullet">•</span> Nutzungsdaten (z.B. besuchte Webseiten, Zugriffszeiten)</li>
-                    <li><span class="legal-bullet">•</span> Meta-/Kommunikationsdaten (z.B. IP-Adressen)</li>
-                </ul>
-                <h3>Zwecke der Verarbeitung</h3>
-                <ul class="legal-list">
-                    <li><span class="legal-bullet">•</span> Erbringung unserer Leistungen und Kundenservice</li>
-                    <li><span class="legal-bullet">•</span> Kontaktanfragen und Kommunikation</li>
-                    <li><span class="legal-bullet">•</span> Sicherheitsmaßnahmen</li>
-                    <li><span class="legal-bullet">•</span> Reichweitenmessung</li>
-                    <li><span class="legal-bullet">•</span> Verwaltung und Beantwortung von Anfragen</li>
-                </ul>
-            </div>
+            <h3>Allgemeine Hinweise</h3>
+            <p>
+                Die folgenden Hinweise geben einen einfachen Überblick darüber, was mit Ihren personenbezogenen Daten
+                passiert, wenn Sie diese Website besuchen. Personenbezogene Daten sind alle Daten, mit denen Sie
+                persönlich identifiziert werden können.
+            </p>
 
-            <div class="legal-section">
-                <h2>3. Rechtsgrundlagen</h2>
-                <p>
-                    Im Folgenden erhalten Sie eine Übersicht der Rechtsgrundlagen der DSGVO, auf deren
-                    Basis wir personenbezogene Daten verarbeiten:
-                </p>
-                <div class="legal-cards-grid">
-                    <div class="legal-card">
-                        <h4>Einwilligung</h4>
-                        <p>Art. 6 Abs. 1 S. 1 lit. a. DSGVO – Die betroffene Person hat ihre Einwilligung in die
-                            Verarbeitung gegeben.</p>
-                    </div>
-                    <div class="legal-card">
-                        <h4>Vertragserfüllung</h4>
-                        <p>Art. 6 Abs. 1 S. 1 lit. b. DSGVO – Die Verarbeitung ist für die Erfüllung eines Vertrags
-                            erforderlich.</p>
-                    </div>
-                    <div class="legal-card">
-                        <h4>Berechtigte Interessen</h4>
-                        <p>Art. 6 Abs. 1 S. 1 lit. f. DSGVO – Die Verarbeitung ist zur Wahrung unserer berechtigten
-                            Interessen erforderlich.</p>
-                    </div>
-                </div>
-            </div>
+            <h3>Datenerfassung auf dieser Website</h3>
+            <p>
+                <strong>Wer ist verantwortlich für die Datenerfassung auf dieser Website?</strong><br>
+                Die Datenverarbeitung auf dieser Website erfolgt durch den Websitebetreiber. Dessen Kontaktdaten können
+                Sie dem Impressum dieser Website entnehmen.
+            </p>
+            <p>
+                <strong>Wie erfassen wir Ihre Daten?</strong><br>
+                Ihre Daten werden zum einen dadurch erhoben, dass Sie uns diese mitteilen. Hierbei kann es sich z.B. um
+                Daten handeln, die Sie in ein Kontaktformular eingeben.
+            </p>
+            <p>
+                Andere Daten werden automatisch beim Besuch der Website durch unsere IT-Systeme erfasst. Das sind vor
+                allem technische Daten (z.B. Internetbrowser, Betriebssystem oder Uhrzeit des Seitenaufrufs).
+            </p>
 
-            <div class="legal-section">
-                <h2>4. Sicherheitsmaßnahmen</h2>
-                <p>
-                    Wir treffen technische und organisatorische Sicherheitsmaßnahmen entsprechend dem
-                    Stand der Technik, um ein dem Risiko angemessenes Schutzniveau zu gewährleisten.
-                </p>
-                <div class="security-measures-grid">
-                    <div class="security-measure">
-                        <span class="measure-icon">🔐</span>
-                        <span>Verschlüsselung der Datenübertragung (TLS/SSL)</span>
-                    </div>
-                    <div class="security-measure">
-                        <span class="measure-icon">💾</span>
-                        <span>Verschlüsselung der gespeicherten Daten (AES-256)</span>
-                    </div>
-                    <div class="security-measure">
-                        <span class="measure-icon">🔑</span>
-                        <span>Zugriffskontrolle und Authentifizierung</span>
-                    </div>
-                    <div class="security-measure">
-                        <span class="measure-icon">🔍</span>
-                        <span>Regelmäßige Sicherheitsüberprüfungen</span>
-                    </div>
-                    <div class="security-measure">
-                        <span class="measure-icon">👥</span>
-                        <span>Schulung unserer Mitarbeiter</span>
-                    </div>
-                </div>
-            </div>
+            <h2>2. Hosting</h2>
+            <p>
+                Wir hosten die Inhalte unserer Website bei Vercel Inc. Anbieter ist die Vercel Inc., 340 S Lemon Ave
+                #4133, Walnut, CA 91789, USA.
+            </p>
+            <p>
+                Die Verwendung von Vercel erfolgt auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO. Wir haben ein
+                berechtigtes Interesse an einer möglichst zuverlässigen Darstellung unserer Website.
+            </p>
 
-            <div class="legal-section">
-                <h2>5. Datenverarbeitung beim Besuch unserer Website</h2>
-                <p>
-                    Bei der Nutzung unserer Website werden automatisch Daten erhoben und in Server-Logfiles
-                    gespeichert:
-                </p>
-                <ul class="legal-list">
-                    <li><span class="legal-bullet">•</span> IP-Adresse (anonymisiert)</li>
-                    <li><span class="legal-bullet">•</span> Datum und Uhrzeit der Anfrage</li>
-                    <li><span class="legal-bullet">•</span> Inhalt der Anforderung (besuchte Seite)</li>
-                    <li><span class="legal-bullet">•</span> Zugriffsstatus/HTTP-Statuscode</li>
-                    <li><span class="legal-bullet">•</span> Übertragene Datenmenge</li>
-                    <li><span class="legal-bullet">•</span> Referrer-URL</li>
-                    <li><span class="legal-bullet">•</span> Browser und Betriebssystem</li>
-                </ul>
-                <p>
-                    Diese Daten sind nicht bestimmten Personen zuordenbar. Eine Zusammenführung mit anderen
-                    Datenquellen wird nicht vorgenommen.
-                </p>
-            </div>
+            <h2>3. Allgemeine Hinweise und Pflichtinformationen</h2>
 
-            <div class="legal-section">
-                <h2>6. Registrierung und Nutzerkonto</h2>
-                <p>
-                    Bei der Registrierung für unseren Dienst erheben wir folgende Daten:
-                </p>
-                <ul class="legal-list">
-                    <li><span class="legal-bullet">•</span> E-Mail-Adresse</li>
-                    <li><span class="legal-bullet">•</span> Name</li>
-                    <li><span class="legal-bullet">•</span> Unternehmenszugehörigkeit (optional)</li>
-                </ul>
-                <p>
-                    Diese Daten werden zur Bereitstellung unserer Dienste, zur Benutzerverifizierung und
-                    zur Kommunikation über unseren Service verwendet.
-                </p>
-            </div>
+            <h3>Datenschutz</h3>
+            <p>
+                Die Betreiber dieser Seiten nehmen den Schutz Ihrer persönlichen Daten sehr ernst. Wir behandeln Ihre
+                personenbezogenen Daten vertraulich und entsprechend der gesetzlichen Datenschutzvorschriften sowie
+                dieser Datenschutzerklärung.
+            </p>
 
-            <div class="legal-section" id="ki-chatbot">
-                <h2>6a. KI-Chatbot (Kian)</h2>
-                <p>
-                    Auf unserer Website und auf Websites unserer Kunden setzen wir einen KI-gestützten Chatbot
-                    namens "Kian" ein, der von Vallit Network entwickelt wurde. Bei der Nutzung des Chatbots
-                    werden folgende Daten verarbeitet:
-                </p>
-                <h3>Erhobene Daten</h3>
-                <ul class="legal-list">
-                    <li><span class="legal-bullet">•</span> Ihre Chat-Nachrichten und Eingaben</li>
-                    <li><span class="legal-bullet">•</span> Session-ID zur Zuordnung der Konversation</li>
-                    <li><span class="legal-bullet">•</span> Zeitstempel der Nachrichten</li>
-                    <li><span class="legal-bullet">•</span> Technische Metadaten (Browser, Gerätetyp)</li>
-                </ul>
-                <h3>Zweck der Verarbeitung</h3>
-                <ul class="legal-list">
-                    <li><span class="legal-bullet">•</span> Beantwortung Ihrer Anfragen mittels KI-Unterstützung</li>
-                    <li><span class="legal-bullet">•</span> Verbesserung der Servicequalität</li>
-                    <li><span class="legal-bullet">•</span> Terminvereinbarungen und Kontaktaufnahme</li>
-                </ul>
-                <h3>Datenverarbeitung durch Dritte</h3>
-                <p>
-                    Zur Verarbeitung Ihrer Anfragen nutzen wir die API von OpenAI. Ihre Chat-Nachrichten
-                    werden an OpenAI übermittelt, um KI-gestützte Antworten zu generieren. OpenAI verarbeitet
-                    diese Daten gemäß ihrer Datenschutzrichtlinie. Es gelten die Standard-Vertragsklauseln
-                    für die Datenübermittlung in Drittländer.
-                </p>
-                <h3>Speicherdauer</h3>
-                <p>
-                    Chat-Verläufe werden für maximal 90 Tage gespeichert und anschließend automatisch gelöscht,
-                    sofern keine längere Aufbewahrung aufgrund gesetzlicher Verpflichtungen erforderlich ist.
-                </p>
-                <h3>Rechtsgrundlage</h3>
-                <p>
-                    Die Verarbeitung erfolgt auf Grundlage Ihrer Einwilligung (Art. 6 Abs. 1 lit. a DSGVO)
-                    durch die Nutzung des Chatbots sowie zur Durchführung vorvertraglicher Maßnahmen
-                    (Art. 6 Abs. 1 lit. b DSGVO).
-                </p>
-            </div>
+            <h3>Hinweis zur verantwortlichen Stelle</h3>
+            <p>
+                Die verantwortliche Stelle für die Datenverarbeitung auf dieser Website ist:
+            </p>
+            <p>
+                <!-- ZU ERSETZEN -->
+                Vallit Network<br>
+                [Straße und Hausnummer]<br>
+                [PLZ Ort]<br>
+                E-Mail: <a href="mailto:hello@vallit.network">hello@vallit.network</a>
+            </p>
 
-            <div class="legal-section cookie-section" id="cookies">
-                <h2>7. Cookies und Einwilligungsmanagement</h2>
-                <p>
-                    Wir setzen Cookies ein. Bei Cookies handelt es sich um kleine Textdateien, die auf
-                    Ihrem Endgerät gespeichert werden und die Ihr Browser speichert.
-                </p>
+            <h3>Widerruf Ihrer Einwilligung zur Datenverarbeitung</h3>
+            <p>
+                Viele Datenverarbeitungsvorgänge sind nur mit Ihrer ausdrücklichen Einwilligung möglich. Sie können eine
+                bereits erteilte Einwilligung jederzeit widerrufen. Dazu reicht eine formlose Mitteilung per E-Mail an
+                uns.
+            </p>
 
-                <div class="cookie-consent-info">
-                    <div class="cookie-consent-header">
-                        <span class="cookie-icon">🍪</span>
-                        <h3>Unser Cookie-Einwilligungssystem</h3>
-                    </div>
-                    <p>
-                        Beim ersten Besuch unserer Website erscheint ein Cookie-Banner, über das Sie Ihre
-                        Einwilligungen verwalten können. Ihre Entscheidung wird für 365 Tage gespeichert.
-                        Sie können Ihre Einstellungen jederzeit über den Link „Cookie-Einstellungen" im
-                        Footer unserer Website ändern.
-                    </p>
-                </div>
+            <h3>Beschwerderecht bei der zuständigen Aufsichtsbehörde</h3>
+            <p>
+                Im Falle von Verstößen gegen die DSGVO steht den Betroffenen ein Beschwerderecht bei einer
+                Aufsichtsbehörde zu.
+            </p>
 
-                <h3>Kategorien von Cookies</h3>
-                <div class="cookie-categories">
-                    <div class="cookie-category essential">
-                        <div class="cookie-category-header">
-                            <span class="cookie-category-icon">✓</span>
-                            <h4>Notwendige Cookies</h4>
-                            <span class="cookie-status always-on">Immer aktiv</span>
-                        </div>
-                        <p>Diese Cookies sind für die grundlegenden Funktionen der Website erforderlich und können nicht
-                            deaktiviert werden.</p>
-                        <div class="cookie-details">
-                            <table class="cookie-table">
-                                <thead>
-                                    <tr>
-                                        <th>Cookie-Name</th>
-                                        <th>Zweck</th>
-                                        <th>Speicherdauer</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td><code>vallit_consent</code></td>
-                                        <td>Speichert Ihre Cookie-Einwilligungen</td>
-                                        <td>365 Tage</td>
-                                    </tr>
-                                    <tr>
-                                        <td><code>session</code></td>
-                                        <td>Session-Management und Authentifizierung</td>
-                                        <td>Session</td>
-                                    </tr>
-                                    <tr>
-                                        <td><code>csrf_token</code></td>
-                                        <td>Schutz vor Cross-Site-Request-Forgery</td>
-                                        <td>Session</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+            <h3>Recht auf Datenübertragbarkeit</h3>
+            <p>
+                Sie haben das Recht, Daten, die wir auf Grundlage Ihrer Einwilligung oder in Erfüllung eines Vertrags
+                automatisiert verarbeiten, an sich oder an einen Dritten in einem gängigen, maschinenlesbaren Format
+                aushändigen zu lassen.
+            </p>
 
-                    <div class="cookie-category analytics">
-                        <div class="cookie-category-header">
-                            <span class="cookie-category-icon">📊</span>
-                            <h4>Analyse-Cookies</h4>
-                            <span class="cookie-status optional">Optional</span>
-                        </div>
-                        <p>Diese Cookies helfen uns, die Nutzung unserer Website zu verstehen und zu verbessern. Die
-                            Daten werden anonymisiert erhoben.</p>
-                        <div class="cookie-details">
-                            <table class="cookie-table">
-                                <thead>
-                                    <tr>
-                                        <th>Cookie-Name</th>
-                                        <th>Zweck</th>
-                                        <th>Speicherdauer</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td><code>_analytics_id</code></td>
-                                        <td>Anonyme Besucheridentifikation</td>
-                                        <td>30 Tage</td>
-                                    </tr>
-                                    <tr>
-                                        <td><code>_analytics_session</code></td>
-                                        <td>Sitzungsverfolgung für Nutzungsstatistiken</td>
-                                        <td>Session</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <p class="cookie-note">
-                            <strong>Hinweis:</strong> Diese Cookies werden nur gesetzt, wenn Sie im Cookie-Banner auf
-                            „Alle akzeptieren" klicken oder die Analyse-Cookies explizit aktivieren.
-                        </p>
-                    </div>
+            <h3>Auskunft, Löschung und Berichtigung</h3>
+            <p>
+                Sie haben im Rahmen der geltenden gesetzlichen Bestimmungen jederzeit das Recht auf unentgeltliche
+                Auskunft über Ihre gespeicherten personenbezogenen Daten, deren Herkunft und Empfänger und den Zweck der
+                Datenverarbeitung und ggf. ein Recht auf Berichtigung oder Löschung dieser Daten.
+            </p>
 
-                    <div class="cookie-category marketing">
-                        <div class="cookie-category-header">
-                            <span class="cookie-category-icon">📣</span>
-                            <h4>Marketing-Cookies</h4>
-                            <span class="cookie-status optional">Optional</span>
-                        </div>
-                        <p>Diese Cookies werden verwendet, um Ihnen relevante Werbung anzuzeigen und die Wirksamkeit
-                            unserer Marketingkampagnen zu messen.</p>
-                        <p class="cookie-note">
-                            <strong>Aktueller Status:</strong> Wir verwenden derzeit keine Marketing-Cookies auf unserer
-                            Website.
-                        </p>
-                    </div>
-                </div>
+            <h2>4. Datenerfassung auf dieser Website</h2>
 
-                <h3>Ihre Cookie-Einstellungen verwalten</h3>
-                <div class="cookie-manage-info">
-                    <p>Sie haben verschiedene Möglichkeiten, Ihre Cookie-Präferenzen zu verwalten:</p>
-                    <ul class="legal-list">
-                        <li><span class="legal-bullet">1.</span> <strong>Cookie-Banner:</strong> Beim ersten Besuch
-                            können Sie Ihre Präferenzen festlegen</li>
-                        <li><span class="legal-bullet">2.</span> <strong>Footer-Link:</strong> Klicken Sie auf
-                            „Cookie-Einstellungen" im Footer, um Ihre Einstellungen jederzeit anzupassen</li>
-                        <li><span class="legal-bullet">3.</span> <strong>Browser-Einstellungen:</strong> Sie können
-                            Cookies in Ihren Browser-Einstellungen blockieren oder löschen</li>
-                    </ul>
-                    <div class="cookie-manage-buttons">
-                        <button onclick="if(typeof showCookieSettings === 'function') showCookieSettings();"
-                            class="btn-cookie-settings">
-                            Cookie-Einstellungen öffnen
-                        </button>
-                    </div>
-                </div>
-            </div>
+            <h3>Cookies</h3>
+            <p>
+                Unsere Internetseiten verwenden so genannte „Cookies". Cookies sind kleine Textdateien und richten auf
+                Ihrem Endgerät keinen Schaden an. Sie werden entweder vorübergehend für die Dauer einer Sitzung
+                (Session-Cookies) oder dauerhaft (permanente Cookies) auf Ihrem Endgerät gespeichert.
+            </p>
 
-            <div class="legal-section" id="rechte">
-                <h2>8. Ihre Rechte</h2>
-                <p>Sie haben folgende Rechte in Bezug auf Ihre personenbezogenen Daten:</p>
-                <div class="rights-grid">
-                    <div class="right-card">
-                        <span class="right-icon">📋</span>
-                        <h4>Auskunftsrecht</h4>
-                        <p>Art. 15 DSGVO – Sie können Auskunft über Ihre verarbeiteten Daten verlangen.</p>
-                    </div>
-                    <div class="right-card">
-                        <span class="right-icon">✏️</span>
-                        <h4>Berichtigungsrecht</h4>
-                        <p>Art. 16 DSGVO – Sie können die Korrektur falscher Daten verlangen.</p>
-                    </div>
-                    <div class="right-card">
-                        <span class="right-icon">🗑️</span>
-                        <h4>Löschungsrecht</h4>
-                        <p>Art. 17 DSGVO – Sie können die Löschung Ihrer Daten verlangen.</p>
-                    </div>
-                    <div class="right-card">
-                        <span class="right-icon">⏸️</span>
-                        <h4>Einschränkung</h4>
-                        <p>Art. 18 DSGVO – Sie können die Einschränkung der Verarbeitung verlangen.</p>
-                    </div>
-                    <div class="right-card">
-                        <span class="right-icon">📤</span>
-                        <h4>Datenübertragbarkeit</h4>
-                        <p>Art. 20 DSGVO – Sie können Ihre Daten in einem gängigen Format erhalten.</p>
-                    </div>
-                    <div class="right-card">
-                        <span class="right-icon">✋</span>
-                        <h4>Widerspruchsrecht</h4>
-                        <p>Art. 21 DSGVO – Sie können der Verarbeitung widersprechen.</p>
-                    </div>
-                </div>
-            </div>
+            <h3>Kontaktformular</h3>
+            <p>
+                Wenn Sie uns per Kontaktformular Anfragen zukommen lassen, werden Ihre Angaben aus dem Anfrageformular
+                inklusive der von Ihnen dort angegebenen Kontaktdaten zwecks Bearbeitung der Anfrage und für den Fall
+                von Anschlussfragen bei uns gespeichert. Diese Daten geben wir nicht ohne Ihre Einwilligung weiter.
+            </p>
 
-            <div class="legal-section">
-                <h2>9. Drittanbieter und Auftragsverarbeiter</h2>
-                <p>Wir arbeiten mit folgenden Dienstleistern zusammen:</p>
-                <div class="providers-grid">
-                    <div class="provider-card">
-                        <span class="provider-icon">☁️</span>
-                        <h4>Hosting</h4>
-                        <p>Amazon Web Services (AWS), Frankfurt am Main (EU-Rechenzentrum)</p>
-                    </div>
-                    <div class="provider-card">
-                        <span class="provider-icon">💾</span>
-                        <h4>Datenbank</h4>
-                        <p>Supabase Inc. (mit Standard-Vertragsklauseln)</p>
-                    </div>
-                    <div class="provider-card">
-                        <span class="provider-icon">📧</span>
-                        <h4>E-Mail</h4>
-                        <p>Eigene Server innerhalb der EU</p>
-                    </div>
-                </div>
-                <p>
-                    Mit allen Auftragsverarbeitern haben wir entsprechende Verträge nach Art. 28 DSGVO
-                    abgeschlossen.
-                </p>
-            </div>
+            <h3>Anfrage per E-Mail</h3>
+            <p>
+                Wenn Sie uns per E-Mail kontaktieren, wird Ihre Anfrage inklusive aller daraus hervorgehenden
+                personenbezogenen Daten (Name, Anfrage) zum Zwecke der Bearbeitung Ihres Anliegens bei uns gespeichert
+                und verarbeitet.
+            </p>
 
-            <div class="legal-section">
-                <h2>10. Speicherdauer</h2>
-                <p>
-                    Wir speichern personenbezogene Daten nur so lange, wie es für die jeweiligen
-                    Verarbeitungszwecke erforderlich ist oder gesetzliche Aufbewahrungsfristen bestehen.
-                </p>
-                <div class="retention-grid">
-                    <div class="retention-item">
-                        <span class="retention-period">Bis Kündigung</span>
-                        <span class="retention-label">Nutzerkontodaten</span>
-                    </div>
-                    <div class="retention-item">
-                        <span class="retention-period">30 Tage</span>
-                        <span class="retention-label">Server-Logfiles</span>
-                    </div>
-                    <div class="retention-item">
-                        <span class="retention-period">6 Jahre</span>
-                        <span class="retention-label">Geschäftliche Korrespondenz (HGB)</span>
-                    </div>
-                    <div class="retention-item">
-                        <span class="retention-period">10 Jahre</span>
-                        <span class="retention-label">Rechnungsdaten (AO)</span>
-                    </div>
-                </div>
-            </div>
+            <h2>5. Analyse-Tools und Werbung</h2>
 
-            <div class="legal-section">
-                <h2>11. Änderungen dieser Datenschutzerklärung</h2>
-                <p>
-                    Wir behalten uns vor, diese Datenschutzerklärung anzupassen, um sie stets den
-                    aktuellen rechtlichen Anforderungen anzupassen oder um Änderungen unserer Leistungen
-                    umzusetzen. Die jeweils aktuelle Fassung finden Sie auf dieser Website.
-                </p>
-            </div>
-
-            <div class="legal-section" id="kontakt">
-                <h2>12. Kontakt für Datenschutzanfragen</h2>
-                <div class="contact-card">
-                    <p>
-                        Bei Fragen zum Datenschutz wenden Sie sich bitte an:<br><br>
-                        <strong>Vallit Network</strong><br>
-                        Datenschutzbeauftragter<br>
-                        Parkstraße 1<br>
-                        76131 Karlsruhe<br><br>
-                        <a href="mailto:info@vallit.net" class="contact-email">
-                            <span class="email-icon">📧</span>
-                            info@vallit.net
-                        </a>
-                    </p>
-                </div>
-            </div>
-
-            <p class="legal-update">
-                <em>Stand: Januar 2025</em>
+            <h3>Vercel Analytics</h3>
+            <p>
+                Diese Website nutzt Vercel Analytics, einen Webanalysedienst. Vercel Analytics verwendet keine Cookies
+                und erfasst keine personenbezogenen Daten. Es werden lediglich aggregierte, anonymisierte Daten zur
+                Websitenutzung erhoben.
             </p>
         </div>
+
+        <p class="legal-note">
+            Stand: Januar 2025<br>
+            <em>Diese Datenschutzerklärung ist ein Platzhalter und muss durch eine rechtlich geprüfte Version ersetzt
+                werden.</em>
+        </p>
     </div>
 </section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .legal-section {
+        padding: 160px 0 80px;
+    }
+
+    .legal-section h1 {
+        margin-bottom: var(--space-8);
+    }
+
+    .legal-content h2 {
+        font-size: var(--font-size-xl);
+        margin-top: var(--space-10);
+        margin-bottom: var(--space-4);
+    }
+
+    .legal-content h3 {
+        font-size: var(--font-size-base);
+        margin-top: var(--space-6);
+        margin-bottom: var(--space-2);
+    }
+
+    .legal-content h2:first-child {
+        margin-top: 0;
+    }
+
+    .legal-content p {
+        margin-bottom: var(--space-4);
+    }
+
+    .legal-content a {
+        color: var(--color-text);
+        text-decoration: underline;
+    }
+
+    .legal-note {
+        margin-top: var(--space-12);
+        padding-top: var(--space-6);
+        border-top: 1px solid var(--color-border-subtle);
+        font-size: var(--font-size-sm);
+        color: var(--color-text-muted);
+    }
+
+    .legal-note em {
+        color: #ef4444;
+    }
+</style>
 {% endblock %}
