@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="de" style="scroll-behavior: smooth;">
+<html lang="en" style="scroll-behavior: smooth;">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Vallit – AI Automation für moderne Unternehmen{% endblock %}</title>
+    <title>{% block title %}Vallit – Intelligent AI Automation{% endblock %}</title>
     <meta name="description"
-        content="{% block description %}Vallit liefert AI-Automation und Kian – dein intelligentes AI-System für Support, Scheduling und Workflows. Für Start-ups und Unternehmen.{% endblock %}">
-    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+        content="{% block description %}Vallit provides intelligent AI automation and Kian – your context-aware AI system for support, scheduling, and complex workflows.{% endblock %}">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/favicon.svg') }}">
 
     <!-- Google Fonts - Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,8 +31,10 @@
 </head>
 
 <body class="{% block body_class %}{% endblock %}">
+    <div class="scroll-progress" id="scroll-progress"></div>
+
     <!-- Skip to content (Accessibility) -->
-    <a href="#main-content" class="skip-link">Zum Hauptinhalt springen</a>
+    <a href="#main-content" class="skip-link">Skip to content</a>
 
     <!-- Navigation -->
     <header class="navbar" id="navbar">

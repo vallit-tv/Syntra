@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Über uns – Vallit{% endblock %}
+{% block title %}About – Vallit{% endblock %}
 
 {% block body_class %}page-about{% endblock %}
 
@@ -8,17 +8,13 @@
 <!-- ============================================================================
      HERO SECTION
      ============================================================================ -->
-<section class="page-hero">
-    <div class="hero-bg">
-        <div class="hero-gradient hero-gradient-1"></div>
-    </div>
-
+<section class="section page-hero">
     <div class="container">
-        <div class="page-hero-content">
-            <span class="badge badge-light">Über Vallit</span>
-            <h1>Wir automatisieren,<br>was automatisiert gehört.</h1>
-            <p class="hero-subtitle">
-                Kein Buzzword-Bingo. Keine leeren Versprechen. Nur AI-Automation, die funktioniert.
+        <div class="page-hero-content reveal">
+            <span class="badge mb-4">About Vallit</span>
+            <h1 class="display mb-6">We Automate<br> the Mundane.</h1>
+            <p class="lead text-secondary" style="max-width: 600px;">
+                No buzzwords. No empty promises. just AI automation systems that actually work.
             </p>
         </div>
     </div>
@@ -27,12 +23,12 @@
 <!-- ============================================================================
      MISSION
      ============================================================================ -->
-<section class="section-sm mission-section">
+<section class="section pt-0">
     <div class="container container-narrow">
         <blockquote class="mission-quote reveal">
             <span class="quote-mark">"</span>
-            <p>Technologie sollte für Menschen arbeiten, nicht umgekehrt. Jedes Unternehmen verdient Automation, die
-                tatsächlich funktioniert – ohne ein IT-Team zu brauchen, das sie versteht.</p>
+            <p>Technology should work for people, not the other way around. Every company deserves automation that
+                simply works—without needing an IT army to maintain it.</p>
         </blockquote>
     </div>
 </section>
@@ -42,31 +38,31 @@
      ============================================================================ -->
 <section class="section">
     <div class="container">
-        <div class="section-header">
-            <span class="badge">Warum Vallit</span>
-            <h2>Drei Prinzipien</h2>
+        <div class="mb-12">
+            <span class="badge mb-2">Philosophy</span>
+            <h2 class="display-sm">Three Principles</h2>
         </div>
 
         <div class="principles-grid">
-            <div class="principle-card reveal">
+            <div class="card card-glow principle-card reveal">
                 <span class="principle-number">01</span>
-                <h3>Pragmatisch</h3>
-                <p>Wir liefern Ergebnisse, keine PowerPoints. Messbare Outcomes, konkrete Zeitersparnis. Wenn es nicht
-                    funktioniert, arbeiten wir daran, bis es funktioniert.</p>
+                <h3 class="card-title">Pragmatic</h3>
+                <p class="text-secondary text-sm">We deliver results, not PowerPoint slides. Measurable outcomes and
+                    tangible time savings. If it doesn't work, we fix it until it does.</p>
             </div>
 
-            <div class="principle-card reveal delay-1">
+            <div class="card card-glow principle-card reveal delay-1">
                 <span class="principle-number">02</span>
-                <h3>Partnerschaftlich</h3>
-                <p>Wir verstehen dein Business, bevor wir automatisieren. Keine One-Size-Fits-All Lösungen. Jede
-                    Implementierung ist maßgeschneidert auf deine Prozesse.</p>
+                <h3 class="card-title">Partnership</h3>
+                <p class="text-secondary text-sm">We understand your business before we write a single line of code. No
+                    one-size-fits-all. Every implementation is tailored to your specific workflow.</p>
             </div>
 
-            <div class="principle-card reveal delay-2">
+            <div class="card card-glow principle-card reveal delay-2">
                 <span class="principle-number">03</span>
-                <h3>Zuverlässig</h3>
-                <p>Enterprise-grade Qualität. GDPR-konform. In Deutschland gehostet. Wir sind da, wenn etwas nicht
-                    funktioniert – nicht nach 48 Stunden, sondern sofort.</p>
+                <h3 class="card-title">Reliable</h3>
+                <p class="text-secondary text-sm">Enterprise-grade quality. GDPR-compliant. Hosted in Germany. We are
+                    there when you need us—not after 48 hours, but immediately.</p>
             </div>
         </div>
     </div>
@@ -75,25 +71,25 @@
 <!-- ============================================================================
      FOCUS
      ============================================================================ -->
-<section class="section-sm focus-section">
+<section class="section pt-0">
     <div class="container container-narrow">
         <div class="focus-content reveal">
-            <h3>Unser Fokus</h3>
-            <p>AI-Automation für B2B. Start-ups bis Enterprise. Wir arbeiten mit Teams, die manuelle Arbeit reduzieren
-                wollen – nicht mit Vision Decks, sondern mit laufenden Systemen.</p>
+            <h3 class="mb-4">Our Focus</h3>
+            <p class="text-secondary mb-8">AI Automation for B2B. From Startups to Enterprise. We work with teams who
+                want to reduce manual toil—building running systems, not vision decks.</p>
 
             <div class="focus-stats">
                 <div class="focus-stat">
                     <span class="stat-value">B2B</span>
-                    <span class="stat-label">Fokus</span>
+                    <span class="stat-label">Focus</span>
                 </div>
                 <div class="focus-stat">
-                    <span class="stat-value">AI-first</span>
-                    <span class="stat-label">Ansatz</span>
+                    <span class="stat-value">AI-First</span>
+                    <span class="stat-label">Approach</span>
                 </div>
                 <div class="focus-stat">
                     <span class="stat-value">🇩🇪</span>
-                    <span class="stat-label">Made in Germany</span>
+                    <span class="stat-label">Engineering</span>
                 </div>
             </div>
         </div>
@@ -103,13 +99,13 @@
 <!-- ============================================================================
      GERMAN QUALITY
      ============================================================================ -->
-<section class="section german-section">
+<section class="section">
     <div class="container container-narrow">
         <div class="german-banner reveal">
-            <div class="german-icon">🇩🇪</div>
-            <h3>German Quality. German Data Protection.</h3>
-            <p>Wir sind stolz auf unseren Standort in Deutschland. Das bedeutet: strengste Datenschutzgesetze der Welt,
-                EU-Server, volle Dokumentation für eure Compliance-Abteilung.</p>
+            <div class="text-4xl mb-4">🇪🇺</div>
+            <h3 class="mb-4">European Standards. Global Ambition.</h3>
+            <p class="text-secondary mb-6">Proudly engineering in Germany. That means: strictest data protection laws,
+                EU-based servers, and full documentation for your compliance department.</p>
 
             <div class="german-badges">
                 <span class="german-badge">🔒 GDPR Compliant</span>
@@ -123,23 +119,21 @@
 <!-- ============================================================================
      CTA
      ============================================================================ -->
-<section class="section cta-section">
-    <div class="container container-narrow text-center">
-        <div class="reveal">
-            <h2>Lass uns sprechen</h2>
-            <p class="text-lg mb-8">Kein Sales-Pitch, kein Druck. Nur ein Gespräch über das, was möglich ist.</p>
+<section class="section text-center">
+    <div class="container reveal">
+        <h2 class="display-sm mb-6">Let's Talk.</h2>
+        <p class="lead mb-8">No sales pitch, no pressure. Just a conversation about what's possible.</p>
 
-            <div class="hero-ctas justify-center">
-                <a href="{{ url_for('pricing') }}#contact" class="btn btn-primary btn-lg">
-                    Kontakt aufnehmen
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M5 12h14M12 5l7 7-7 7" />
-                    </svg>
-                </a>
-                <a href="{{ url_for('features') }}" class="btn btn-secondary btn-lg">
-                    Features erkunden
-                </a>
-            </div>
+        <div class="flex-center gap-4">
+            <a href="{{ url_for('pricing') }}#contact" class="btn btn-primary btn-lg">
+                Contact Us
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+            </a>
+            <a href="{{ url_for('features') }}" class="btn btn-secondary btn-lg">
+                Explore Features
+            </a>
         </div>
     </div>
 </section>
@@ -147,182 +141,116 @@
 
 {% block extra_css %}
 <style>
-    /* ==========================================================================
-   ABOUT PAGE STYLES
-   ========================================================================== */
-
-    .page-hero {
-        padding: 160px 0 80px;
-        position: relative;
-    }
-
-    .page-hero-content {
-        max-width: 700px;
-    }
-
-    .page-hero-content h1 {
-        margin: var(--space-4) 0;
-    }
-
-    .hero-subtitle {
-        font-size: var(--font-size-xl);
-        color: var(--color-text-secondary);
-    }
-
     /* Mission */
     .mission-quote {
         position: relative;
-        padding: var(--space-8);
-        background: var(--color-bg-card);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-xl);
+        padding: 48px;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--border-subtle);
+        border-radius: 24px;
         text-align: center;
     }
 
     .quote-mark {
         position: absolute;
-        top: var(--space-4);
-        left: var(--space-6);
-        font-size: 4rem;
-        color: var(--color-gray-700);
+        top: 24px;
+        left: 32px;
+        font-size: 64px;
+        color: rgba(255, 255, 255, 0.1);
         line-height: 1;
-        font-family: Georgia, serif;
+        font-family: serif;
     }
 
     .mission-quote p {
-        font-size: var(--font-size-xl);
-        line-height: var(--line-height-relaxed);
-        color: var(--color-text);
+        font-size: 20px;
+        line-height: 1.6;
+        color: var(--text-primary);
     }
 
     /* Principles */
     .principles-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: var(--space-6);
+        gap: 24px;
+    }
+
+    .principle-card {
+        padding: 32px;
+        min-height: 240px;
+    }
+
+    .principle-number {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--color-accent);
+        margin-bottom: 16px;
+        opacity: 0.6;
+    }
+
+    /* Focus */
+    .focus-content {
+        padding: 48px;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--border-subtle);
+        border-radius: 24px;
+        text-align: center;
+    }
+
+    .focus-stats {
+        display: flex;
+        justify-content: center;
+        gap: 48px;
+        margin-top: 32px;
+    }
+
+    .stat-value {
+        display: block;
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .stat-label {
+        font-size: 12px;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* German Banner */
+    .german-banner {
+        padding: 40px;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.2));
+        border: 1px solid var(--border-subtle);
+        border-radius: 24px;
+        text-align: center;
+    }
+
+    .german-badges {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .german-badge {
+        padding: 6px 14px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 6px;
+        font-size: 12px;
+        border: 1px solid var(--border-subtle);
     }
 
     @media (max-width: 768px) {
         .principles-grid {
             grid-template-columns: 1fr;
         }
-    }
 
-    .principle-card {
-        padding: var(--space-8);
-        background: var(--color-bg-card);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-lg);
-        transition: all var(--transition-smooth);
-    }
-
-    .principle-card:hover {
-        border-color: var(--color-gray-700);
-    }
-
-    .principle-number {
-        display: block;
-        font-size: var(--font-size-sm);
-        font-weight: var(--font-weight-medium);
-        color: var(--color-text-muted);
-        margin-bottom: var(--space-4);
-    }
-
-    .principle-card h3 {
-        margin-bottom: var(--space-3);
-    }
-
-    /* Focus */
-    .focus-content {
-        padding: var(--space-8);
-        background: var(--color-bg-card);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-xl);
-        text-align: center;
-    }
-
-    .focus-content h3 {
-        margin-bottom: var(--space-4);
-    }
-
-    .focus-content>p {
-        max-width: 600px;
-        margin: 0 auto var(--space-8);
-    }
-
-    .focus-stats {
-        display: flex;
-        justify-content: center;
-        gap: var(--space-12);
-    }
-
-    .focus-stat {
-        text-align: center;
-    }
-
-    .stat-value {
-        display: block;
-        font-size: var(--font-size-2xl);
-        font-weight: var(--font-weight-bold);
-        margin-bottom: var(--space-1);
-    }
-
-    .stat-label {
-        font-size: var(--font-size-sm);
-        color: var(--color-text-muted);
-    }
-
-    @media (max-width: 600px) {
         .focus-stats {
             flex-direction: column;
-            gap: var(--space-6);
+            gap: 24px;
         }
-    }
-
-    /* German Section */
-    .german-banner {
-        padding: var(--space-10);
-        background: var(--color-bg-card);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-xl);
-        text-align: center;
-    }
-
-    .german-icon {
-        font-size: 3rem;
-        margin-bottom: var(--space-4);
-    }
-
-    .german-banner h3 {
-        margin-bottom: var(--space-4);
-    }
-
-    .german-banner>p {
-        max-width: 500px;
-        margin: 0 auto var(--space-6);
-    }
-
-    .german-badges {
-        display: flex;
-        justify-content: center;
-        gap: var(--space-3);
-        flex-wrap: wrap;
-    }
-
-    .german-badge {
-        padding: var(--space-2) var(--space-4);
-        background: var(--color-bg-hover);
-        border-radius: var(--radius-md);
-        font-size: var(--font-size-sm);
-    }
-
-    /* CTA */
-    .cta-section {
-        background: linear-gradient(to bottom, transparent, var(--color-gray-950));
-    }
-
-    .justify-center {
-        justify-content: center;
     }
 </style>
 {% endblock %}
