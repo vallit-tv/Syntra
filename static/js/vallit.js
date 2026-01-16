@@ -20,14 +20,6 @@ document.addEventListener('DOMContentLoaded', function () {
             navbar.classList.remove('scrolled');
         }
 
-        // update scroll progress
-        const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-        const scrolled = (currentScroll / height) * 100;
-        const progressBar = document.getElementById('scroll-progress');
-        if (progressBar) {
-            progressBar.style.width = scrolled + "%";
-        }
-
         lastScroll = currentScroll;
     }
 
@@ -267,11 +259,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (!field.value.trim()) {
                     isValid = false;
                     field.classList.add('error');
-                    if (errorEl) errorEl.textContent = 'This field is required';
+                    if (errorEl) errorEl.textContent = 'Dieses Feld ist erforderlich';
                 } else if (field.type === 'email' && !isValidEmail(field.value)) {
                     isValid = false;
                     field.classList.add('error');
-                    if (errorEl) errorEl.textContent = 'Please enter a valid email address';
+                    if (errorEl) errorEl.textContent = 'Bitte gib eine gültige E-Mail-Adresse ein';
                 } else {
                     field.classList.remove('error');
                     if (errorEl) errorEl.textContent = '';
@@ -283,7 +275,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // Show loading state with animation
             const submitBtn = contactForm.querySelector('button[type="submit"]');
             const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<span class="loading">Sending...</span>';
+            submitBtn.innerHTML = '<span class="loading">Wird gesendet...</span>';
             submitBtn.disabled = true;
             submitBtn.style.opacity = '0.7';
 
@@ -299,7 +291,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (data.success) {
                         showFormSuccess();
                     } else {
-                        showFormError(data.message || 'An error occurred.');
+                        showFormError(data.message || 'Es ist ein Fehler aufgetreten.');
                     }
                 })
                 .catch(error => {

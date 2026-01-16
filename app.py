@@ -315,44 +315,6 @@ def handle_exception(e):
         """, 500
 
 # ============================================================================
-# API ENDPOINTS
-# ============================================================================
-
-@app.route('/api/contact', methods=['POST'])
-def api_contact():
-    """Handle contact form submissions"""
-    try:
-        # Support both JSON and Form data
-        if request.is_json:
-            data = request.json
-        else:
-            data = request.form.to_dict()
-
-        # Simple validation
-        required_fields = ['name', 'email', 'message']
-        for field in required_fields:
-            if not data.get(field):
-                return jsonify({'error': 'Missing required fields', 'field': field}), 400
-        
-        # Honeypot check (if present)
-        if data.get('website'):
-            # It's a bot
-            return jsonify({'success': True, 'message': 'Message received'}), 200
-
-        # Log the contact request (In production, send to Email/Slack/CRM)
-        print(f"CONTACT FORM: Name={data.get('name')}, Email={data.get('email')}, Company={data.get('company')}")
-        print(f"MESSAGE: {data.get('message')}")
-        
-        # TODO: Integrate with Resend/SendGrid or Supabase
-        # db.store_contact_request(data) 
-
-        return jsonify({'success': True, 'message': 'Thank you! We will be in touch.'}), 200
-
-    except Exception as e:
-        print(f"Contact API Error: {str(e)}")
-        return jsonify({'error': 'Internal Server Error'}), 500
-
-# ============================================================================
 # PAGES
 # ============================================================================
 
