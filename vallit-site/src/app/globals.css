@@ -6,37 +6,37 @@
    ========================================= */
 
 :root {
-  /* --- Color Palette: Dark Mode First --- */
-  --bg-body: #050505;
-  --bg-elevated: #0a0a0a;
-  --bg-card: rgba(255, 255, 255, 0.03);
-  --bg-card-hover: rgba(255, 255, 255, 0.06);
-  --bg-nav: rgba(5, 5, 5, 0.8);
+  /* --- Color Palette: Linear-Inspired Dark Mode --- */
+  --bg-body: #08090a;
+  --bg-elevated: #0c0d0e;
+  --bg-card: rgba(255, 255, 255, 0.02);
+  --bg-card-hover: rgba(255, 255, 255, 0.04);
+  --bg-nav: rgba(8, 9, 10, 0.85);
 
-  /* Grays */
-  --gray-50: #fafafa;
-  --gray-100: #ededed;
-  --gray-200: #a1a1a1;
-  --gray-300: #888888;
-  --gray-400: #666666;
-  --gray-500: #444444;
-  --gray-600: #333333;
-  --gray-700: #222222;
-  --gray-800: #171717;
-  --gray-900: #0a0a0a;
+  /* Grays - Linear-inspired palette */
+  --gray-50: #f7f8f8;
+  --gray-100: #e8e9ea;
+  --gray-200: #8a8f98;
+  --gray-300: #6b7280;
+  --gray-400: #4b5563;
+  --gray-500: #374151;
+  --gray-600: #1f2937;
+  --gray-700: #18191b;
+  --gray-800: #111213;
+  --gray-900: #0c0d0e;
 
-  /* Accent: Muted Teal/Cyan */
-  --accent: #00D4AA;
-  --accent-dim: rgba(0, 212, 170, 0.15);
-  --accent-glow: rgba(0, 212, 170, 0.4);
-  --accent-muted: rgba(0, 212, 170, 0.6);
+  /* Accent: Tech Green */
+  --accent: #10b981;
+  --accent-dim: rgba(16, 185, 129, 0.12);
+  --accent-glow: rgba(16, 185, 129, 0.35);
+  --accent-muted: rgba(16, 185, 129, 0.5);
 
-  /* Semantic Colors */
-  --text-primary: #ffffff;
-  --text-secondary: var(--gray-200);
-  --text-tertiary: var(--gray-400);
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-hover: rgba(255, 255, 255, 0.15);
+  /* Semantic Colors - Linear-inspired */
+  --text-primary: #f7f8f8;
+  --text-secondary: #8a8f98;
+  --text-tertiary: #6b7280;
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-hover: rgba(255, 255, 255, 0.12);
   --border-focus: var(--accent);
 
   /* Shadows */
@@ -67,12 +67,12 @@
   --space-24: 96px;
   --space-32: 128px;
 
-  /* Radius */
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --radius-2xl: 24px;
+  /* Radius - Larger for premium feel */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 28px;
   --radius-full: 9999px;
 }
 
@@ -100,7 +100,7 @@ body {
   min-height: 100vh;
 }
 
-/* --- Global Background System (No Cutoffs) --- */
+/* --- Global Background System (Linear-Inspired, Smooth) --- */
 body::before {
   content: "";
   position: fixed;
@@ -108,12 +108,15 @@ body::before {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+  /* Subtle dot grid pattern - smooth, not pixelated */
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.03) 1px, transparent 0);
+  background-size: 32px 32px;
   pointer-events: none;
   z-index: -1;
 }
 
-/* Radial gradient glow - spans full viewport */
+/* Smooth gradient mesh - atmospheric lighting */
 .global-glow {
   position: fixed;
   top: 0;
@@ -128,22 +131,24 @@ body::before {
 .global-glow::before {
   content: "";
   position: absolute;
-  top: -20%;
+  top: -30%;
   left: 50%;
-  width: 150vw;
-  height: 60vh;
-  background: radial-gradient(ellipse at center, rgba(0, 212, 170, 0.08) 0%, transparent 60%);
+  width: 120vw;
+  height: 70vh;
+  background: radial-gradient(ellipse at center, rgba(0, 212, 170, 0.04) 0%, transparent 55%);
   transform: translateX(-50%);
+  filter: blur(60px);
 }
 
 .global-glow::after {
   content: "";
   position: absolute;
-  bottom: 10%;
-  right: -20%;
-  width: 80vw;
-  height: 60vh;
-  background: radial-gradient(ellipse at center, rgba(20, 40, 60, 0.15) 0%, transparent 60%);
+  bottom: 5%;
+  right: -10%;
+  width: 60vw;
+  height: 50vh;
+  background: radial-gradient(ellipse at center, rgba(59, 130, 246, 0.03) 0%, transparent 55%);
+  filter: blur(80px);
 }
 
 /* --- Typography --- */
@@ -237,100 +242,77 @@ h6 {
 }
 
 /* =========================================
-   GLOW CARD SYSTEM - PREMIUM EDITION
-   Glow spreads across nearby cards on hover
+   GLOW CARD SYSTEM - LINEAR STYLE
+   Border glow effect that illuminates nearby cards
    ========================================= */
 
 .glow-grid {
   position: relative;
-  --grid-mouse-x: 50%;
-  --grid-mouse-y: 50%;
+  --grid-mouse-x: 0px;
+  --grid-mouse-y: 0px;
 }
 
 .glow-card {
   position: relative;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: var(--radius-lg);
+  background: transparent;
+  border-radius: var(--radius-xl);
   cursor: pointer;
-  overflow: visible;
+  padding: 1px;
+  /* Space for glow border */
 }
 
-/* Outer glow - follows mouse across entire grid, visible on all cards */
+/* Border glow effect - follows mouse across grid */
 .glow-card::before {
   content: "";
   position: absolute;
-  inset: -1px;
+  inset: 0;
   border-radius: inherit;
-  background: radial-gradient(800px circle at var(--grid-mouse-x, 50%) var(--grid-mouse-y, 50%),
-      rgba(255, 255, 255, 0.08),
-      transparent 50%);
+  background: radial-gradient(600px circle at var(--grid-mouse-x) var(--grid-mouse-y),
+      rgba(255, 255, 255, 0.12),
+      transparent 40%);
   z-index: 1;
   opacity: 0;
-  transition: opacity 0.5s var(--ease-out-expo);
+  transition: opacity 0.4s var(--ease-out-expo);
   pointer-events: none;
 }
 
-/* Show outer glow on all cards when grid is hovered */
+/* Show border glow on all cards when grid is hovered */
 .glow-grid:hover .glow-card::before {
   opacity: 1;
 }
 
-/* Ambient glow that spreads beyond card boundaries */
-.glow-card::after {
-  content: "";
-  position: absolute;
-  inset: -40px;
-  border-radius: 50%;
-  background: radial-gradient(circle at center,
-      rgba(255, 255, 255, 0.06),
-      transparent 70%);
-  z-index: 0;
-  opacity: 0;
-  transition: opacity 0.6s var(--ease-out-expo);
-  pointer-events: none;
-}
-
-.glow-card:hover::after {
-  opacity: 1;
-}
-
-/* Card content with inner glow */
+/* Card content - the actual visible card */
 .glow-card-content {
   position: relative;
   background: var(--bg-elevated);
-  border-radius: inherit;
+  border-radius: calc(var(--radius-xl) - 1px);
   padding: var(--space-6);
   height: 100%;
   z-index: 2;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  transition: border-color 0.4s var(--ease-out-expo),
-    box-shadow 0.4s var(--ease-out-expo),
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition:
+    border-color 0.3s var(--ease-out-expo),
     transform 0.4s var(--ease-out-expo);
 }
 
+/* Brighten border on direct hover */
 .glow-card:hover .glow-card-content {
-  border-color: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 0 40px -10px rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.1);
   transform: translateY(-2px);
 }
 
-/* Subtle glow on adjacent cards when one is hovered */
-.glow-grid:has(.glow-card:hover) .glow-card:not(:hover) .glow-card-content {
-  border-color: rgba(255, 255, 255, 0.08);
-}
-
-/* Inner glow - follows mouse, stronger on hovered card */
+/* Inner content glow - subtle highlight on hover */
 .glow-card-content::before {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: radial-gradient(500px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
-      rgba(255, 255, 255, 0.1),
-      transparent 45%);
-  z-index: 3;
+  background: radial-gradient(400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+      rgba(255, 255, 255, 0.04),
+      transparent 40%);
+  z-index: -1;
   opacity: 0;
-  transition: opacity 0.5s var(--ease-out-expo);
+  transition: opacity 0.4s var(--ease-out-expo);
   pointer-events: none;
 }
 

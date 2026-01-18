@@ -4,6 +4,7 @@ import { StickyStepper } from "@/components/home/sticky-stepper";
 import { UseCases } from "@/components/home/use-cases";
 import { Section, SectionHeader } from "@/components/ui/section";
 import { ButtonLink } from "@/components/ui/button";
+import { CTASection } from "@/components/home/cta-section";
 
 // Social proof logos placeholder
 const logos = [
@@ -92,25 +93,7 @@ export default function HomePage() {
       </Section>
 
       {/* Final CTA */}
-      <section className="py-24 md:py-32">
-        <div className="container mx-auto px-6 max-w-6xl">
-          <div className="relative bg-gradient-to-br from-[rgba(255,255,255,0.03)] to-transparent rounded-3xl border border-[rgba(255,255,255,0.08)] p-12 md:p-20 text-center overflow-hidden">
-            {/* Glow */}
-            <div className="absolute inset-0 bg-gradient-to-b from-[var(--accent-dim)] to-transparent opacity-20 -z-10" />
-
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold text-white mb-6">
-              Ready for AI that actually works?
-            </h2>
-            <p className="text-lg text-[var(--gray-300)] max-w-xl mx-auto mb-10">
-              Let&apos;s discuss how we can build automation that fits your
-              business. No templates. No DIY setup. Just results.
-            </p>
-            <ButtonLink href="/pricing#contact" size="lg">
-              Talk to Us
-            </ButtonLink>
-          </div>
-        </div>
-      </section>
+      <CTASection />
     </>
   );
 }

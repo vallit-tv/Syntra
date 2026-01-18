@@ -13,62 +13,36 @@ export const metadata: Metadata = {
 
 const plans = [
     {
-        name: "Starter",
-        price: "€149",
+        name: "Growth",
+        price: "€50",
         period: "/mo",
-        description: "For small teams getting started with AI automation",
+        description: "Perfect for getting started with AI automation",
         features: [
             "1 Kian deployment",
             "Up to 500 conversations/mo",
             "Email + chat support",
-            "Basic integrations",
+            "Standard integrations",
             "Managed setup included",
-        ],
-        cta: "Get Started",
-        popular: false,
-    },
-    {
-        name: "Growth",
-        price: "€499",
-        period: "/mo",
-        description: "For growing teams with more complex workflows",
-        features: [
-            "Up to 3 Kian deployments",
-            "Up to 2,000 conversations/mo",
-            "Priority support",
-            "Advanced integrations",
-            "Custom workflows",
-            "Approval flows",
         ],
         cta: "Get Started",
         popular: true,
     },
     {
-        name: "Scale",
-        price: "€1,499",
-        period: "/mo",
-        description: "For teams running multiple automation systems",
+        name: "Enterprise",
+        price: "Custom",
+        period: "",
+        description: "For organizations with custom requirements",
         features: [
             "Unlimited Kian deployments",
-            "Up to 10,000 conversations/mo",
-            "Dedicated support",
-            "All integrations",
-            "Custom development",
+            "Unlimited conversations",
+            "Dedicated account manager",
+            "Custom integrations",
             "SLA guarantee",
-            "Quarterly reviews",
+            "On-premise options",
         ],
-        cta: "Get Started",
+        cta: "Contact Sales",
         popular: false,
     },
-];
-
-const enterpriseFeatures = [
-    "Unlimited conversations",
-    "Custom SLA",
-    "Dedicated account manager",
-    "On-premise options",
-    "Custom security requirements",
-    "White-label available",
 ];
 
 export default function PricingPage() {
@@ -84,7 +58,7 @@ export default function PricingPage() {
                         Simple, transparent pricing
                     </h1>
                     <p className="text-lg md:text-xl text-[var(--gray-300)] max-w-2xl mx-auto">
-                        All plans include managed setup and deployment. We build your
+                        Start small and scale as you grow. We build your
                         automation systems — you don&apos;t have to figure it out yourself.
                     </p>
                 </div>
@@ -92,11 +66,11 @@ export default function PricingPage() {
 
             {/* Pricing Cards */}
             <section className="pb-24">
-                <div className="container mx-auto px-6 max-w-6xl">
-                    <GlowGrid columns={3}>
+                <div className="container mx-auto px-6 max-w-5xl">
+                    <GlowGrid columns={2}>
                         {plans.map((plan) => (
                             <GlowCard key={plan.name}>
-                                <div className="relative">
+                                <div className="relative h-full flex flex-col">
                                     {plan.popular && (
                                         <span className="absolute -top-3 -right-3 px-3 py-1 bg-[var(--accent)] text-[var(--bg-body)] text-xs font-medium rounded-full">
                                             Popular
@@ -114,7 +88,7 @@ export default function PricingPage() {
                                     <p className="text-sm text-[var(--gray-400)] mb-6">
                                         {plan.description}
                                     </p>
-                                    <ul className="space-y-3 mb-8">
+                                    <ul className="space-y-3 mb-8 flex-grow">
                                         {plan.features.map((feature) => (
                                             <li key={feature} className="flex items-start gap-3">
                                                 <span className="w-5 h-5 rounded-full bg-[var(--accent-dim)] flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -140,7 +114,7 @@ export default function PricingPage() {
                                     <ButtonLink
                                         href="#contact"
                                         variant={plan.popular ? "primary" : "secondary"}
-                                        className="w-full justify-center"
+                                        className="w-full justify-center mt-auto"
                                     >
                                         {plan.cta}
                                     </ButtonLink>
@@ -148,57 +122,6 @@ export default function PricingPage() {
                             </GlowCard>
                         ))}
                     </GlowGrid>
-                </div>
-            </section>
-
-            {/* Enterprise */}
-            <section className="py-24 bg-[rgba(255,255,255,0.01)]">
-                <div className="container mx-auto px-6 max-w-6xl">
-                    <div className="grid lg:grid-cols-2 gap-12 items-center">
-                        <div>
-                            <Badge className="mb-4">Enterprise</Badge>
-                            <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4">
-                                Need more?
-                            </h2>
-                            <p className="text-lg text-[var(--gray-300)] mb-8">
-                                For large organizations with custom requirements, we offer
-                                enterprise plans with dedicated support, custom SLAs, and
-                                flexible deployment options.
-                            </p>
-                            <ul className="grid sm:grid-cols-2 gap-3 mb-8">
-                                {enterpriseFeatures.map((feature) => (
-                                    <li key={feature} className="flex items-center gap-3">
-                                        <span className="w-5 h-5 rounded-full bg-[var(--accent-dim)] flex items-center justify-center flex-shrink-0">
-                                            <svg
-                                                width="10"
-                                                height="10"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="var(--accent)"
-                                                strokeWidth="3"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                            >
-                                                <polyline points="20 6 9 17 4 12" />
-                                            </svg>
-                                        </span>
-                                        <span className="text-sm text-[var(--gray-200)]">{feature}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                            <ButtonLink href="#contact" size="lg">
-                                Contact Sales
-                            </ButtonLink>
-                        </div>
-                        <div className="h-64 md:h-80 bg-[rgba(255,255,255,0.02)] rounded-2xl border border-[rgba(255,255,255,0.06)] flex items-center justify-center">
-                            <div className="text-center">
-                                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[var(--accent)] to-[var(--accent-muted)] mx-auto mb-4 flex items-center justify-center">
-                                    <span className="text-[var(--bg-body)] text-2xl font-bold">E</span>
-                                </div>
-                                <p className="text-sm text-[var(--gray-500)]">Enterprise</p>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </section>
 

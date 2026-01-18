@@ -1,12 +1,16 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { InputVisual } from "./step-visuals/input-visual";
+import { ContextVisual } from "./step-visuals/context-visual";
+import { ActionVisual } from "./step-visuals/action-visual";
+import { ResultVisual } from "./step-visuals/result-visual";
 
 interface Step {
     id: string;
     title: string;
     description: string;
-    visual: React.ReactNode;
+    VisualComponent: React.ComponentType<{ isActive: boolean }>;
 }
 
 const steps: Step[] = [
@@ -15,126 +19,28 @@ const steps: Step[] = [
         title: "Input",
         description:
             "Customer sends a message via chat, email, or form. Kian receives and processes it instantly.",
-        visual: (
-            <div className="relative w-full h-full flex items-center justify-center">
-                <div className="w-64 bg-[rgba(255,255,255,0.03)] rounded-2xl border border-[rgba(255,255,255,0.08)] p-4 space-y-3">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-[var(--accent-dim)] flex items-center justify-center">
-                            <span className="text-[var(--accent)] text-xs font-bold">C</span>
-                        </div>
-                        <div className="flex-1">
-                            <div className="h-2 w-20 bg-[rgba(255,255,255,0.1)] rounded" />
-                        </div>
-                    </div>
-                    <div className="bg-[rgba(255,255,255,0.05)] rounded-xl p-3 ml-11">
-                        <p className="text-sm text-[var(--gray-200)]">
-                            Hi, I need to schedule a meeting with your sales team.
-                        </p>
-                    </div>
-                    <div className="flex justify-center">
-                        <div className="w-2 h-2 rounded-full bg-[var(--accent)] animate-ping" />
-                    </div>
-                </div>
-            </div>
-        ),
+        VisualComponent: InputVisual,
     },
     {
         id: "context",
         title: "Context",
         description:
-            "Kian understands your business. It accesses your knowledge base, processes, and current state to form context.",
-        visual: (
-            <div className="relative w-full h-full flex items-center justify-center">
-                <div className="grid grid-cols-2 gap-3 max-w-xs">
-                    {["Products", "Policies", "Calendar", "CRM"].map((item, i) => (
-                        <div
-                            key={item}
-                            className="bg-[rgba(255,255,255,0.03)] rounded-xl border border-[rgba(255,255,255,0.08)] p-4 text-center"
-                            style={{ animationDelay: `${i * 100}ms` }}
-                        >
-                            <div className="w-10 h-10 rounded-lg bg-[var(--accent-dim)] mx-auto mb-2 flex items-center justify-center">
-                                <span className="text-[var(--accent)] text-lg">
-                                    {["📦", "📋", "📅", "👥"][i]}
-                                </span>
-                            </div>
-                            <p className="text-xs text-[var(--gray-300)]">{item}</p>
-                        </div>
-                    ))}
-                </div>
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="w-20 h-20 rounded-full border-2 border-[var(--accent)] border-dashed animate-spin opacity-20" style={{ animationDuration: "10s" }} />
-                </div>
-            </div>
-        ),
+            "Kian understands your business. It accesses your knowledge base, policies, and current state to form context.",
+        VisualComponent: ContextVisual,
     },
     {
         id: "action",
         title: "Action",
         description:
-            "Kian takes action. It schedules meetings, sends responses, updates systems, or escalates to humans when needed.",
-        visual: (
-            <div className="relative w-full h-full flex items-center justify-center">
-                <div className="space-y-3 w-64">
-                    {[
-                        { icon: "✓", text: "Checking calendar availability...", done: true },
-                        { icon: "✓", text: "Finding optimal time slot...", done: true },
-                        { icon: "→", text: "Sending calendar invite...", done: false },
-                    ].map((item, i) => (
-                        <div
-                            key={i}
-                            className={`flex items-center gap-3 p-3 rounded-xl border ${item.done
-                                    ? "bg-[rgba(0,212,170,0.05)] border-[var(--accent-dim)]"
-                                    : "bg-[rgba(255,255,255,0.03)] border-[rgba(255,255,255,0.08)]"
-                                }`}
-                        >
-                            <span
-                                className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${item.done
-                                        ? "bg-[var(--accent)] text-[var(--bg-body)]"
-                                        : "bg-[rgba(255,255,255,0.1)] text-[var(--gray-400)]"
-                                    }`}
-                            >
-                                {item.icon}
-                            </span>
-                            <span className={`text-sm ${item.done ? "text-[var(--gray-200)]" : "text-[var(--gray-400)]"}`}>
-                                {item.text}
-                            </span>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        ),
+            "Kian takes action. It schedules meetings, updates systems, or escalates to humans when needed.",
+        VisualComponent: ActionVisual,
     },
     {
         id: "result",
         title: "Result",
         description:
-            "Customer receives a response. Meeting is booked. Everything is logged and synced with your tools.",
-        visual: (
-            <div className="relative w-full h-full flex items-center justify-center">
-                <div className="w-72 bg-[rgba(255,255,255,0.03)] rounded-2xl border border-[rgba(255,255,255,0.08)] overflow-hidden">
-                    <div className="bg-[var(--accent-dim)] px-4 py-3 border-b border-[rgba(255,255,255,0.08)]">
-                        <p className="text-sm font-medium text-[var(--accent)]">Meeting Confirmed</p>
-                    </div>
-                    <div className="p-4 space-y-3">
-                        <div className="flex items-center gap-3">
-                            <span className="text-2xl">📅</span>
-                            <div>
-                                <p className="text-sm text-white font-medium">Sales Demo Call</p>
-                                <p className="text-xs text-[var(--gray-400)]">Tomorrow at 2:00 PM</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-[var(--gray-400)]">
-                            <span className="w-2 h-2 rounded-full bg-green-500" />
-                            Synced to Google Calendar
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-[var(--gray-400)]">
-                            <span className="w-2 h-2 rounded-full bg-green-500" />
-                            Logged in CRM
-                        </div>
-                    </div>
-                </div>
-            </div>
-        ),
+            "Customer receives a response. Task is completed. Everything is logged and synced with your tools.",
+        VisualComponent: ResultVisual,
     },
 ];
 
@@ -157,7 +63,7 @@ export function StickyStepper() {
             },
             {
                 threshold: 0.5,
-                rootMargin: "-40% 0px -40% 0px",
+                rootMargin: "-20% 0px -20% 0px",
             }
         );
 
@@ -170,36 +76,48 @@ export function StickyStepper() {
 
     return (
         <div ref={containerRef} className="relative">
-            <div className="lg:grid lg:grid-cols-2 lg:gap-16">
+            <div className="lg:grid lg:grid-cols-2 lg:gap-20">
                 {/* Left: Step titles (sticky on desktop) */}
-                <div className="hidden lg:block">
-                    <div className="sticky top-32 space-y-2">
+                <div className="hidden lg:block h-full">
+                    <div className="sticky top-40 space-y-6">
                         {steps.map((step, index) => (
                             <button
                                 key={step.id}
                                 onClick={() => {
-                                    stepRefs.current[index]?.scrollIntoView({ behavior: "smooth", block: "center" });
+                                    stepRefs.current[index]?.scrollIntoView({
+                                        behavior: "smooth",
+                                        block: "center",
+                                    });
                                 }}
-                                className={`w-full text-left p-4 rounded-xl transition-all duration-300 ${activeStep === index
-                                        ? "bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.1)]"
-                                        : "hover:bg-[rgba(255,255,255,0.03)]"
-                                    }`}
+                                className="group w-full text-left"
                             >
-                                <div className="flex items-center gap-4">
-                                    <span
-                                        className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all ${activeStep === index
-                                                ? "bg-[var(--accent)] text-[var(--bg-body)]"
-                                                : "bg-[rgba(255,255,255,0.1)] text-[var(--gray-400)]"
-                                            }`}
-                                    >
-                                        {index + 1}
-                                    </span>
-                                    <span
-                                        className={`text-lg font-medium transition-colors ${activeStep === index ? "text-white" : "text-[var(--gray-400)]"
-                                            }`}
-                                    >
-                                        {step.title}
-                                    </span>
+                                <div className="flex items-center gap-6">
+                                    <div className="relative flex flex-col items-center">
+                                        {/* Number Circle */}
+                                        <span
+                                            className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-300 z-10 
+                        ${activeStep === index
+                                                    ? "bg-[var(--accent)] text-[var(--bg-body)] scale-110"
+                                                    : "bg-white/5 text-neutral-500 group-hover:bg-white/10 group-hover:text-neutral-400"
+                                                }`}
+                                        >
+                                            {index + 1}
+                                        </span>
+
+                                        {/* Vertical Line (except for last item) */}
+                                        {index !== steps.length - 1 && (
+                                            <div className="absolute top-8 w-px h-16 bg-white/5 -z-0" />
+                                        )}
+                                    </div>
+
+                                    <div className={`transition-all duration-300 ${activeStep === index ? "opacity-100 translate-x-2" : "opacity-40 hover:opacity-100"}`}>
+                                        <span
+                                            className={`text-xl font-medium block ${activeStep === index ? "text-white" : "text-neutral-400"
+                                                }`}
+                                        >
+                                            {step.title}
+                                        </span>
+                                    </div>
                                 </div>
                             </button>
                         ))}
@@ -207,30 +125,40 @@ export function StickyStepper() {
                 </div>
 
                 {/* Right: Step content */}
-                <div className="space-y-24 lg:space-y-32">
+                <div className="space-y-40 pb-40">
                     {steps.map((step, index) => (
                         <div
                             key={step.id}
                             ref={(el) => {
                                 stepRefs.current[index] = el;
                             }}
-                            className="scroll-mt-32"
+                            className="scroll-mt-40"
                         >
                             {/* Mobile step indicator */}
                             <div className="lg:hidden flex items-center gap-3 mb-6">
                                 <span className="w-8 h-8 rounded-full bg-[var(--accent)] text-[var(--bg-body)] flex items-center justify-center text-sm font-medium">
                                     {index + 1}
                                 </span>
-                                <span className="text-xl font-semibold text-white">{step.title}</span>
+                                <span className="text-xl font-semibold text-white">
+                                    {step.title}
+                                </span>
                             </div>
 
-                            {/* Visual */}
-                            <div className="h-64 md:h-80 bg-[rgba(255,255,255,0.02)] rounded-2xl border border-[rgba(255,255,255,0.06)] mb-6 overflow-hidden">
-                                {step.visual}
+                            {/* Visual Container */}
+                            <div className="relative group">
+                                <div className={`relative h-[400px] w-full bg-neutral-900/50 rounded-2xl border transition-all duration-500 overflow-hidden
+                  ${activeStep === index
+                                        ? "border-[var(--accent)]/20 shadow-[0_0_50px_-20px_rgba(0,212,170,0.1)]"
+                                        : "border-white/5 opacity-50 grayscale"
+                                    }`}>
+                                    <step.VisualComponent isActive={activeStep === index} />
+                                </div>
                             </div>
 
                             {/* Description */}
-                            <p className="text-[var(--gray-300)] text-lg leading-relaxed">{step.description}</p>
+                            <p className="mt-8 text-neutral-400 text-lg leading-relaxed max-w-lg">
+                                {step.description}
+                            </p>
                         </div>
                     ))}
                 </div>

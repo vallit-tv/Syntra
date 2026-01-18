@@ -51,9 +51,20 @@ export function GlowGrid({
             }
 
             rafId.current = requestAnimationFrame(() => {
-                const cards = gridRef.current?.querySelectorAll(".glow-card");
-                if (!cards) return;
+                const grid = gridRef.current;
+                if (!grid) return;
 
+                // Get grid-relative position for border glow effect
+                const gridRect = grid.getBoundingClientRect();
+                const gridX = e.clientX - gridRect.left;
+                const gridY = e.clientY - gridRect.top;
+
+                // Set grid-level vars for cross-card border glow
+                grid.style.setProperty("--grid-mouse-x", `${gridX}px`);
+                grid.style.setProperty("--grid-mouse-y", `${gridY}px`);
+
+                // Update each card with its relative mouse position
+                const cards = grid.querySelectorAll(".glow-card");
                 cards.forEach((card) => {
                     const rect = card.getBoundingClientRect();
                     const x = e.clientX - rect.left;
