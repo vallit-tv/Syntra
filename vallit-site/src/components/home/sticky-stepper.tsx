@@ -146,10 +146,10 @@ export function StickyStepper() {
 
                             {/* Visual Container */}
                             <div className="relative group">
-                                <div className={`relative h-[400px] w-full bg-neutral-900/50 rounded-2xl border transition-all duration-500 overflow-hidden
+                                <div className={`relative h-[400px] w-full bg-[#0A0A0A] rounded-2xl border transition-all duration-500 overflow-hidden
                   ${activeStep === index
-                                        ? "border-[var(--accent)]/20 shadow-[0_0_50px_-20px_rgba(0,212,170,0.1)]"
-                                        : "border-white/5 opacity-50 grayscale"
+                                        ? "border-[var(--accent)]/50 shadow-[0_0_50px_-20px_rgba(34,197,94,0.1)]"
+                                        : "border-white/10 opacity-50 grayscale"
                                     }`}>
                                     <step.VisualComponent isActive={activeStep === index} />
                                 </div>

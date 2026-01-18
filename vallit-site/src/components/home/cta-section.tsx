@@ -23,7 +23,7 @@ export function CTASection() {
 
             <div className="container mx-auto px-6 max-w-5xl relative z-10">
                 <div
-                    className="group relative bg-[#050505] rounded-3xl border border-white/5 p-12 md:p-24 text-center overflow-hidden"
+                    className="group relative bg-[#0A0A0A] rounded-3xl border border-white/10 p-12 md:p-24 text-center overflow-hidden"
                     onMouseMove={handleMouseMove}
                 >
                     {/* Spotlight Effect */}
@@ -33,7 +33,7 @@ export function CTASection() {
                             background: useMotionTemplate`
                         radial-gradient(
                         650px circle at ${mouseX}px ${mouseY}px,
-                        rgba(0, 212, 170, 0.1),
+                        rgba(34, 197, 94, 0.1),
                         transparent 80%
                         )
                     `,

@@ -132,7 +132,7 @@ export default function PricingPage() {
                         title="Get in touch"
                         subtitle="Ready to discuss your automation needs? Fill out the form below and we'll get back to you within 24 hours."
                     />
-                    <div className="bg-[rgba(255,255,255,0.02)] rounded-2xl border border-[rgba(255,255,255,0.08)] p-8 md:p-10">
+                    <div className="bg-[#0A0A0A] rounded-2xl border border-white/10 p-8 md:p-10">
                         <ContactForm />
                     </div>
                 </div>
@@ -165,7 +165,7 @@ export default function PricingPage() {
                     ].map((faq) => (
                         <div
                             key={faq.q}
-                            className="p-6 bg-[rgba(255,255,255,0.02)] rounded-xl border border-[rgba(255,255,255,0.06)]"
+                            className="p-6 bg-[#0A0A0A] rounded-xl border border-white/10"
                         >
                             <h3 className="text-white font-medium mb-2">{faq.q}</h3>
                             <p className="text-[var(--gray-300)] text-sm leading-relaxed">
