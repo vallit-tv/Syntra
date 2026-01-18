@@ -98,8 +98,8 @@ export function KianWidget() {
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg ${isOpen
-                        ? "bg-[var(--gray-700)] rotate-180"
-                        : "bg-[var(--accent)] hover:bg-[var(--accent-muted)] shadow-[0_0_30px_-5px_var(--accent-glow)]"
+                    ? "bg-[var(--gray-700)] rotate-180"
+                    : "bg-[var(--accent)] hover:bg-[var(--accent-muted)] shadow-[0_0_30px_-5px_var(--accent-glow)]"
                     }`}
                 aria-label={isOpen ? "Close chat" : "Open chat"}
             >
@@ -138,8 +138,8 @@ export function KianWidget() {
             {/* Chat Panel */}
             <div
                 className={`fixed bottom-24 right-6 z-50 w-[380px] max-w-[calc(100vw-48px)] bg-[var(--bg-elevated)] border border-[rgba(255,255,255,0.1)] rounded-2xl shadow-2xl overflow-hidden transition-all duration-300 ${isOpen
-                        ? "opacity-100 translate-y-0 pointer-events-auto"
-                        : "opacity-0 translate-y-4 pointer-events-none"
+                    ? "opacity-100 translate-y-0 pointer-events-auto"
+                    : "opacity-0 translate-y-4 pointer-events-none"
                     }`}
             >
                 {/* Header */}
@@ -164,8 +164,8 @@ export function KianWidget() {
                         >
                             <div
                                 className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${msg.role === "user"
-                                        ? "bg-[var(--accent)] text-[var(--bg-body)]"
-                                        : "bg-[rgba(255,255,255,0.06)] text-[var(--gray-100)] border border-[rgba(255,255,255,0.06)]"
+                                    ? "bg-[var(--accent)] text-[var(--bg-body)]"
+                                    : "bg-[rgba(255,255,255,0.06)] text-[var(--gray-100)] border border-[rgba(255,255,255,0.06)]"
                                     }`}
                             >
                                 {msg.content}
@@ -233,6 +233,19 @@ export function KianWidget() {
                         </button>
                     </div>
                 </form>
+
+                {/* Legal Footer */}
+                <div className="px-4 pb-3 pt-1 text-center">
+                    <p className="text-[10px] text-[var(--gray-500)] leading-relaxed">
+                        By using this chat, you accept our{" "}
+                        <a href="/impressum" className="underline hover:text-[var(--gray-300)] transition-colors">Terms</a>
+                        {" "}&amp;{" "}
+                        <a href="/datenschutz" className="underline hover:text-[var(--gray-300)] transition-colors">Privacy Policy</a>
+                    </p>
+                    <p className="text-[10px] text-[var(--gray-600)] mt-1">
+                        Powered by <span className="text-[var(--gray-500)]">Vallit</span>
+                    </p>
+                </div>
             </div>
         </>
     );

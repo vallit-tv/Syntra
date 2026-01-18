@@ -47,8 +47,8 @@ export function Navbar() {
     return (
         <header
             className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
-                    ? "bg-[rgba(5,5,5,0.85)] backdrop-blur-xl border-b border-[rgba(255,255,255,0.08)]"
-                    : "bg-transparent"
+                ? "bg-[rgba(5,5,5,0.85)] backdrop-blur-xl border-b border-[rgba(255,255,255,0.08)]"
+                : "bg-transparent"
                 }`}
         >
             <div className="container mx-auto px-6 max-w-6xl">
@@ -68,8 +68,8 @@ export function Navbar() {
                                 key={link.href}
                                 href={link.href}
                                 className={`text-sm font-medium transition-colors relative ${pathname === link.href
-                                        ? "text-white"
-                                        : "text-[var(--gray-400)] hover:text-white"
+                                    ? "text-white"
+                                    : "text-[var(--gray-400)] hover:text-white"
                                     }`}
                             >
                                 {link.label}
@@ -81,7 +81,10 @@ export function Navbar() {
                     </nav>
 
                     {/* Desktop CTA */}
-                    <div className="hidden md:flex items-center gap-4">
+                    <div className="hidden md:flex items-center gap-3">
+                        <ButtonLink href="https://console.vallit.net" variant="secondary" size="sm" external>
+                            Dashboard
+                        </ButtonLink>
                         <ButtonLink href="/pricing#contact" size="sm">
                             Contact
                         </ButtonLink>
@@ -113,8 +116,8 @@ export function Navbar() {
             {/* Mobile Menu */}
             <div
                 className={`fixed inset-0 bg-[var(--bg-body)] z-50 flex flex-col items-center justify-center gap-8 transition-all duration-500 md:hidden ${isMobileMenuOpen
-                        ? "opacity-100 pointer-events-auto"
-                        : "opacity-0 pointer-events-none"
+                    ? "opacity-100 pointer-events-auto"
+                    : "opacity-0 pointer-events-none"
                     }`}
             >
                 {navLinks.map((link) => (
@@ -122,14 +125,17 @@ export function Navbar() {
                         key={link.href}
                         href={link.href}
                         className={`text-2xl font-medium transition-colors ${pathname === link.href
-                                ? "text-white"
-                                : "text-[var(--gray-400)] hover:text-white"
+                            ? "text-white"
+                            : "text-[var(--gray-400)] hover:text-white"
                             }`}
                     >
                         {link.label}
                     </Link>
                 ))}
-                <ButtonLink href="/pricing#contact" size="lg" className="mt-4">
+                <ButtonLink href="https://console.vallit.net" variant="secondary" size="lg" className="mt-4" external>
+                    Dashboard
+                </ButtonLink>
+                <ButtonLink href="/pricing#contact" size="lg">
                     Contact
                 </ButtonLink>
             </div>
