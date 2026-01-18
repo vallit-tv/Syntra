@@ -1,0 +1,349 @@
+@import "tailwindcss";
+
+/* =========================================
+   VALLIT PREMIUM DESIGN SYSTEM
+   Inspiration: Linear, Vercel, Cursor
+   ========================================= */
+
+:root {
+  /* --- Color Palette: Dark Mode First --- */
+  --bg-body: #050505;
+  --bg-elevated: #0a0a0a;
+  --bg-card: rgba(255, 255, 255, 0.03);
+  --bg-card-hover: rgba(255, 255, 255, 0.06);
+  --bg-nav: rgba(5, 5, 5, 0.8);
+
+  /* Grays */
+  --gray-50: #fafafa;
+  --gray-100: #ededed;
+  --gray-200: #a1a1a1;
+  --gray-300: #888888;
+  --gray-400: #666666;
+  --gray-500: #444444;
+  --gray-600: #333333;
+  --gray-700: #222222;
+  --gray-800: #171717;
+  --gray-900: #0a0a0a;
+
+  /* Accent: Muted Teal/Cyan */
+  --accent: #00D4AA;
+  --accent-dim: rgba(0, 212, 170, 0.15);
+  --accent-glow: rgba(0, 212, 170, 0.4);
+  --accent-muted: rgba(0, 212, 170, 0.6);
+
+  /* Semantic Colors */
+  --text-primary: #ffffff;
+  --text-secondary: var(--gray-200);
+  --text-tertiary: var(--gray-400);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.15);
+  --border-focus: var(--accent);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 80px -20px var(--accent-dim);
+  --shadow-btn-hover: 0 0 20px -5px var(--accent-glow);
+
+  /* Transitions */
+  --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+  --ease-out-quart: cubic-bezier(0.165, 0.84, 0.44, 1);
+  --transition-fast: 150ms var(--ease-out-quart);
+  --transition-base: 300ms var(--ease-out-expo);
+  --transition-slow: 500ms var(--ease-out-expo);
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+  --space-32: 128px;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+}
+
+@theme inline {
+  --color-background: var(--bg-body);
+  --color-foreground: var(--text-primary);
+  --color-accent: var(--accent);
+  --font-sans: var(--font-inter);
+}
+
+/* Base Styles */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg-body);
+  color: var(--text-primary);
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+  overflow-x: hidden;
+  position: relative;
+  min-height: 100vh;
+}
+
+/* --- Global Background System (No Cutoffs) --- */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Radial gradient glow - spans full viewport */
+.global-glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: -2;
+  overflow: hidden;
+}
+
+.global-glow::before {
+  content: "";
+  position: absolute;
+  top: -20%;
+  left: 50%;
+  width: 150vw;
+  height: 60vh;
+  background: radial-gradient(ellipse at center, rgba(0, 212, 170, 0.08) 0%, transparent 60%);
+  transform: translateX(-50%);
+}
+
+.global-glow::after {
+  content: "";
+  position: absolute;
+  bottom: 10%;
+  right: -20%;
+  width: 80vw;
+  height: 60vh;
+  background: radial-gradient(ellipse at center, rgba(20, 40, 60, 0.15) 0%, transparent 60%);
+}
+
+/* --- Typography --- */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--text-primary);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.text-gradient {
+  background: linear-gradient(to bottom right, #ffffff 30%, #a1a1a1 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-accent {
+  background: linear-gradient(135deg, #ffffff 40%, var(--accent) 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* --- Focus States --- */
+*:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* --- Skip Link (Accessibility) --- */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent);
+  color: var(--bg-body);
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  z-index: 10000;
+  transition: top var(--transition-fast);
+}
+
+.skip-link:focus {
+  top: var(--space-4);
+}
+
+/* --- Reduced Motion --- */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* --- Selection --- */
+::selection {
+  background: var(--accent-dim);
+  color: var(--text-primary);
+}
+
+/* --- Scrollbar --- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-body);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gray-600);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gray-500);
+}
+
+/* =========================================
+   GLOW CARD SYSTEM
+   ========================================= */
+
+.glow-grid {
+  position: relative;
+}
+
+.glow-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+/* Outer glow - visible on grid hover */
+.glow-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+      rgba(255, 255, 255, 0.15),
+      transparent 40%);
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.glow-grid:hover .glow-card::before {
+  opacity: 1;
+}
+
+/* Card content with inner glow */
+.glow-card-content {
+  position: relative;
+  background: var(--bg-elevated);
+  border-radius: inherit;
+  padding: var(--space-6);
+  height: 100%;
+  z-index: 2;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: border-color 0.3s ease;
+}
+
+.glow-card:hover .glow-card-content {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Inner glow - only on hovered card */
+.glow-card-content::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+      rgba(255, 255, 255, 0.08),
+      transparent 40%);
+  z-index: 3;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.glow-card:hover .glow-card-content::before {
+  opacity: 1;
+}
+
+/* Card icon styling */
+.glow-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--accent-dim), transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-4);
+  color: var(--accent);
+}
+
+.glow-card-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Card title and description */
+.glow-card-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.glow-card-description {
+  font-size: 0.9375rem;
+  color: var(--gray-300);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+
+  .glow-card::before,
+  .glow-card-content::before {
+    display: none;
+  }
+}
