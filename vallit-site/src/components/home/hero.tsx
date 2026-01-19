@@ -1,7 +1,6 @@
 "use client";
 
 import { ButtonLink } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 
@@ -18,24 +17,15 @@ export function Hero() {
     return (
         <section ref={containerRef} className="relative pt-32 pb-0 md:pt-48 overflow-hidden bg-[#020202]">
 
-            {/* 1. Text Content Layer (Top) */}
-            <div className="container relative z-20 mx-auto px-6 max-w-5xl text-center mb-12 sm:mb-20">
+            {/* 1. Text Content Layer (Top - Z-Index 20 to sit ON TOP of Visual) */}
+            <div className="container relative z-20 mx-auto px-6 max-w-5xl text-center mb-0">
                 <motion.div style={{ opacity, y }}>
-                    {/* Badge */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-                        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                        transition={{ duration: 0.8, ease: "easeOut" }}
-                    >
-                        <Badge variant="accent" className="mb-8 border-white/10 bg-white/5 backdrop-blur-md">
-                            Done-for-you AI Automation
-                        </Badge>
-                    </motion.div>
+                    {/* Badge Removed per user request */}
 
                     {/* Title */}
                     <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight mb-8 drop-shadow-2xl">
                         AI systems that work. <br />
-                        <span className="text-[#888]">Built for you.</span>
+                        <span className="text-[var(--accent)]">Built for you.</span>
                     </h1>
 
                     {/* Subtitle */}
@@ -66,8 +56,9 @@ export function Hero() {
                 </motion.div>
             </div>
 
-            {/* 2. Visual Layer (Bottom - Tilted Console) */}
-            <div className="relative w-full max-w-[1400px] mx-auto perspective-[2000px] z-10">
+            {/* 2. Visual Layer (Bottom - Overlapped & Tilted) */}
+            {/* Negative margin pulls it UP behind the text */}
+            <div className="relative w-full max-w-[1400px] mx-auto perspective-[2000px] z-10 -mt-20 md:-mt-32 pointer-events-none">
                 <motion.div
                     initial={{ opacity: 0, rotateX: 30, y: 100 }}
                     animate={{ opacity: 1, rotateX: 20, y: 0 }}
@@ -81,11 +72,14 @@ export function Hero() {
                     {/* The 3D Console/Interface */}
                     <div className="relative mx-auto w-full md:w-[90%] aspect-[16/9] bg-[#050505] rounded-t-2xl border-t border-x border-white/10 shadow-[0_-20px_60px_-20px_rgba(255,255,255,0.05)] overflow-hidden ring-1 ring-white/5">
 
+                        {/* Subtle Grid Overlay for "More Design" */}
+                        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] opacity-20" />
+
                         {/* Internal Reflection / Gloss */}
                         <div className="absolute inset-0 bg-gradient-to-b from-white/[0.03] to-transparent pointer-events-none" />
 
                         {/* Status Bar */}
-                        <div className="h-12 border-b border-white/5 bg-[#080808] flex items-center px-6 justify-between">
+                        <div className="h-12 border-b border-white/5 bg-[#080808] flex items-center px-6 justify-between relative z-10">
                             <div className="flex gap-2">
                                 <div className="w-3 h-3 rounded-full bg-white/10" />
                                 <div className="w-3 h-3 rounded-full bg-white/10" />
@@ -94,7 +88,7 @@ export function Hero() {
                         </div>
 
                         {/* Content Grid */}
-                        <div className="p-8 grid grid-cols-12 gap-6 h-full bg-[#030303]">
+                        <div className="p-8 grid grid-cols-12 gap-6 h-full bg-[#030303] relative z-10">
                             {/* Left Panel */}
                             <div className="col-span-3 hidden md:flex flex-col gap-4 border-r border-white/5 pr-6">
                                 <div className="h-8 w-24 bg-white/5 rounded-md" />

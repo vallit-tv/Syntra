@@ -1,30 +1,17 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-
-const quickPrompts = [
-    "What can you automate?",
-    "Show scheduling",
-    "Pricing info",
-    "Talk to Vallit",
-];
+import { CalendarView } from "./calendar-view";
+import { BookingForm, BookingData } from "./booking-form";
+import { defaultBotConfig, botKnowledgeBase, gettingStartedPrompts, BotResponse } from "@/lib/bot-data";
 
 interface Message {
     id: string;
     role: "user" | "assistant";
     content: string;
+    type?: "text" | "calendar" | "form";
+    metadata?: any;
 }
-
-const placeholderResponses: Record<string, string> = {
-    "What can you automate?":
-        "I can help automate customer support, meeting scheduling, workflow execution, and more. Kian understands your business context and handles tasks end-to-end. Would you like to learn about a specific area?",
-    "Show scheduling":
-        "Kian handles calendar coordination automatically. It finds optimal meeting times, sends invites, manages rescheduling, and syncs with your existing tools like Google Calendar or Outlook. No back-and-forth emails needed.",
-    "Pricing info":
-        "We offer three plans: Starter (€149/mo), Growth (€499/mo), and Scale (€1,499/mo). Enterprise plans are also available. All plans include managed setup and deployment. Want me to explain the differences?",
-    "Talk to Vallit":
-        "I'd be happy to connect you with our team! Please share your email and company name, and someone will reach out within 24 hours. Or you can use the contact form on our pricing page.",
-};
 
 export function KianWidget() {
     const [isOpen, setIsOpen] = useState(false);
@@ -34,6 +21,7 @@ export function KianWidget() {
             role: "assistant",
             content:
                 "Hi! I'm Kian, Vallit's AI assistant. I can tell you about our automation solutions, scheduling features, or connect you with our team. How can I help?",
+            type: "text",
         },
     ]);
     const [input, setInput] = useState("");
@@ -48,9 +36,26 @@ export function KianWidget() {
     useEffect(() => {
         if (isOpen) {
             scrollToBottom();
-            inputRef.current?.focus();
+            // inputRef.current?.focus(); // Optional: might be annoying on mobile if it pops keyboard
         }
     }, [isOpen, messages]);
+
+    const findResponse = (text: string): BotResponse => {
+        const lowerText = text.toLowerCase();
+
+        // Exact match check first (for prompts)
+        const exactMatch = botKnowledgeBase.find(kb =>
+            kb.keywords.some(k => k.toLowerCase() === lowerText)
+        );
+        if (exactMatch) return exactMatch;
+
+        // Partial match
+        const partialMatch = botKnowledgeBase.find(kb =>
+            kb.keywords.some(k => lowerText.includes(k.toLowerCase()))
+        );
+
+        return partialMatch || botKnowledgeBase.find(kb => kb.id === "fallback")!;
+    };
 
     const handleSend = async (text: string) => {
         if (!text.trim()) return;
@@ -59,6 +64,7 @@ export function KianWidget() {
             id: Date.now().toString(),
             role: "user",
             content: text.trim(),
+            type: "text",
         };
 
         setMessages((prev) => [...prev, userMessage]);
@@ -66,17 +72,15 @@ export function KianWidget() {
         setIsTyping(true);
 
         // Simulate response delay
-        await new Promise((resolve) => setTimeout(resolve, 800 + Math.random() * 500));
+        await new Promise((resolve) => setTimeout(resolve, 600 + Math.random() * 400));
 
-        // Get response (placeholder logic)
-        const response =
-            placeholderResponses[text] ||
-            "Thanks for your message! Our team at Vallit builds custom AI automation solutions. For specific questions, please reach out through our contact form and we'll get back to you within 24 hours.";
+        const responseData = findResponse(text);
 
         const assistantMessage: Message = {
             id: (Date.now() + 1).toString(),
             role: "assistant",
-            content: response,
+            content: responseData.content,
+            type: responseData.action === "calendar" ? "calendar" : "text",
         };
 
         setMessages((prev) => [...prev, assistantMessage]);
@@ -90,6 +94,81 @@ export function KianWidget() {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         handleSend(input);
+    };
+
+    // Calendar Flow Handlers
+    const handleSlotSelect = (date: Date) => {
+        // Remove the interactive calendar from previous messages to "freeze" it (optional, but good UX)
+        // For now, we just append a new message "You selected..." and show the form
+
+        const confirmMsg: Message = {
+            id: Date.now().toString(),
+            role: "user",
+            content: `I'd like to book ${date.toLocaleString()}`,
+            type: "text"
+        };
+
+        const formMsg: Message = {
+            id: (Date.now() + 1).toString(),
+            role: "assistant",
+            content: "Great! Please fill in your details to confirm the appointment.",
+            type: "form",
+            metadata: { selectedDate: date }
+        };
+
+        setMessages(prev => [...prev, confirmMsg, formMsg]);
+    };
+
+    const handleBookingSubmit = async (data: BookingData) => {
+        setIsTyping(true);
+
+        try {
+            const response = await fetch("/api/book-appointment", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: data.name,
+                    email: data.email,
+                    company: data.company,
+                    customField: data.customField,
+                    date: data.date.toISOString(),
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Booking failed");
+            }
+
+            const successMsg: Message = {
+                id: Date.now().toString(),
+                role: "assistant",
+                content: `Great news, ${data.name}! Your appointment is confirmed for ${data.date.toLocaleDateString()} at ${data.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}. I've sent a calendar invite with the Zoom link to ${data.email}.`,
+                type: "text"
+            };
+            setMessages(prev => [...prev, successMsg]);
+
+        } catch (error) {
+            console.error("Booking Error:", error);
+            const errorMsg: Message = {
+                id: Date.now().toString(),
+                role: "assistant",
+                content: "I'm sorry, but something went wrong while scheduling the meeting. Please try again or use our contact form.",
+                type: "text"
+            };
+            setMessages(prev => [...prev, errorMsg]);
+        } finally {
+            setIsTyping(false);
+        }
+    };
+
+    const handleBookingCancel = () => {
+        const cancelMsg: Message = {
+            id: Date.now().toString(),
+            role: "assistant",
+            content: "No problem. Let me know if you want to schedule something later!",
+            type: "text"
+        };
+        setMessages(prev => [...prev, cancelMsg]);
     };
 
     return (
@@ -146,30 +225,58 @@ export function KianWidget() {
                 <div className="px-5 py-4 border-b border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)]">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--accent)] to-[var(--accent-muted)] flex items-center justify-center">
-                            <span className="text-[var(--bg-body)] font-bold text-sm">K</span>
+                            <span className="text-[var(--bg-body)] font-bold text-sm">{defaultBotConfig.companyName.charAt(0)}</span>
                         </div>
                         <div>
-                            <h3 className="text-sm font-semibold text-white">Kian</h3>
-                            <p className="text-xs text-[var(--gray-400)]">Vallit AI Assistant</p>
+                            <h3 className="text-sm font-semibold text-white">{defaultBotConfig.companyName}</h3>
+                            <p className="text-xs text-[var(--gray-400)]">AI Assistant</p>
                         </div>
                     </div>
                 </div>
 
                 {/* Messages */}
-                <div className="h-80 overflow-y-auto p-4 space-y-4">
-                    {messages.map((msg) => (
+                <div className="h-96 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-[var(--gray-700)] scrollbar-track-transparent">
+                    {messages.map((msg, index) => (
                         <div
                             key={msg.id}
-                            className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                            className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}
                         >
                             <div
-                                className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${msg.role === "user"
+                                className={`max-w-[90%] px-4 py-3 rounded-2xl text-sm leading-relaxed mb-2 ${msg.role === "user"
                                     ? "bg-[var(--accent)] text-[var(--bg-body)]"
                                     : "bg-[rgba(255,255,255,0.06)] text-[var(--gray-100)] border border-[rgba(255,255,255,0.06)]"
                                     }`}
                             >
                                 {msg.content}
                             </div>
+
+                            {/* Render different types of interactive elements only for the LATEST message of that type or if we want persistent history. 
+                                For clean UX, maybe only render interactive elements if it's the last response, 
+                                but User demanded it to be embedded and never take you out. 
+                                So we render it inline.
+                             */}
+
+                            {msg.type === "calendar" && msg.role === "assistant" && (
+                                <div className="w-full max-w-[90%] mt-1">
+                                    {/* If this is not the last "calendar" request logic, we might want to disable it. 
+                                        But for now let's keep it simple. */}
+                                    <CalendarView
+                                        onSelectSlot={handleSlotSelect}
+                                        locale={defaultBotConfig.locale}
+                                    />
+                                </div>
+                            )}
+
+                            {msg.type === "form" && msg.role === "assistant" && (
+                                <div className="w-full max-w-[90%] mt-1">
+                                    <BookingForm
+                                        selectedDate={msg.metadata.selectedDate}
+                                        config={defaultBotConfig}
+                                        onSubmit={handleBookingSubmit}
+                                        onCancel={handleBookingCancel}
+                                    />
+                                </div>
+                            )}
                         </div>
                     ))}
                     {isTyping && (
@@ -187,9 +294,9 @@ export function KianWidget() {
                 </div>
 
                 {/* Quick Prompts */}
-                {messages.length <= 1 && (
+                {messages.length === 1 && (
                     <div className="px-4 pb-3 flex flex-wrap gap-2">
-                        {quickPrompts.map((prompt) => (
+                        {gettingStartedPrompts.map((prompt) => (
                             <button
                                 key={prompt}
                                 onClick={() => handleQuickPrompt(prompt)}
@@ -202,7 +309,7 @@ export function KianWidget() {
                 )}
 
                 {/* Input */}
-                <form onSubmit={handleSubmit} className="p-4 border-t border-[rgba(255,255,255,0.08)]">
+                <form onSubmit={handleSubmit} className="p-4 border-t border-[rgba(255,255,255,0.08)] bg-[var(--bg-elevated)]">
                     <div className="flex gap-3">
                         <input
                             ref={inputRef}
@@ -235,7 +342,7 @@ export function KianWidget() {
                 </form>
 
                 {/* Legal Footer */}
-                <div className="px-4 pb-3 pt-1 text-center">
+                <div className="px-4 pb-3 pt-1 text-center bg-[var(--bg-elevated)]">
                     <p className="text-[10px] text-[var(--gray-500)] leading-relaxed">
                         By using this chat, you accept our{" "}
                         <a href="/impressum" className="underline hover:text-[var(--gray-300)] transition-colors">Terms</a>
