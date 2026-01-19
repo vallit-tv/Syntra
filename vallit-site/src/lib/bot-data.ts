@@ -21,6 +21,11 @@ export const defaultBotConfig: BotConfig = {
 
 export const botKnowledgeBase: BotResponse[] = [
     {
+        id: "greeting",
+        keywords: ["hey", "hi", "hello", "hallo", "greetings", "moin"],
+        content: "Hello! I'm Kian. I can tell you about our automation services, scheduling features, or help you find the right contact. What are you looking for?",
+    },
+    {
         id: "automation",
         keywords: ["automate", "automation", "automatisieren", "automatisierung"],
         content: "I can help automate customer support, meeting scheduling, workflow execution, and more. Kian understands your business context and handles tasks end-to-end. Would you like to learn about a specific area?",
