@@ -79,7 +79,7 @@ export function StickyStepper() {
         <section ref={containerRef} className="relative py-24 md:py-32">
             {/* Floating Dock Navigation */}
             <div className="sticky top-8 z-50 flex justify-center mb-24 pointer-events-none">
-                <div className="pointer-events-auto bg-[#0A0A0A]/80 backdrop-blur-xl border border-white/10 rounded-full p-2 flex items-center gap-1 shadow-2xl ring-1 ring-white/5">
+                <div className="pointer-events-auto bg-[#0A0A0A]/80 backdrop-blur-xl border border-white/20 rounded-full p-2 flex items-center gap-1 shadow-[0_0_0_1px_rgba(0,0,0,0.5),0_8px_40px_rgba(0,0,0,0.4)] ring-1 ring-white/5">
                     {steps.map((step, index) => {
                         const isActive = activeStep === index;
                         return (

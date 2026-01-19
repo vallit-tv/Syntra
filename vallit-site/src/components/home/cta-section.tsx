@@ -1,12 +1,8 @@
 "use client";
 
-import { motion, useMotionTemplate, useMotionValue } from "framer-motion";
+import { motion, useMotionTemplate, useMotionValue, useTransform } from "framer-motion";
 import { MouseEvent, useState } from "react";
 import { ButtonLink } from "@/components/ui/button";
-
-// ... imports
-// (Keeping imports as they are usually fine, but I'll overwrite the whole file content to be safe and consistent with previous tool usage pattern, or just the component parts if possible.
-// The replace_file_content tool requires *exact* match on TargetContent. The previous view showed the whole file. I will replace the component definitions.)
 
 export function CTASection() {
     const mouseX = useMotionValue(0);
@@ -21,208 +17,183 @@ export function CTASection() {
     const [isHovered, setIsHovered] = useState(false);
 
     return (
-        <section className="py-32 md:py-48 relative overflow-hidden bg-[#030303]">
-            {/* Background Animation Layer */}
+        <section className="py-24 md:py-32 relative overflow-hidden bg-[#020202] min-h-[800px] flex items-center justify-center">
+            {/* Background Animation Layer - Radial Grid */}
             <div className="absolute inset-0 z-0">
-                <AnimatedGrid isActive={isHovered} />
+                <RadialCircuitGrid isActive={isHovered} />
             </div>
 
-            <div className="container mx-auto px-6 max-w-4xl relative z-10">
-                {/* CPU Card Metaphor */}
+            <div className="container mx-auto px-6 max-w-5xl relative z-10 flex flex-col items-center justify-center">
+
+                {/* THE "CORE" - Sci-Fi Reactor Design */}
                 <div
-                    className="group relative bg-[#0A0A0A] rounded-[2.5rem] border border-[#222] p-12 md:p-20 text-center overflow-hidden shadow-2xl"
+                    className="relative w-[300px] h-[300px] md:w-[400px] md:h-[400px] flex items-center justify-center mb-16 select-none"
                     onMouseMove={handleMouseMove}
                     onMouseEnter={() => setIsHovered(true)}
                     onMouseLeave={() => setIsHovered(false)}
                 >
-                    {/* CPU Pins/Metallic Border Effect */}
-                    <div className="absolute inset-0 rounded-[2.5rem] border-[3px] border-transparent bg-gradient-to-b from-[#333] to-[#111] [mask-image:linear-gradient(white,white)] -z-10 opacity-50" />
+                    {/* 1. Outer Tech Ring (Static) */}
+                    <div className="absolute inset-0 rounded-full border border-white/5 bg-[#050505]/80 backdrop-blur-sm" />
 
-                    {/* Internal Inner Glow */}
-                    <div className="absolute inset-0 shadow-[inset_0_0_100px_rgba(0,0,0,0.9)] rounded-[2.5rem] pointer-events-none" />
-
-                    {/* Spotlight Effect */}
+                    {/* 2. Rotating Dash Ring */}
                     <motion.div
-                        className="pointer-events-none absolute -inset-px rounded-[2.5rem] opacity-0 transition duration-300 group-hover:opacity-100"
-                        style={{
-                            background: useMotionTemplate`
-                        radial-gradient(
-                        600px circle at ${mouseX}px ${mouseY}px,
-                        rgba(34, 197, 94, 0.08),
-                        transparent 80%
-                        )
-                    `,
-                        }}
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                        className="absolute inset-[10%] rounded-full border border-dashed border-white/10 opacity-30"
+                    />
+                    <motion.div
+                        animate={{ rotate: -360 }}
+                        transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+                        className="absolute inset-[15%] rounded-full border border-dotted border-[var(--accent)]/20 opacity-40"
                     />
 
-                    {/* Circuit Pattern Overlay on Chip */}
-                    <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.05] bg-center mask-image-[radial-gradient(ellipse_at_center,black,transparent)]" />
-                    <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:20px_20px] opacity-20" />
+                    {/* 3. Glowing Core Container */}
+                    <div className="absolute inset-[25%] rounded-full bg-[#001a0f] border border-[var(--accent)]/30 shadow-[0_0_50px_rgba(34,197,94,0.1)] flex items-center justify-center overflow-hidden group">
 
-                    <div className="relative z-10 flex flex-col items-center">
-                        {/* Chip Branding / Logo placeholder */}
-                        <div className="mb-8 p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-lg">
-                            <div className="w-12 h-12 bg-gradient-to-br from-[var(--accent)] to-emerald-800 rounded-xl flex items-center justify-center">
-                                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                </svg>
-                            </div>
+                        {/* Inner Gradient Pulse */}
+                        <motion.div
+                            animate={{ opacity: [0.5, 0.8, 0.5], scale: [1, 1.1, 1] }}
+                            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                            className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--accent),transparent_70%)] opacity-20"
+                        />
+
+                        {/* Center Icon/Logo */}
+                        <div className="relative z-10 w-16 h-16 rounded-xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 flex items-center justify-center backdrop-blur-md shadow-2xl">
+                            <svg className="w-8 h-8 text-[var(--accent)] drop-shadow-[0_0_10px_rgba(34,197,94,0.5)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
                         </div>
-
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.8 }}
-                        >
-                            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 tracking-tight">
-                                Ready for AI that <br className="hidden md:block" />
-                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-200 via-emerald-400 to-emerald-200 animate-gradient-x">
-                                    actually works?
-                                </span>
-                            </h2>
-                        </motion.div>
-
-                        <motion.p
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.8, delay: 0.2 }}
-                            className="text-lg md:text-xl text-[#888] max-w-xl mx-auto mb-10 leading-relaxed font-light"
-                        >
-                            Let&apos;s build automation that fits your business. <br />
-                            No templates. No complex setup. Just results.
-                        </motion.p>
-
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            whileInView={{ opacity: 1, scale: 1 }}
-                            transition={{ duration: 0.5, delay: 0.4 }}
-                        >
-                            <ButtonLink href="/pricing#contact" size="lg" className="relative overflow-hidden group/btn px-12 py-6 text-lg rounded-xl shadow-[0_0_40px_-10px_rgba(34,197,94,0.3)] hover:shadow-[0_0_60px_-10px_rgba(34,197,94,0.5)] transition-shadow duration-500">
-                                <span className="relative z-10 text-white font-medium">Start your journey</span>
-                                <div className="absolute inset-0 -translate-x-full group-hover/btn:translate-x-full duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform ease-in-out" />
-                            </ButtonLink>
-                        </motion.div>
                     </div>
+
+                    {/* 4. Mouse-following Highlight */}
+                    <motion.div
+                        className="pointer-events-none absolute -inset-[20%] rounded-full opacity-0 transition duration-500 group-hover:opacity-100"
+                        style={{
+                            background: useMotionTemplate`
+                                radial-gradient(
+                                    300px circle at ${mouseX}px ${mouseY}px,
+                                    rgba(34, 197, 94, 0.15),
+                                    transparent 80%
+                                )
+                            `,
+                        }}
+                    />
+                </div>
+
+                {/* Text Content - Floating below */}
+                <div className="text-center relative z-20 max-w-2xl bg-black/40 backdrop-blur-md p-8 rounded-3xl border border-white/5 shadow-2xl">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8 }}
+                    >
+                        <h2 className="text-4xl md:text-6xl font-bold text-white mb-6 tracking-tight drop-shadow-xl">
+                            Ready for AI that <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent)] via-emerald-200 to-[var(--accent)] animate-gradient-x">
+                                actually works?
+                            </span>
+                        </h2>
+                    </motion.div>
+
+                    <ButtonLink href="/pricing#contact" size="lg" className="shadow-[0_0_30px_rgba(34,197,94,0.3)] hover:shadow-[0_0_50px_rgba(34,197,94,0.5)] transition-shadow duration-500">
+                        Start your journey
+                    </ButtonLink>
                 </div>
             </div>
         </section>
     );
 }
 
-function AnimatedGrid({ isActive }: { isActive: boolean }) {
+function RadialCircuitGrid({ isActive }: { isActive: boolean }) {
     return (
-        <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
-            {/* Background Tech Mesh */}
-            <div className="absolute inset-0 bg-[#020202] opacity-90" />
-            <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:60px_60px] opacity-30" />
+        <div className="absolute inset-0 overflow-hidden pointer-events-none select-none flex items-center justify-center">
+            {/* Darker Grid Background */}
+            <div className="absolute inset-0 bg-[#020202]" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(34,197,94,0.03)_1px,transparent_1px)] bg-[size:40px_40px] opacity-20" />
 
-            <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+            <svg className="absolute w-[150%] h-[150%] animate-spin-slow-reverse" style={{ animationDuration: '60s' }} viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
                 <defs>
-                    <linearGradient id="trace-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <linearGradient id="radial-trace" x1="0%" y1="0%" x2="100%" y2="0%">
                         <stop offset="0%" stopColor="transparent" />
                         <stop offset="50%" stopColor="var(--accent)" stopOpacity="1" />
                         <stop offset="100%" stopColor="transparent" />
                     </linearGradient>
-                    <filter id="glow">
-                        <feGaussianBlur stdDeviation="3.5" result="coloredBlur" />
-                        <feMerge>
-                            <feMergeNode in="coloredBlur" />
-                            <feMergeNode in="SourceGraphic" />
-                        </feMerge>
-                    </filter>
                 </defs>
 
-                <CircuitPaths isActive={isActive} side="left" count={8} />
-                <CircuitPaths isActive={isActive} side="right" count={8} />
+                <RadialTraces isActive={isActive} count={12} />
             </svg>
-
-            {/* Central Energy Field - Pulse */}
-            <motion.div
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-[var(--accent)]/5 blur-[120px] rounded-full pointer-events-none"
-                animate={{ opacity: isActive ? 0.4 : 0.1 }}
-                transition={{ duration: 0.5 }}
-            />
         </div>
     )
 }
 
-function CircuitPaths({ isActive, side, count }: { isActive: boolean, side: "left" | "right", count: number }) {
-    // Generate paths that "plug into" the central area (approx width of container is 896px = 56rem)
-    // Screen center is 50%. Container half-width is roughly 448px. 
-    // On desktop (1000px+), 50% +/- 450px is roughly where the card edges are.
-    // Let's assume the sticky-outy processing lines go from edges (0% / 100%) to around 30% / 70% to mock the visuals.
+function RadialTraces({ isActive, count }: { isActive: boolean, count: number }) {
+    // Generate radial paths radiating FROM center outwards (or inwards)
+    // Center of viewBox is 500, 500
 
     const paths = Array.from({ length: count }).map((_, i) => {
-        // Distribute start Y uniformly
-        const yStart = 10 + (i * (80 / count)); // 10% to 90%
+        const angleDeg = (i * (360 / count)) + (i % 2 * 15); // Offset slightly
+        const angleRad = (angleDeg * Math.PI) / 180;
 
-        // Distribute end Y focused towards the middle
-        const yEnd = 30 + (i * (40 / count));   // 30% to 70%
+        // Inner radius (Core boundary) ~ 200px
+        // Outer radius ~ 500px
 
-        const isLeft = side === "left";
+        const innerR = 200;
+        const outerR = 500;
 
-        // Path construction:
-        // M StartX StartY
-        // H MidX
-        // V EndY
-        // H EndX (The "Socket" entry)
+        // Simple straight radial line for now, maybe adding a "kink"
+        const startX = 500 + Math.cos(angleRad) * innerR;
+        const startY = 500 + Math.sin(angleRad) * innerR;
 
-        const startX = isLeft ? "0%" : "100%";
-        const midX = isLeft ? "15%" : "85%";
-        const socketX = isLeft ? "30%" : "70%"; // Connects to the side of the central card area (approx)
+        const endX = 500 + Math.cos(angleRad) * outerR;
+        const endY = 500 + Math.sin(angleRad) * outerR;
 
-        const d = `M ${startX} ${yStart}% H ${midX} V ${yEnd}% H ${socketX}`;
+        // Add a kink
+        const kinkR = 300 + (Math.random() * 50);
+        const kinkX = 500 + Math.cos(angleRad + 0.1) * kinkR; // Slight twist
+        const kinkY = 500 + Math.sin(angleRad + 0.1) * kinkR;
+
+        const d = `M ${startX} ${startY} L ${kinkX} ${kinkY} L ${endX} ${endY}`;
 
         return { id: i, d };
     });
 
     return (
-        <g filter="url(#glow)">
-            {paths.map((p, i) => (
+        <g>
+            {paths.map((p) => (
                 <g key={p.id}>
-                    {/* Shadow/Base Path */}
+                    {/* Base Path */}
                     <path
                         d={p.d}
                         fill="none"
                         stroke="rgba(255,255,255,0.03)"
-                        strokeWidth="1.5"
+                        strokeWidth="1"
                     />
 
-                    {/* Active Data Packet */}
+                    {/* Active Packet */}
                     <motion.path
                         d={p.d}
                         fill="none"
-                        stroke="url(#trace-gradient)"
-                        strokeWidth="2.5"
+                        stroke="url(#radial-trace)"
+                        strokeWidth="2"
                         strokeLinecap="round"
                         initial={{ pathLength: 0, opacity: 0 }}
                         animate={{
-                            pathLength: [0, 0.4, 0],
+                            pathLength: [0, 0.3, 0],
                             opacity: [0, 1, 0],
-                            pathOffset: isArrowRight(side) ? [0, 1] : [1, 0] // Direction check
+                            pathOffset: [0, 1]
                         }}
                         transition={{
-                            duration: isActive ? 0.8 + Math.random() * 0.5 : 2 + Math.random() * 2,
+                            duration: 2 + Math.random() * 2,
                             repeat: Infinity,
                             ease: "linear",
-                            delay: Math.random() * 2,
+                            delay: Math.random() * 2
                         }}
                     />
 
-                    {/* Socket Connection Checkpoint (The plug) */}
-                    <circle
-                        cx={side === "left" ? "30%" : "70%"}
-                        cy={`${30 + (i * (40 / count))}%`}
-                        r="3"
-                        fill={isActive ? "var(--accent)" : "rgba(255,255,255,0.1)"}
-                        className="transition-colors duration-500"
-                    />
+                    {/* Connection Node at start (Core side) */}
+                    <circle cx={p.d.split(' ')[1]} cy={p.d.split(' ')[2]} r="2" fill="rgba(255,255,255,0.1)" />
                 </g>
             ))}
         </g>
     );
-}
-
-function isArrowRight(side: string) {
-    return side === "left"; // Flows left to right (0 -> 1)
 }
