@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
 import { InputVisual } from "./step-visuals/input-visual";
 import { ContextVisual } from "./step-visuals/context-visual";
 import { ActionVisual } from "./step-visuals/action-visual";
@@ -75,12 +76,13 @@ export function StickyStepper() {
     }, []);
 
     return (
-        <div ref={containerRef} className="relative">
-            <div className="lg:grid lg:grid-cols-2 lg:gap-20">
-                {/* Left: Step titles (sticky on desktop) */}
-                <div className="hidden lg:block h-full">
-                    <div className="sticky top-40 space-y-2">
-                        {steps.map((step, index) => (
+        <section ref={containerRef} className="relative py-24 md:py-32">
+            {/* Floating Dock Navigation */}
+            <div className="sticky top-8 z-50 flex justify-center mb-24 pointer-events-none">
+                <div className="pointer-events-auto bg-[#0A0A0A]/80 backdrop-blur-xl border border-white/10 rounded-full p-2 flex items-center gap-1 shadow-2xl ring-1 ring-white/5">
+                    {steps.map((step, index) => {
+                        const isActive = activeStep === index;
+                        return (
                             <button
                                 key={step.id}
                                 onClick={() => {
@@ -89,67 +91,64 @@ export function StickyStepper() {
                                         block: "center",
                                     });
                                 }}
-                                className="group relative w-full text-left px-6 py-4 rounded-full transition-colors"
+                                className="relative px-5 py-2 rounded-full text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-white/20"
                             >
-                                {/* Active Background Pill */}
-                                {activeStep === index && (
-                                    <div
-                                        className="absolute inset-0 bg-white/10 border border-white/5 rounded-full backdrop-blur-sm transition-all duration-300"
+                                {isActive && (
+                                    <motion.div
+                                        layoutId="activeTab"
+                                        className="absolute inset-0 bg-white/10 border border-white/5 rounded-full"
+                                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                                     />
                                 )}
-
-                                <div className="relative flex items-center justify-between z-10">
-                                    <span className={`text-lg font-medium transition-colors duration-300 ${activeStep === index ? "text-white" : "text-neutral-500 group-hover:text-neutral-300"}`}>
-                                        {step.title}
-                                    </span>
-                                    {activeStep === index && (
-                                        <div className="w-2 h-2 rounded-full bg-[var(--accent)] shadow-[0_0_10px_var(--accent)]" />
-                                    )}
-                                </div>
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Right: Step content */}
-                <div className="space-y-40 pb-40">
-                    {steps.map((step, index) => (
-                        <div
-                            key={step.id}
-                            ref={(el) => {
-                                stepRefs.current[index] = el;
-                            }}
-                            className="scroll-mt-40"
-                        >
-                            {/* Mobile step indicator */}
-                            <div className="lg:hidden flex items-center gap-3 mb-6">
-                                <span className="w-8 h-8 rounded-full bg-[var(--accent)] text-[var(--bg-body)] flex items-center justify-center text-sm font-medium">
-                                    {index + 1}
-                                </span>
-                                <span className="text-xl font-semibold text-white">
+                                <span className={`relative z-10 transition-colors duration-300 ${isActive ? "text-white" : "text-neutral-400 hover:text-neutral-200"}`}>
                                     {step.title}
                                 </span>
-                            </div>
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
 
-                            {/* Visual Container */}
-                            <div className="relative group">
-                                <div className={`relative h-[400px] w-full bg-[#0A0A0A] rounded-2xl border transition-all duration-500 overflow-hidden
-                  ${activeStep === index
-                                        ? "border-[var(--accent)]/50 shadow-[0_0_50px_-20px_rgba(34,197,94,0.1)]"
-                                        : "border-white/10 opacity-50 grayscale"
-                                    }`}>
-                                    <step.VisualComponent isActive={activeStep === index} />
-                                </div>
+            {/* Content Stack */}
+            <div className="container mx-auto px-6 max-w-5xl space-y-32 md:space-y-48">
+                {steps.map((step, index) => (
+                    <div
+                        key={step.id}
+                        ref={(el) => {
+                            stepRefs.current[index] = el;
+                        }}
+                        className="scroll-mt-40 grid md:grid-cols-2 gap-12 items-center"
+                    >
+                        {/* Text Block */}
+                        <div className={`space-y-6 ${index % 2 === 1 ? 'md:order-2' : ''}`}>
+                            <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-xl font-bold text-white mb-6">
+                                {index + 1}
                             </div>
-
-                            {/* Description */}
-                            <p className="mt-8 text-neutral-400 text-lg leading-relaxed max-w-lg">
+                            <h3 className="text-3xl md:text-4xl font-bold tracking-tight text-white">
+                                {step.title}
+                            </h3>
+                            <p className="text-lg text-neutral-400 leading-relaxed">
                                 {step.description}
                             </p>
                         </div>
-                    ))}
-                </div>
+
+                        {/* Visual Block */}
+                        <div className={`relative ${index % 2 === 1 ? 'md:order-1' : ''}`}>
+                            <div className={`relative h-[400px] w-full bg-[#0A0A0A] rounded-3xl border transition-all duration-700 overflow-hidden group
+                                ${activeStep === index
+                                    ? "border-[var(--accent)]/30 shadow-[0_0_80px_-20px_rgba(34,197,94,0.15)] opacity-100"
+                                    : "border-white/5 opacity-40 grayscale"
+                                }`}>
+
+                                {/* Inner Glow */}
+                                <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent pointer-events-none" />
+
+                                <step.VisualComponent isActive={activeStep === index} />
+                            </div>
+                        </div>
+                    </div>
+                ))}
             </div>
-        </div>
+        </section>
     );
 }
