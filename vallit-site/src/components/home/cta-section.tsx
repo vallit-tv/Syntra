@@ -109,15 +109,15 @@ function AnimatedGrid({ isActive }: { isActive: boolean }) {
                         <path
                             d={`M 0 ${y}% C 30% ${y}%, 30% 50%, 50% 50%`}
                             fill="none"
-                            stroke="rgba(255,255,255,0.05)"
-                            strokeWidth="1"
+                            stroke="rgba(255,255,255,0.08)"
+                            strokeWidth="1.5"
                         />
                         {/* Animated Pulse */}
                         <motion.path
                             d={`M 0 ${y}% C 30% ${y}%, 30% 50%, 50% 50%`}
                             fill="none"
                             stroke="url(#line-gradient)"
-                            strokeWidth="2"
+                            strokeWidth="3"
                             initial={{ pathLength: 0, opacity: 0 }}
                             animate={{
                                 pathLength: 1,
