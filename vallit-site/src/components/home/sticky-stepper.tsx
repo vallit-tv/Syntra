@@ -94,19 +94,35 @@ export function StickyStepper() {
                                 <div className="flex items-center gap-6">
                                     <div className="relative flex flex-col items-center">
                                         {/* Number Circle */}
-                                        <span
-                                            className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-300 z-10 
+                                        <div className="relative z-10 flex items-center justify-center">
+                                            <span
+                                                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-300 relative z-20
                         ${activeStep === index
-                                                    ? "bg-[var(--accent)] text-[var(--bg-body)] scale-110"
-                                                    : "bg-white/5 text-neutral-500 group-hover:bg-white/10 group-hover:text-neutral-400"
-                                                }`}
-                                        >
-                                            {index + 1}
-                                        </span>
+                                                        ? "bg-[var(--accent)] text-[var(--bg-body)] scale-110"
+                                                        : "bg-neutral-800 text-neutral-500 group-hover:bg-neutral-700 group-hover:text-neutral-300"
+                                                    }`}
+                                            >
+                                                {index + 1}
+                                            </span>
+                                            {/* Glow effect on active/hover */}
+                                            <div
+                                                className={`absolute inset-0 rounded-full transition-all duration-500 z-10 blur-md
+                          ${activeStep === index
+                                                        ? "bg-[var(--accent)]/50 scale-150 opacity-100"
+                                                        : "bg-white/20 scale-100 opacity-0 group-hover:opacity-100"
+                                                    }`}
+                                            />
+                                        </div>
 
                                         {/* Vertical Line (except for last item) */}
                                         {index !== steps.length - 1 && (
-                                            <div className="absolute top-8 w-px h-16 bg-white/5 -z-0" />
+                                            <div className="absolute top-8 w-px h-28 bg-white/5 -z-0">
+                                                <div
+                                                    className={`absolute top-0 w-full bg-[var(--accent)] transition-all duration-500
+                                                    ${activeStep > index ? "h-full" : "h-0"}
+                                                    `}
+                                                />
+                                            </div>
                                         )}
                                     </div>
 

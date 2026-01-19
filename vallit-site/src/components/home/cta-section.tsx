@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useMotionTemplate, useMotionValue } from "framer-motion";
-import { MouseEvent } from "react";
+import { MouseEvent, useState } from "react";
 import { ButtonLink } from "@/components/ui/button";
 
 export function CTASection() {
@@ -14,11 +14,13 @@ export function CTASection() {
         mouseY.set(clientY - top);
     }
 
+    const [isHovered, setIsHovered] = useState(false);
+
     return (
         <section className="py-24 md:py-32 relative overflow-hidden">
             {/* Background Animation Layer */}
             <div className="absolute inset-0 z-0">
-                <AnimatedGrid />
+                <AnimatedGrid isActive={isHovered} />
             </div>
 
             <div className="container mx-auto px-6 max-w-5xl relative z-10">
@@ -69,6 +71,8 @@ export function CTASection() {
                             initial={{ opacity: 0, scale: 0.9 }}
                             whileInView={{ opacity: 1, scale: 1 }}
                             transition={{ duration: 0.5, delay: 0.4 }}
+                            onMouseEnter={() => setIsHovered(true)}
+                            onMouseLeave={() => setIsHovered(false)}
                         >
                             <ButtonLink href="/pricing#contact" size="lg" className="relative overflow-hidden group/btn">
                                 <span className="relative z-10">Start your journey</span>
@@ -82,27 +86,97 @@ export function CTASection() {
     );
 }
 
-function AnimatedGrid() {
+function AnimatedGrid({ isActive }: { isActive: boolean }) {
     return (
-        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-30">
-            <div className="absolute w-full h-full bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:100px_100px] [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_70%)]" />
+        <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
+            {/* Base grid */}
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px] [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_70%)]" />
 
-            {/* Moving horizontal lines */}
-            {[10, 40, 70].map((top, i) => (
-                <motion.div
-                    key={i}
-                    className="absolute h-px w-full bg-gradient-to-r from-transparent via-[var(--accent)]/50 to-transparent"
-                    style={{ top: `${top}%` }}
-                    initial={{ x: "-100%" }}
-                    animate={{ x: "100%" }}
-                    transition={{
-                        duration: 8 + i * 2,
-                        repeat: Infinity,
-                        ease: "linear",
-                        delay: i * 2
-                    }}
-                />
-            ))}
+            {/* CPU Cores connecting to center */}
+            <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="line-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="transparent" />
+                        <stop offset="50%" stopColor="var(--accent)" />
+                        <stop offset="100%" stopColor="transparent" />
+                    </linearGradient>
+                </defs>
+
+                {/* Left Side Connections */}
+                {[20, 40, 60, 80].map((y, i) => (
+                    <g key={`left-${i}`}>
+                        {/* Static Path */}
+                        <path
+                            d={`M 0 ${y}% C 30% ${y}%, 30% 50%, 50% 50%`}
+                            fill="none"
+                            stroke="rgba(255,255,255,0.05)"
+                            strokeWidth="1"
+                        />
+                        {/* Animated Pulse */}
+                        <motion.path
+                            d={`M 0 ${y}% C 30% ${y}%, 30% 50%, 50% 50%`}
+                            fill="none"
+                            stroke="url(#line-gradient)"
+                            strokeWidth="2"
+                            initial={{ pathLength: 0, opacity: 0 }}
+                            animate={{
+                                pathLength: 1,
+                                opacity: [0, 1, 0],
+                                transition: {
+                                    duration: isActive ? 0.5 : 2, // Faster when active
+                                    repeat: Infinity,
+                                    ease: "linear",
+                                    delay: i * (isActive ? 0.1 : 0.5),
+                                    repeatDelay: isActive ? 0.1 : 1
+                                }
+                            }}
+                        />
+                    </g>
+                ))}
+
+                {/* Right Side Connections */}
+                {[20, 40, 60, 80].map((y, i) => (
+                    <g key={`right-${i}`}>
+                        <path
+                            d={`M 100% ${y}% C 70% ${y}%, 70% 50%, 50% 50%`}
+                            fill="none"
+                            stroke="rgba(255,255,255,0.05)"
+                            strokeWidth="1"
+                        />
+                        <motion.path
+                            d={`M 100% ${y}% C 70% ${y}%, 70% 50%, 50% 50%`}
+                            fill="none"
+                            stroke="url(#line-gradient)"
+                            strokeWidth="2"
+                            initial={{ pathLength: 0, opacity: 0 }}
+                            animate={{
+                                pathLength: 1,
+                                opacity: [0, 1, 0],
+                                transition: {
+                                    duration: isActive ? 0.5 : 2, // Faster when active
+                                    repeat: Infinity,
+                                    ease: "linear",
+                                    delay: i * (isActive ? 0.1 : 0.5) + 0.5,
+                                    repeatDelay: isActive ? 0.1 : 1
+                                }
+                            }}
+                        />
+                    </g>
+                ))}
+            </svg>
+
+            {/* Central Pulse Effect behind button */}
+            <motion.div
+                animate={{
+                    scale: isActive ? [1, 1.2, 1] : [1, 1.1, 1],
+                    opacity: isActive ? 0.8 : 0.3
+                }}
+                transition={{
+                    duration: isActive ? 1 : 2,
+                    repeat: Infinity
+                }}
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] h-[200px] bg-[var(--accent)]/10 rounded-full blur-3xl"
+            />
         </div>
     )
 }

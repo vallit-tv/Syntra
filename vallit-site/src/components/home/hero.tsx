@@ -1,5 +1,8 @@
+"use client";
+
 import { ButtonLink } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { motion } from "framer-motion";
 
 export function Hero() {
     return (
@@ -43,10 +46,20 @@ export function Hero() {
                         <div className="absolute inset-0 bg-gradient-to-b from-[var(--accent-dim)] to-transparent opacity-30 blur-3xl -z-10" />
 
                         {/* Mock UI */}
-                        <div className="bg-[rgba(255,255,255,0.02)] backdrop-blur-sm rounded-2xl border border-[rgba(255,255,255,0.08)] p-4 md:p-6">
+                        <motion.div
+                            initial={{ opacity: 0, y: 40, filter: "blur(10px)" }}
+                            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                            transition={{ duration: 0.8, ease: "easeOut" }}
+                            className="bg-[rgba(255,255,255,0.02)] backdrop-blur-sm rounded-2xl border border-[rgba(255,255,255,0.08)] p-4 md:p-6"
+                        >
                             <div className="grid md:grid-cols-3 gap-4">
                                 {/* Chat Panel */}
-                                <div className="bg-[var(--bg-elevated)] rounded-xl border border-[rgba(255,255,255,0.06)] p-4">
+                                <motion.div
+                                    initial={{ opacity: 0, x: -20, filter: "blur(5px)" }}
+                                    animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+                                    transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+                                    className="bg-[var(--bg-elevated)] rounded-xl border border-[rgba(255,255,255,0.06)] p-4"
+                                >
                                     <div className="flex items-center gap-2 mb-4">
                                         <div className="w-3 h-3 rounded-full bg-red-500/50" />
                                         <div className="w-3 h-3 rounded-full bg-yellow-500/50" />
@@ -59,16 +72,26 @@ export function Hero() {
                                                 Can I reschedule my meeting?
                                             </p>
                                         </div>
-                                        <div className="bg-[var(--accent-dim)] rounded-lg p-3 ml-4">
+                                        <motion.div
+                                            initial={{ opacity: 0, scale: 0.9 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            transition={{ duration: 0.4, delay: 1 }}
+                                            className="bg-[var(--accent-dim)] rounded-lg p-3 ml-4"
+                                        >
                                             <p className="text-xs text-[var(--accent)]">
                                                 Done! Moved to Thursday 3pm.
                                             </p>
-                                        </div>
+                                        </motion.div>
                                     </div>
-                                </div>
+                                </motion.div>
 
                                 {/* Calendar Panel */}
-                                <div className="bg-[var(--bg-elevated)] rounded-xl border border-[rgba(255,255,255,0.06)] p-4">
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20, filter: "blur(5px)" }}
+                                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                                    transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
+                                    className="bg-[var(--bg-elevated)] rounded-xl border border-[rgba(255,255,255,0.06)] p-4"
+                                >
                                     <div className="flex items-center gap-2 mb-4">
                                         <div className="w-3 h-3 rounded-full bg-red-500/50" />
                                         <div className="w-3 h-3 rounded-full bg-yellow-500/50" />
@@ -80,22 +103,30 @@ export function Hero() {
                                     <div className="space-y-2">
                                         {["10:00 AM - Team Sync", "2:00 PM - Client Demo", "4:30 PM - Review"].map(
                                             (item, i) => (
-                                                <div
+                                                <motion.div
                                                     key={i}
+                                                    initial={{ opacity: 0, x: -10 }}
+                                                    animate={{ opacity: 1, x: 0 }}
+                                                    transition={{ delay: 0.8 + (i * 0.1) }}
                                                     className={`text-xs p-2 rounded-lg ${i === 1
-                                                            ? "bg-[var(--accent-dim)] text-[var(--accent)]"
-                                                            : "bg-[rgba(255,255,255,0.03)] text-[var(--gray-400)]"
+                                                        ? "bg-[var(--accent-dim)] text-[var(--accent)]"
+                                                        : "bg-[rgba(255,255,255,0.03)] text-[var(--gray-400)]"
                                                         }`}
                                                 >
                                                     {item}
-                                                </div>
+                                                </motion.div>
                                             )
                                         )}
                                     </div>
-                                </div>
+                                </motion.div>
 
                                 {/* Workflow Panel */}
-                                <div className="bg-[var(--bg-elevated)] rounded-xl border border-[rgba(255,255,255,0.06)] p-4">
+                                <motion.div
+                                    initial={{ opacity: 0, x: 20, filter: "blur(5px)" }}
+                                    animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+                                    transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
+                                    className="bg-[var(--bg-elevated)] rounded-xl border border-[rgba(255,255,255,0.06)] p-4"
+                                >
                                     <div className="flex items-center gap-2 mb-4">
                                         <div className="w-3 h-3 rounded-full bg-red-500/50" />
                                         <div className="w-3 h-3 rounded-full bg-yellow-500/50" />
@@ -117,18 +148,18 @@ export function Hero() {
                                                 <span className="text-[var(--gray-300)]">{item.label}</span>
                                                 <span
                                                     className={`w-2 h-2 rounded-full ${item.status === "active"
-                                                            ? "bg-[var(--accent)] animate-pulse"
-                                                            : item.status === "done"
-                                                                ? "bg-green-500"
-                                                                : "bg-[var(--gray-500)]"
+                                                        ? "bg-[var(--accent)] animate-pulse"
+                                                        : item.status === "done"
+                                                            ? "bg-green-500"
+                                                            : "bg-[var(--gray-500)]"
                                                         }`}
                                                 />
                                             </div>
                                         ))}
                                     </div>
-                                </div>
+                                </motion.div>
                             </div>
-                        </div>
+                        </motion.div>
                     </div>
                 </div>
             </div>
