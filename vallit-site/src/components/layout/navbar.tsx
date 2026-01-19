@@ -82,7 +82,7 @@ export function Navbar() {
 
                     {/* Desktop CTA */}
                     <div className="hidden md:flex items-center gap-3">
-                        <ButtonLink href="https://console.vallit.net" variant="secondary" size="sm" external>
+                        <ButtonLink href="/login" variant="secondary" size="sm">
                             Dashboard
                         </ButtonLink>
                         <ButtonLink href="/pricing#contact" size="sm">
@@ -132,7 +132,7 @@ export function Navbar() {
                         {link.label}
                     </Link>
                 ))}
-                <ButtonLink href="https://console.vallit.net" variant="secondary" size="lg" className="mt-4" external>
+                <ButtonLink href="/login" variant="secondary" size="lg" className="mt-4">
                     Dashboard
                 </ButtonLink>
                 <ButtonLink href="/pricing#contact" size="lg">
