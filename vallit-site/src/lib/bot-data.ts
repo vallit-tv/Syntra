@@ -28,32 +28,32 @@ export const botKnowledgeBase: BotResponse[] = [
     {
         id: "scheduling",
         keywords: ["schedule", "scheduling", "calendar", "termin", "kalender", "appointment"],
-        content: "I can help you schedule an appointment with our team. Please select a time that works for you.",
-        action: "calendar",
+        content: "Our scheduling agent manages calendars, sends invites, and handles rescheduling automatically. It works with Google Calendar and Outlook. Would you like to see a demo?",
+        // action: "calendar", // Disabled for Vallit main site - specific booking is for clients only
     },
     {
         id: "pricing",
         keywords: ["price", "pricing", "cost", "kosten", "preis"],
-        content: "We offer tailored solutions for every business. To give you an exact quote, we'd need to understand your requirements better. Shall we set up a quick call?",
-        action: "calendar", // Driving to calendar is usually better for sales
+        content: "We offer tailored solutions for every business. To give you an exact quote, we'd need to understand your requirements better. You can check our pricing page for more details.",
+        // action: "calendar", 
     },
     {
         id: "contact",
         keywords: ["contact", "email", "mail", "kontakt", "sprechen", "talk"],
-        content: "I'd be happy to connect you with our team! You can either book a direct slot or leave your details.",
-        action: "calendar",
+        content: "I'd be happy to connect you with our team! Please use the contact form on our website to reach out.",
+        action: "contact_form", // Changed to generic text or handled differently
     },
     {
         id: "fallback",
         keywords: [],
-        content: "I'm not sure I quite understood that. However, our team certainly can! Would you like to schedule a quick chat to discuss your needs?",
-        action: "calendar",
+        content: "I'm not sure I quite understood that. However, our team certainly can! Please browse our solutions page or contact us directly.",
+        // action: "calendar",
     }
 ];
 
 export const gettingStartedPrompts = [
     "What can you automate?",
-    "Book an appointment",
+    "How does it work?", // Changed from "Show scheduling"
     "Pricing info",
     "Contact support"
 ];
