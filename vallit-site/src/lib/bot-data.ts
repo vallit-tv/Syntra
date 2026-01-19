@@ -26,6 +26,11 @@ export const botKnowledgeBase: BotResponse[] = [
         content: "Hello! I'm Kian. I can tell you about our automation services, scheduling features, or help you find the right contact. What are you looking for?",
     },
     {
+        id: "capabilities",
+        keywords: ["what can you do", "help", "features", "capabilities", "können", "hilfe"],
+        content: "I'm designed to help you automate your business processes. I can:\n• Schedule appointments automatically\n• Answer customer inquiries 24/7\n• Integrate with your existing tools\n\nWould you like to explore a specific feature?",
+    },
+    {
         id: "automation",
         keywords: ["automate", "automation", "automatisieren", "automatisierung"],
         content: "I can help automate customer support, meeting scheduling, workflow execution, and more. Kian understands your business context and handles tasks end-to-end. Would you like to learn about a specific area?",
