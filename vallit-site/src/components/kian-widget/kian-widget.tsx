@@ -40,23 +40,6 @@ export function KianWidget() {
         }
     }, [isOpen, messages]);
 
-    const findResponse = (text: string): BotResponse => {
-        const lowerText = text.toLowerCase();
-
-        // Exact match check first (for prompts)
-        const exactMatch = botKnowledgeBase.find(kb =>
-            kb.keywords.some(k => k.toLowerCase() === lowerText)
-        );
-        if (exactMatch) return exactMatch;
-
-        // Partial match
-        const partialMatch = botKnowledgeBase.find(kb =>
-            kb.keywords.some(k => lowerText.includes(k.toLowerCase()))
-        );
-
-        return partialMatch || botKnowledgeBase.find(kb => kb.id === "fallback")!;
-    };
-
     const handleSend = async (text: string) => {
         if (!text.trim()) return;
 
@@ -71,20 +54,63 @@ export function KianWidget() {
         setInput("");
         setIsTyping(true);
 
-        // Simulate response delay
-        await new Promise((resolve) => setTimeout(resolve, 600 + Math.random() * 400));
+        try {
+            // Call Python Backend API
+            // In production (Vercel), we use relative path to hit the rewrite rule in vercel.json
+            // Locally, we use .env.local to point to Flask
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
-        const responseData = findResponse(text);
+            // Generate or get session ID (simple local storage or memory for now)
+            let sessionId = localStorage.getItem("vallit_session_id");
+            if (!sessionId) {
+                sessionId = `web_${Date.now()}`;
+                localStorage.setItem("vallit_session_id", sessionId);
+            }
 
-        const assistantMessage: Message = {
-            id: (Date.now() + 1).toString(),
-            role: "assistant",
-            content: responseData.content,
-            type: responseData.action === "calendar" ? "calendar" : "text",
-        };
+            const response = await fetch(`${API_URL}/api/chat/message`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    message: text,
+                    session_id: sessionId,
+                    widget_id: "vallit-web",  // Identifier for the main site
+                    // company_id: "..." // Optional: defaults to Generic/Vallit if backend handles it
+                })
+            });
 
-        setMessages((prev) => [...prev, assistantMessage]);
-        setIsTyping(false);
+            const data = await response.json();
+
+            if (data.status === "success") {
+                const assistantMessage: Message = {
+                    id: (Date.now() + 1).toString(),
+                    role: "assistant",
+                    content: data.response,
+                    type: "text" // Backend needs to return type/action if needed
+                };
+                setMessages((prev) => [...prev, assistantMessage]);
+            } else {
+                // Fallback for error
+                const errorMessage: Message = {
+                    id: (Date.now() + 1).toString(),
+                    role: "assistant",
+                    content: "I'm having trouble connecting to my brain right now. Please try again later.",
+                    type: "text",
+                };
+                setMessages((prev) => [...prev, errorMessage]);
+            }
+
+        } catch (error) {
+            console.error("Chat API Error:", error);
+            const errorMessage: Message = {
+                id: (Date.now() + 1).toString(),
+                role: "assistant",
+                content: "Sorry, I can't connect to the server. Please check your internet connection.",
+                type: "text",
+            };
+            setMessages((prev) => [...prev, errorMessage]);
+        } finally {
+            setIsTyping(false);
+        }
     };
 
     const handleQuickPrompt = (prompt: string) => {

@@ -48,6 +48,11 @@ export const botKnowledgeBase: BotResponse[] = [
         // action: "calendar", 
     },
     {
+        id: "continue",
+        keywords: ["go on", "tell me more", "continue", "details", "more", "weiter", "erzähl mir mehr"],
+        content: "I'd love to! Our core strength is connecting your tools (like Zoom, Email, CRM) to automate workflows. For example, I can book meetings and sync them instantly.\n\nType 'scheduling' to see how that works, or 'contact' to speak with us.",
+    },
+    {
         id: "contact",
         keywords: ["contact", "email", "mail", "kontakt", "sprechen", "talk"],
         content: "I'd be happy to connect you with our team! Please use the contact form on our website to reach out.",
