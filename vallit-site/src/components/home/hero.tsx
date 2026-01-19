@@ -2,79 +2,25 @@
 
 import { ButtonLink } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useRef } from "react";
 
 export function Hero() {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const { scrollYProgress } = useScroll({
+        target: containerRef,
+        offset: ["start start", "end start"],
+    });
+
+    const y = useTransform(scrollYProgress, [0, 1], [0, 200]);
+    const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+
     return (
-        <section className="relative min-h-[90vh] flex items-center pt-20 pb-20 overflow-hidden perspective-[2000px]">
-            {/* Background Visual Layer - Crisp & Visible */}
-            <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
-                <div className="w-full max-w-7xl px-6 h-full flex items-center justify-center">
-                    <motion.div
-                        initial={{ opacity: 0, rotateX: 25, y: 100, scale: 0.9 }}
-                        animate={{ opacity: 1, rotateX: 12, y: 0, scale: 1 }}
-                        transition={{ duration: 1.2, ease: "circOut" }}
-                        style={{ transformStyle: "preserve-3d" }}
-                        className="relative w-full max-w-5xl"
-                    >
-                        {/* 3D Mockup Container - Brightened Border & Glow */}
-                        <div className="relative bg-[#050505] rounded-xl border border-white/20 shadow-[0_0_60px_-15px_rgba(255,255,255,0.1)] overflow-hidden ring-1 ring-white/10 rotate-x-12 transform-gpu">
-                            {/* Glass Edge Highlight */}
-                            <div className="absolute inset-0 rounded-xl ring-1 ring-white/30 pointer-events-none z-50 mix-blend-overlay" />
+        <section ref={containerRef} className="relative pt-32 pb-0 md:pt-48 overflow-hidden bg-[#020202]">
 
-                            {/* Window Config Bar */}
-                            <div className="h-10 border-b border-white/10 bg-[#0A0A0A] flex items-center px-4 gap-2">
-                                <div className="flex gap-2">
-                                    <div className="w-3 h-3 rounded-full bg-[#333] border border-white/10" />
-                                    <div className="w-3 h-3 rounded-full bg-[#333] border border-white/10" />
-                                    <div className="w-3 h-3 rounded-full bg-[#333] border border-white/10" />
-                                </div>
-                            </div>
-
-                            {/* Content Grid - Crisp Interface */}
-                            <div className="grid md:grid-cols-12 gap-0 h-[700px] bg-[#030303]">
-                                {/* Sidebar */}
-                                <div className="md:col-span-3 border-r border-white/5 p-4 hidden md:flex flex-col gap-3 bg-[#050505]">
-                                    {[1, 2, 3, 4, 5, 6].map((i) => (
-                                        <div key={i} className={`h-8 rounded-md w-full ${i === 2 ? 'bg-white/10' : 'bg-white/[0.02]'}`} />
-                                    ))}
-                                </div>
-                                {/* Main Area */}
-                                <div className="md:col-span-9 p-8">
-                                    <div className="flex items-center justify-between mb-10">
-                                        <div className="h-8 w-40 bg-white/[0.04] rounded-lg border border-white/5" />
-                                        <div className="flex gap-3">
-                                            <div className="h-8 w-8 rounded-full bg-white/[0.04] border border-white/5" />
-                                            <div className="h-8 w-24 bg-[var(--accent)]/10 border border-[var(--accent)]/20 rounded-lg" />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-6">
-                                        {[1, 2, 3].map((i) => (
-                                            <div key={i} className="group relative h-28 rounded-xl bg-[#080808] border border-white/5 w-full overflow-hidden">
-                                                <div className="absolute inset-0 bg-gradient-to-r from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                                                <div className="p-4 flex gap-4">
-                                                    <div className="w-12 h-12 rounded-lg bg-white/5" />
-                                                    <div className="space-y-2 flex-1">
-                                                        <div className="h-4 w-1/3 bg-white/10 rounded" />
-                                                        <div className="h-3 w-1/2 bg-white/5 rounded" />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </motion.div>
-                </div>
-            </div>
-
-            {/* Content Layer - Text Readability protection */}
-            <div className="container relative z-10 mx-auto px-6 max-w-6xl">
-                <div className="max-w-4xl mx-auto text-center">
-                    {/* Readability backing for text */}
-                    <div className="absolute inset-0 -z-10 bg-gradient-to-b from-[#030303]/90 via-[#030303]/70 to-transparent blur-3xl scale-150 transform -translate-y-20" />
-
+            {/* 1. Text Content Layer (Top) */}
+            <div className="container relative z-20 mx-auto px-6 max-w-5xl text-center mb-12 sm:mb-20">
+                <motion.div style={{ opacity, y }}>
                     {/* Badge */}
                     <motion.div
                         initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
@@ -87,56 +33,99 @@ export function Hero() {
                     </motion.div>
 
                     {/* Title */}
-                    <h1 className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight mb-8 drop-shadow-2xl">
-                        <span className="block overflow-hidden p-2">
-                            <motion.span
-                                initial={{ y: "100%", filter: "blur(20px)", opacity: 0 }}
-                                animate={{ y: 0, filter: "blur(0px)", opacity: 1 }}
-                                transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-                                className="block text-gradient"
-                            >
-                                AI systems that work.
-                            </motion.span>
-                        </span>
-                        <span className="block overflow-hidden p-2">
-                            <motion.span
-                                initial={{ y: "100%", filter: "blur(20px)", opacity: 0 }}
-                                animate={{ y: 0, filter: "blur(0px)", opacity: 1 }}
-                                transition={{ duration: 1, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-                                className="block text-white"
-                            >
-                                Built for you.
-                            </motion.span>
-                        </span>
+                    <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight mb-8 drop-shadow-2xl">
+                        AI systems that work. <br />
+                        <span className="text-[#888]">Built for you.</span>
                     </h1>
 
                     {/* Subtitle */}
                     <motion.p
-                        initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-                        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
-                        className="text-xl md:text-2xl text-[var(--gray-300)] leading-relaxed max-w-2xl mx-auto mb-12 drop-shadow-lg"
+                        className="text-xl md:text-2xl text-[var(--gray-300)] leading-relaxed max-w-2xl mx-auto mb-12"
                     >
                         Kian understands your business context, handles support, schedules
-                        meetings, and executes workflows end-to-end. We build and deploy it for
-                        you.
+                        meetings, and executes workflows end-to-end.
                     </motion.p>
 
                     {/* CTAs */}
                     <motion.div
-                        initial={{ opacity: 0, y: 20, filter: "blur(5px)" }}
-                        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.5, ease: "easeOut" }}
                         className="flex flex-col sm:flex-row items-center justify-center gap-4"
                     >
-                        <ButtonLink href="/pricing#contact" size="lg" className="shadow-xl shadow-[var(--accent)]/20">
+                        <ButtonLink href="/pricing#contact" size="lg" className="shadow-lg shadow-[var(--accent)]/20 px-8 py-6 text-lg">
                             Contact Us
                         </ButtonLink>
-                        <ButtonLink href="/features" variant="secondary" size="lg" className="bg-white/5 border border-white/10 hover:bg-white/10 backdrop-blur-md">
+                        <ButtonLink href="/features" variant="secondary" size="lg" className="bg-white/5 border border-white/10 hover:bg-white/10 px-8 py-6 text-lg">
                             See Features
                         </ButtonLink>
                     </motion.div>
-                </div>
+                </motion.div>
+            </div>
+
+            {/* 2. Visual Layer (Bottom - Tilted Console) */}
+            <div className="relative w-full max-w-[1400px] mx-auto perspective-[2000px] z-10">
+                <motion.div
+                    initial={{ opacity: 0, rotateX: 30, y: 100 }}
+                    animate={{ opacity: 1, rotateX: 20, y: 0 }}
+                    transition={{ duration: 1.4, ease: "circOut", delay: 0.2 }}
+                    style={{
+                        transformStyle: "preserve-3d",
+                        transformOrigin: "top center",
+                    }}
+                    className="relative w-full"
+                >
+                    {/* The 3D Console/Interface */}
+                    <div className="relative mx-auto w-full md:w-[90%] aspect-[16/9] bg-[#050505] rounded-t-2xl border-t border-x border-white/10 shadow-[0_-20px_60px_-20px_rgba(255,255,255,0.05)] overflow-hidden ring-1 ring-white/5">
+
+                        {/* Internal Reflection / Gloss */}
+                        <div className="absolute inset-0 bg-gradient-to-b from-white/[0.03] to-transparent pointer-events-none" />
+
+                        {/* Status Bar */}
+                        <div className="h-12 border-b border-white/5 bg-[#080808] flex items-center px-6 justify-between">
+                            <div className="flex gap-2">
+                                <div className="w-3 h-3 rounded-full bg-white/10" />
+                                <div className="w-3 h-3 rounded-full bg-white/10" />
+                            </div>
+                            <div className="text-xs font-mono text-white/20">VALLIT_OS_V4.2.0</div>
+                        </div>
+
+                        {/* Content Grid */}
+                        <div className="p-8 grid grid-cols-12 gap-6 h-full bg-[#030303]">
+                            {/* Left Panel */}
+                            <div className="col-span-3 hidden md:flex flex-col gap-4 border-r border-white/5 pr-6">
+                                <div className="h-8 w-24 bg-white/5 rounded-md" />
+                                <div className="space-y-2 mt-4">
+                                    {[1, 2, 3, 4, 5].map(i => (
+                                        <div key={i} className="h-10 w-full bg-white/[0.02] rounded-lg border border-white/[0.02]" />
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Main Board */}
+                            <div className="col-span-12 md:col-span-9 flex flex-col gap-6">
+                                <div className="flex justify-between items-center">
+                                    <div className="h-10 w-48 bg-white/5 rounded-lg" />
+                                    <div className="h-10 w-10 rounded-full bg-[var(--accent)]/20 border border-[var(--accent)]/30" />
+                                </div>
+                                <div className="grid grid-cols-3 gap-4">
+                                    {[1, 2, 3].map(i => (
+                                        <div key={i} className="aspect-video bg-[#0A0A0A] rounded-xl border border-white/5 relative overflow-hidden group">
+                                            <div className="absolute inset-0 bg-gradient-to-tr from-white/[0.05] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="h-40 bg-[#0A0A0A] rounded-xl border border-white/5" />
+                            </div>
+                        </div>
+
+                        {/* Bottom Fade Mask (Linear Style) */}
+                        <div className="absolute inset-0 z-50 bg-gradient-to-b from-transparent via-transparent to-[#020202] pointer-events-none" />
+                    </div>
+                </motion.div>
             </div>
         </section>
     );
