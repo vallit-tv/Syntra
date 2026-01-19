@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useMotionTemplate, useMotionValue, useTransform } from "framer-motion";
+import { motion, useMotionTemplate, useMotionValue } from "framer-motion";
 import { MouseEvent, useState } from "react";
 import { ButtonLink } from "@/components/ui/button";
 
@@ -130,27 +130,25 @@ function RadialTraces({ isActive, count }: { isActive: boolean, count: number })
     // Generate radial paths radiating FROM center outwards (or inwards)
     // Center of viewBox is 500, 500
 
+    // Core logical radius in SVG units: ~170 (slightly overlapping 400px width visual element on desktop)
+    const innerR = 170;
+    const outerR = 600;
+
     const paths = Array.from({ length: count }).map((_, i) => {
-        const angleDeg = (i * (360 / count)) + (i % 2 * 15); // Offset slightly
+        const angleDeg = (i * (360 / count)) + (i % 2 * 10); // Offset slightly
         const angleRad = (angleDeg * Math.PI) / 180;
 
-        // Inner radius (Core boundary) ~ 200px
-        // Outer radius ~ 500px
-
-        const innerR = 200;
-        const outerR = 500;
-
-        // Simple straight radial line for now, maybe adding a "kink"
+        // Use consistent start radius
         const startX = 500 + Math.cos(angleRad) * innerR;
         const startY = 500 + Math.sin(angleRad) * innerR;
 
+        // Kink further out to ensure clean exit from core
+        const kinkR = 350 + (Math.random() * 50);
+        const kinkX = 500 + Math.cos(angleRad + (i % 2 ? 0.05 : -0.05)) * kinkR;
+        const kinkY = 500 + Math.sin(angleRad + (i % 2 ? 0.05 : -0.05)) * kinkR;
+
         const endX = 500 + Math.cos(angleRad) * outerR;
         const endY = 500 + Math.sin(angleRad) * outerR;
-
-        // Add a kink
-        const kinkR = 300 + (Math.random() * 50);
-        const kinkX = 500 + Math.cos(angleRad + 0.1) * kinkR; // Slight twist
-        const kinkY = 500 + Math.sin(angleRad + 0.1) * kinkR;
 
         const d = `M ${startX} ${startY} L ${kinkX} ${kinkY} L ${endX} ${endY}`;
 
@@ -161,6 +159,9 @@ function RadialTraces({ isActive, count }: { isActive: boolean, count: number })
         <g>
             {paths.map((p) => (
                 <g key={p.id}>
+                    {/* Connection Dot at Core Interface */}
+                    <circle cx={p.d.split(' ')[1]} cy={p.d.split(' ')[2]} r="3" fill={isActive ? "var(--accent)" : "rgba(255,255,255,0.15)"} className="transition-colors duration-500" />
+
                     {/* Base Path */}
                     <path
                         d={p.d}
@@ -178,20 +179,17 @@ function RadialTraces({ isActive, count }: { isActive: boolean, count: number })
                         strokeLinecap="round"
                         initial={{ pathLength: 0, opacity: 0 }}
                         animate={{
-                            pathLength: [0, 0.3, 0],
+                            pathLength: [0, 0.4, 0],
                             opacity: [0, 1, 0],
                             pathOffset: [0, 1]
                         }}
                         transition={{
-                            duration: 2 + Math.random() * 2,
+                            duration: 1.5 + Math.random(),
                             repeat: Infinity,
                             ease: "linear",
                             delay: Math.random() * 2
                         }}
                     />
-
-                    {/* Connection Node at start (Core side) */}
-                    <circle cx={p.d.split(' ')[1]} cy={p.d.split(' ')[2]} r="2" fill="rgba(255,255,255,0.1)" />
                 </g>
             ))}
         </g>

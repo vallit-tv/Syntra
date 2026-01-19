@@ -15,19 +15,19 @@ export function Hero() {
                         animate={{ opacity: 1, rotateX: 12, y: 0, scale: 1 }}
                         transition={{ duration: 1.2, ease: "circOut" }}
                         style={{ transformStyle: "preserve-3d" }}
-                        className="relative w-full max-w-5xl mask-image-linear-gradient(to bottom, black 70%, transparent 100%)"
+                        className="relative w-full max-w-5xl"
                     >
-                        {/* 3D Mockup Container */}
-                        <div className="relative bg-[#050505] rounded-xl border border-white/10 shadow-2xl overflow-hidden ring-1 ring-white/10 rotate-x-12 transform-gpu">
+                        {/* 3D Mockup Container - Brightened Border & Glow */}
+                        <div className="relative bg-[#050505] rounded-xl border border-white/20 shadow-[0_0_60px_-15px_rgba(255,255,255,0.1)] overflow-hidden ring-1 ring-white/10 rotate-x-12 transform-gpu">
                             {/* Glass Edge Highlight */}
-                            <div className="absolute inset-0 rounded-xl ring-1 ring-white/20 pointer-events-none z-50 mix-blend-overlay" />
+                            <div className="absolute inset-0 rounded-xl ring-1 ring-white/30 pointer-events-none z-50 mix-blend-overlay" />
 
                             {/* Window Config Bar */}
-                            <div className="h-10 border-b border-white/5 bg-[#0A0A0A] flex items-center px-4 gap-2">
+                            <div className="h-10 border-b border-white/10 bg-[#0A0A0A] flex items-center px-4 gap-2">
                                 <div className="flex gap-2">
-                                    <div className="w-3 h-3 rounded-full bg-[#2A2A2A] border border-white/5" />
-                                    <div className="w-3 h-3 rounded-full bg-[#2A2A2A] border border-white/5" />
-                                    <div className="w-3 h-3 rounded-full bg-[#2A2A2A] border border-white/5" />
+                                    <div className="w-3 h-3 rounded-full bg-[#333] border border-white/10" />
+                                    <div className="w-3 h-3 rounded-full bg-[#333] border border-white/10" />
+                                    <div className="w-3 h-3 rounded-full bg-[#333] border border-white/10" />
                                 </div>
                             </div>
 
@@ -73,7 +73,7 @@ export function Hero() {
             <div className="container relative z-10 mx-auto px-6 max-w-6xl">
                 <div className="max-w-4xl mx-auto text-center">
                     {/* Readability backing for text */}
-                    <div className="absolute inset-0 -z-10 bg-gradient-to-b from-[#030303]/80 via-[#030303]/60 to-transparent blur-3xl scale-150 transform -translate-y-20" />
+                    <div className="absolute inset-0 -z-10 bg-gradient-to-b from-[#030303]/90 via-[#030303]/70 to-transparent blur-3xl scale-150 transform -translate-y-20" />
 
                     {/* Badge */}
                     <motion.div
