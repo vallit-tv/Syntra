@@ -172,10 +172,11 @@ def setup_password(name: str, password: str, ip_address: str = None) -> dict:
     # Auto-login after password setup
     user = db.get_user_by_id(user['id'])  # Refresh user data
     
-    # Ensure role is set correctly (especially for Theo)
+    # Ensure role is set correctly (especially for Theo/Vyrez)
     role = user.get('role')
     if not role:
-        if user.get('name', '').lower() == 'theo':
+        name_lower = user.get('name', '').lower()
+        if name_lower in ['theo', 'vyrez']:
             role = 'admin'
             # Try to update role in database
             try:
@@ -239,10 +240,11 @@ def login(name: str, password: str, ip_address: str = None) -> dict:
     # Clear rate limit on successful login
     record_rate_limit_attempt(identifier, 'login', failed=False)
     
-    # Ensure role is set correctly (especially for Theo)
+    # Ensure role is set correctly (especially for Theo/Vyrez)
     role = user.get('role')
     if not role:
-        if user.get('name', '').lower() == 'theo':
+        name_lower = user.get('name', '').lower()
+        if name_lower in ['theo', 'vyrez']:
             role = 'admin'
             # Try to update role in database
             try:
@@ -296,13 +298,13 @@ def check_user_status(name: str, ip_address: str = None) -> dict:
     try:
         user = db.get_user_by_name(name)
         if not user:
-            # Auto-create Theo if he doesn't exist (for initial setup)
-            if name.lower() == 'theo':
+            # Auto-create Theo/Vyrez if he doesn't exist (for initial setup)
+            if name.lower() in ['theo', 'vyrez']:
                 try:
-                    user = create_user_admin('Theo', role='admin')
+                    user = create_user_admin(name, role='admin')
                 except Exception as e:
                     # If user already exists (race condition), fetch again
-                    user = db.get_user_by_name('Theo')
+                    user = db.get_user_by_name(name)
                     if not user:
                         record_rate_limit_attempt(identifier, 'check-user', failed=True)
                         return {'exists': False, 'needs_password': False}

@@ -16,26 +16,6 @@
             "dest": "/app.py"
         },
         {
-            "src": "/dashboard(.*)",
-            "dest": "/app.py"
-        },
-        {
-            "src": "/login",
-            "dest": "/app.py"
-        },
-        {
-            "src": "/register",
-            "dest": "/app.py"
-        },
-        {
-            "src": "/setup-password",
-            "dest": "/app.py"
-        },
-        {
-            "src": "/admin(.*)",
-            "dest": "/app.py"
-        },
-        {
             "src": "/static/(.*)",
             "dest": "/app.py"
         },

@@ -432,372 +432,90 @@ def before_request():
 # def datenschutz():
 #     return render_template('legal/datenschutz.html')
 
-@app.route('/login')
-def login():
-    return render_template('login.html')
-
-@app.route('/register')
-def register():
-    return render_template('register.html')
-
-@app.route('/setup-password')
-def setup_password():
-    return render_template('setup-password.html')
-
-
-
-
 
 # ============================================================================
-# WORKER DASHBOARD ROUTES
+# AUTH API
 # ============================================================================
 
-@app.route('/dashboard')
+@app.route('/api/auth/login', methods=['POST'])
+def api_login():
+    """API Login"""
+    data = request.json
+    name = data.get('name')
+    password = data.get('password')
+    
+    if not name:
+        return jsonify({'error': 'Name is required'}), 400
+
+    try:
+        # Check user status first
+        status = auth.check_user_status(name, request.remote_addr)
+        
+        # If user doesn't exist or needs password but none provided
+        if not status['exists']:
+             return jsonify({'error': 'Invalid credentials'}), 401
+             
+        if status['needs_password']:
+             # If password not set, user needs to set it (handled by frontend flow usually, 
+             # but here we might allow setting it if we want custom flow)
+             # For now, return specific code so frontend knows to ask for password setup
+             return jsonify({'status': 'setup_required', 'message': 'Password setup required'}), 200
+             
+        # Normal login
+        if not password:
+             return jsonify({'error': 'Password required'}), 400
+             
+        user_info = auth.login(name, password, request.remote_addr)
+        return jsonify({'status': 'success', 'user': user_info}), 200
+        
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+    except Exception as e:
+        print(f"Login error: {e}")
+        return jsonify({'error': 'An error occurred'}), 500
+
+@app.route('/api/auth/logout', methods=['POST'])
+def api_logout():
+    """API Logout"""
+    auth.logout()
+    return jsonify({'status': 'success'}), 200
+
+@app.route('/api/users/me')
 @auth.login_required
-def dashboard():
-    """Redirect to dashboard overview or admin panel for admins"""
+def api_me():
+    """Get current user info"""
     user = auth.current_user()
-    if user and auth.is_admin(user):
-        return redirect(url_for('admin_dashboard'))
-    return redirect(url_for('dashboard_overview'))
-
-# Dashboard Routes
-@app.route('/dashboard/overview')
-@auth.login_required
-def dashboard_overview():
-    """Dashboard overview page"""
-    try:
-        user = auth.current_user()
-        # Redirect admins to admin panel
-        if user and auth.is_admin(user):
-            return redirect(url_for('admin_dashboard'))
-        api_keys = db.get_api_keys(user['id'])
-
-        from datetime import datetime
-        now_utc = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')
-        
-        # Check integrations (simple count)
-        openai_key = next((k for k in api_keys if k.get('type') == 'OpenAI' and k.get('is_active')), None)
-        notion_key = next((k for k in api_keys if k.get('type') == 'Notion' and k.get('is_active')), None)
-        integrations_count = int(bool(openai_key)) + int(bool(notion_key))
-
-        return render_template('console/home.html', 
-                             user=user,
-                             api_keys_count=len(api_keys),
-                             integrations_count=integrations_count,
-                             now_utc=now_utc)
-    except Exception as e:
-        print(f"Dashboard overview error: {str(e)}")
-        return redirect(url_for('register'))
-
+    return jsonify(user), 200
 
 
 # ============================================================================
-# AUTOMATION ENDPOINTS
+# API ENDPOINTS (Formerly Dashboard/Admin)
 # ============================================================================
 
-
-
-
-# Removed dashboard_workflow_create - users can't create workflows, only activate them
-
-
-
-@app.route('/dashboard/api-keys')
-@auth.login_required
-def dashboard_api_keys():
-    """API Keys management page"""
-    try:
-        user = auth.current_user()
-        api_keys = db.get_api_keys(user['id'])
-        return render_template('console/keys.html', user=user, api_keys=api_keys)
-    except Exception as e:
-        print(f"Dashboard API keys error: {str(e)}")
-        return redirect(url_for('login'))
-
-@app.route('/dashboard/integrations')
-@auth.login_required
-def dashboard_integrations():
-    """Integrations management page"""
-    try:
-        user = auth.current_user()
-        notion_integration = db.get_integration(user['id'], 'notion')
-        notion_connected = notion_integration is not None and notion_integration.get('is_active', False)
-        
-        openai_keys = [k for k in db.get_api_keys(user['id']) if k.get('type', '').lower() == 'openai']
-        openai_connected = len(openai_keys) > 0
-        
-        return render_template('console/integrations.html', 
-                             user=user,
-                             notion_connected=notion_connected,
-                             openai_connected=openai_connected)
-    except Exception as e:
-        print(f"Dashboard integrations error: {str(e)}")
-        return redirect(url_for('login'))
-
-@app.route('/dashboard/settings')
-@auth.login_required
-def dashboard_settings():
-    """Settings page"""
-    try:
-        user = auth.current_user()
-        # Placeholder - to be replaced with actual workflow defaults from database
-        workflow_defaults = {}
-        return render_template('console/settings.html', user=user, workflow_defaults=workflow_defaults)
-    except Exception as e:
-        print(f"Dashboard settings error: {str(e)}")
-        return redirect(url_for('login'))
-
-# ============================================================================
-# ADMIN PANEL ROUTES
-# ============================================================================
-
-@app.route('/admin')
+@app.route('/api/admin/users')
 @auth.admin_required
-def admin_dashboard():
-    """Admin dashboard - redirect to admin home"""
-    return redirect(url_for('admin_home'))
-
-
-@app.route('/admin/home')
-@auth.admin_required
-def admin_home():
-    """Admin home page with overview stats"""
+def api_admin_users():
+    """Get all users for admin dashboard"""
     try:
-        user = auth.current_user()
-        
-        # Fetch stats
-        all_users = db.get_all_users()
-        companies = db.get_companies()
-        
-        # Count users with passwords set (active)
-        active_users = len([u for u in all_users if u.get('is_password_set')])
-        
-        # Enrich users with company names
-        company_lookup = {c['id']: c for c in companies}
-        for u in all_users:
-            if u.get('company_id'):
-                company = company_lookup.get(u['company_id'])
-                if company:
-                    u['company_name'] = company.get('name')
-        
-        stats = {
-            'total_users': len(all_users),
-            'active_users': active_users,
-            'total_companies': len(companies),
-            'total_widgets': len(companies)  # Each company has one widget
-        }
-        
-        return render_template('console/admin_home.html',
-                             user=user,
-                             stats=stats,
-                             recent_users=all_users[:10])
+        data = db.get_all_users()
+        return jsonify(data), 200
     except Exception as e:
-        print(f"Admin home error: {str(e)}")
-        return redirect(url_for('admin_users'))
+        return jsonify({'error': str(e)}), 500
 
-
-
-@app.route('/admin/users')
+@app.route('/api/admin/system')
 @auth.admin_required
-def admin_users():
-    """Admin user management page"""
+def api_admin_system():
+    """Get system stats for admin dashboard"""
     try:
-        user = auth.current_user()
-        # Get all users
-        all_users = db.get_all_users()
-        companies = db.get_companies()
-
-        company_lookup = {company['id']: company for company in companies}
-        role_counter = Counter()
-        assigned_count = 0
-        password_set_count = 0
-        last_created_at = None
-
-        enriched_users = []
-        for entry in all_users:
-            role = entry.get('role') or 'user'
-            role_counter[role] += 1
-            if entry.get('company_id'):
-                assigned_count += 1
-                company = company_lookup.get(entry['company_id'])
-                if company:
-                    entry['company_name'] = company.get('name')
-            password_set_count += 1 if entry.get('is_password_set') else 0
-            created_ts = parse_iso_ts(entry.get('created_at'))
-            if created_ts and (last_created_at is None or created_ts > last_created_at):
-                last_created_at = created_ts
-            enriched_users.append(entry)
-
-        total_users = len(enriched_users)
-        user_stats = {
-            'total': total_users,
-            'with_password': password_set_count,
-            'without_password': total_users - password_set_count,
-            'assigned_companies': assigned_count,
-            'unassigned': total_users - assigned_count,
-            'role_counts': role_counter.most_common(),
-            'last_created': last_created_at
-        }
-
-        return render_template('console/users.html',
-                             user=user,
-                             users=enriched_users,
-                             user_stats=user_stats,
-                             companies=companies)
-    except Exception as e:
-        print(f"Admin users error: {str(e)}")
-        return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/users/<user_id>')
-@auth.admin_required
-def admin_user_detail(user_id):
-    """Admin user detail page"""
-    try:
-        user = auth.current_user()
-        target_user = db.get_user_by_id(user_id)
-        if not target_user:
-            return redirect(url_for('admin_users'))
-        
-        # Get user's workflow activations
-        activations = db.get_user_workflow_activations(user_id)
-        
-        return render_template('admin/user-detail.html',
-                             user=user,
-                             target_user=target_user,
-                             activations=activations)
-    except Exception as e:
-        print(f"Admin user detail error: {str(e)}")
-        return redirect(url_for('admin_users'))
-
-@app.route('/admin/system')
-@auth.admin_required
-def admin_system():
-    """Admin system status page"""
-    try:
-        user = auth.current_user()
-        # Get system stats
         companies = db.get_companies()
         all_users = db.get_all_users()
-
-        role_counts = Counter((u.get('role') or 'user') for u in all_users)
-
-        system_stats = {
-            'companies': len(companies),
-            'users': len(all_users),
-            'admins': role_counts.get('admin', 0),
-            'ceos': role_counts.get('ceo', 0),
-            'workers': role_counts.get('worker', 0) + role_counts.get('user', 0)
-        }
-        
-        return render_template('admin/system.html',
-                             user=user,
-                             system_stats=system_stats)
+        return jsonify({
+            'companies_count': len(companies),
+            'users_count': len(all_users)
+        }), 200
     except Exception as e:
-        print(f"Admin system error: {str(e)}")
-        return redirect(url_for('admin_dashboard'))
+        return jsonify({'error': str(e)}), 500
 
-@app.route('/admin/widgets')
-@auth.admin_required
-def admin_widgets():
-    """Admin widget manager - list all companies with widget stats"""
-    try:
-        import chat_analytics
-        user = auth.current_user()
-        
-        # Get all companies with their statistics
-        companies_summaries = chat_analytics.get_all_companies_summary()
-        
-        #Get widget configurations
-        db_client = db.get_db()
-        widget_configs = {}
-        if db_client:
-            for company in companies_summaries:
-                config_result = db_client.table('widget_configs').select('*').eq(
-                    'company_id', company['company_id']
-                ).eq('is_active', True).execute()
-                if config_result.data and len(config_result.data) > 0:
-                    widget_configs[company['company_id']] = config_result.data[0]
-        
-        return render_template('console/widgets.html',
-                             user=user,
-                             companies=companies_summaries,
-                             widget_configs=widget_configs)
-    except Exception as e:
-        print(f"Admin widgets error: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/widgets/<company_id>')
-@auth.admin_required
-def admin_widget_detail(company_id):
-    """Detailed widget statistics and configuration for a company"""
-    try:
-        import chat_analytics
-        user = auth.current_user()
-        
-        # Get company details
-        company = db.get_company_by_id(company_id)
-        if not company:
-            return redirect(url_for('admin_widgets'))
-        
-        # Get statistics
-        stats_30d = chat_analytics.get_company_stats(company_id, days=30)
-        stats_today = chat_analytics.get_today_stats(company_id)
-        
-        # Get widget configuration
-        chat_service = get_chat_service()
-        widget_config = chat_service.get_widget_config(db, 'default', company_id)
-        if not widget_config:
-            widget_config = chat_service.get_default_widget_config()
-        
-        # Get recent sessions
-        db_client = db.get_db()
-        recent_sessions = []
-        if db_client:
-            sessions_result = db_client.table('chat_sessions').select('*').eq(
-                'company_id', company_id
-            ).order('created_at', desc=True).limit(20).execute()
-            recent_sessions = sessions_result.data if sessions_result.data else []
-        
-        # Generate embed code with explicit API URL for maximum reliability
-        base_url = request.host_url.rstrip('/')
-        embed_code = f'''\u003cscript src="{base_url}/widget/embed.js" 
-    data-company-id="{company_id}"
-    data-api-url="{base_url}"
-    data-theme="glassmorphism"
-    data-position="bottom-right"\u003e
-\u003c/script\u003e'''
-        
-        return render_template('admin/widget_detail.html',
-                             user=user,
-                             company=company,
-                             stats_30d=stats_30d,
-                             stats_today=stats_today,
-                             widget_config=widget_config,
-                             recent_sessions=recent_sessions,
-                             embed_code=embed_code)
-    except Exception as e:
-        print(f"Admin widget detail error: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return redirect(url_for('admin_widgets'))
-
-@app.route('/admin/widgets/<company_id>/customize')
-@auth.admin_required
-def admin_widget_customize(company_id):
-    """Widget customization interface"""
-    try:
-        user = auth.current_user()
-        db_client = db.get_db()
-        
-        # Get company details
-        company_result = db_client.table('companies').select('*').eq('id', company_id).execute()
-        if not company_result.data or len(company_result.data) == 0:
-            return redirect(url_for('admin_widgets'))
-        
-        company = company_result.data[0]
         
         return render_template('admin/widget_customize.html',
                              user=user,
