@@ -79,7 +79,7 @@ export function StickyStepper() {
             <div className="lg:grid lg:grid-cols-2 lg:gap-20">
                 {/* Left: Step titles (sticky on desktop) */}
                 <div className="hidden lg:block h-full">
-                    <div className="sticky top-40 space-y-6">
+                    <div className="sticky top-40 space-y-2">
                         {steps.map((step, index) => (
                             <button
                                 key={step.id}
@@ -89,51 +89,22 @@ export function StickyStepper() {
                                         block: "center",
                                     });
                                 }}
-                                className="group w-full text-left"
+                                className="group relative w-full text-left px-6 py-4 rounded-full transition-colors"
                             >
-                                <div className="flex items-center gap-6">
-                                    <div className="relative flex flex-col items-center">
-                                        {/* Number Circle */}
-                                        <div className="relative z-10 flex items-center justify-center">
-                                            <span
-                                                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-300 relative z-20
-                        ${activeStep === index
-                                                        ? "bg-[var(--accent)] text-[var(--bg-body)] scale-110"
-                                                        : "bg-neutral-800 text-neutral-500 group-hover:bg-neutral-700 group-hover:text-neutral-300"
-                                                    }`}
-                                            >
-                                                {index + 1}
-                                            </span>
-                                            {/* Glow effect on active/hover */}
-                                            <div
-                                                className={`absolute inset-0 rounded-full transition-all duration-500 z-10 blur-md
-                          ${activeStep === index
-                                                        ? "bg-[var(--accent)]/50 scale-150 opacity-100"
-                                                        : "bg-white/20 scale-100 opacity-0 group-hover:opacity-100"
-                                                    }`}
-                                            />
-                                        </div>
+                                {/* Active Background Pill */}
+                                {activeStep === index && (
+                                    <div
+                                        className="absolute inset-0 bg-white/10 border border-white/5 rounded-full backdrop-blur-sm transition-all duration-300"
+                                    />
+                                )}
 
-                                        {/* Vertical Line (except for last item) */}
-                                        {index !== steps.length - 1 && (
-                                            <div className="absolute top-8 w-px h-28 bg-white/5 -z-0">
-                                                <div
-                                                    className={`absolute top-0 w-full bg-[var(--accent)] transition-all duration-500
-                                                    ${activeStep > index ? "h-full" : "h-0"}
-                                                    `}
-                                                />
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className={`transition-all duration-300 ${activeStep === index ? "opacity-100 translate-x-2" : "opacity-40 hover:opacity-100"}`}>
-                                        <span
-                                            className={`text-xl font-medium block ${activeStep === index ? "text-white" : "text-neutral-400"
-                                                }`}
-                                        >
-                                            {step.title}
-                                        </span>
-                                    </div>
+                                <div className="relative flex items-center justify-between z-10">
+                                    <span className={`text-lg font-medium transition-colors duration-300 ${activeStep === index ? "text-white" : "text-neutral-500 group-hover:text-neutral-300"}`}>
+                                        {step.title}
+                                    </span>
+                                    {activeStep === index && (
+                                        <div className="w-2 h-2 rounded-full bg-[var(--accent)] shadow-[0_0_10px_var(--accent)]" />
+                                    )}
                                 </div>
                             </button>
                         ))}

@@ -89,94 +89,97 @@ export function CTASection() {
 function AnimatedGrid({ isActive }: { isActive: boolean }) {
     return (
         <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
-            {/* Base grid */}
-            <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px] [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_70%)]" />
+            {/* Darker Grid Background */}
+            <div className="absolute inset-0 bg-[#050505] opacity-80" />
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_80%)]" />
 
-            {/* CPU Cores connecting to center */}
             <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
                 <defs>
-                    <linearGradient id="line-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <linearGradient id="trace-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
                         <stop offset="0%" stopColor="transparent" />
-                        <stop offset="50%" stopColor="var(--accent)" />
+                        <stop offset="50%" stopColor="var(--accent)" stopOpacity="0.8" />
                         <stop offset="100%" stopColor="transparent" />
                     </linearGradient>
                 </defs>
 
-                {/* Left Side Connections */}
-                {[20, 40, 60, 80].map((y, i) => (
-                    <g key={`left-${i}`}>
-                        {/* Static Path */}
-                        <path
-                            d={`M 0 ${y}% C 30% ${y}%, 30% 50%, 50% 50%`}
-                            fill="none"
-                            stroke="rgba(255,255,255,0.08)"
-                            strokeWidth="1.5"
-                        />
-                        {/* Animated Pulse */}
-                        <motion.path
-                            d={`M 0 ${y}% C 30% ${y}%, 30% 50%, 50% 50%`}
-                            fill="none"
-                            stroke="url(#line-gradient)"
-                            strokeWidth="3"
-                            initial={{ pathLength: 0, opacity: 0 }}
-                            animate={{
-                                pathLength: 1,
-                                opacity: [0, 1, 0],
-                                transition: {
-                                    duration: isActive ? 0.5 : 2, // Faster when active
-                                    repeat: Infinity,
-                                    ease: "linear",
-                                    delay: i * (isActive ? 0.1 : 0.5),
-                                    repeatDelay: isActive ? 0.1 : 1
-                                }
-                            }}
-                        />
-                    </g>
-                ))}
-
-                {/* Right Side Connections */}
-                {[20, 40, 60, 80].map((y, i) => (
-                    <g key={`right-${i}`}>
-                        <path
-                            d={`M 100% ${y}% C 70% ${y}%, 70% 50%, 50% 50%`}
-                            fill="none"
-                            stroke="rgba(255,255,255,0.05)"
-                            strokeWidth="1"
-                        />
-                        <motion.path
-                            d={`M 100% ${y}% C 70% ${y}%, 70% 50%, 50% 50%`}
-                            fill="none"
-                            stroke="url(#line-gradient)"
-                            strokeWidth="2"
-                            initial={{ pathLength: 0, opacity: 0 }}
-                            animate={{
-                                pathLength: 1,
-                                opacity: [0, 1, 0],
-                                transition: {
-                                    duration: isActive ? 0.5 : 2, // Faster when active
-                                    repeat: Infinity,
-                                    ease: "linear",
-                                    delay: i * (isActive ? 0.1 : 0.5) + 0.5,
-                                    repeatDelay: isActive ? 0.1 : 1
-                                }
-                            }}
-                        />
-                    </g>
-                ))}
+                <CircuitPaths isActive={isActive} side="left" count={12} />
+                <CircuitPaths isActive={isActive} side="right" count={12} />
             </svg>
 
-            {/* Central Pulse Effect behind button */}
+            {/* Central Core Glow */}
             <motion.div
                 animate={{
-                    scale: isActive ? [1, 1.2, 1] : [1, 1.1, 1],
-                    opacity: isActive ? 0.8 : 0.3
+                    scale: isActive ? [1, 1.5, 1] : [1, 1.1, 1],
+                    opacity: isActive ? 0.6 : 0.2,
                 }}
                 transition={{
-                    duration: isActive ? 1 : 2,
-                    repeat: Infinity
+                    duration: isActive ? 0.8 : 3,
+                    repeat: Infinity,
+                    ease: "easeInOut"
                 }}
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] h-[200px] bg-[var(--accent)]/10 rounded-full blur-3xl"
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-[var(--accent)]/20 rounded-full blur-[80px] mix-blend-screen"
             />
         </div>
     )
+}
+
+function CircuitPaths({ isActive, side, count }: { isActive: boolean, side: "left" | "right", count: number }) {
+    const paths = Array.from({ length: count }).map((_, i) => {
+        // Calculate vertical positions
+        const yStart = 10 + (i * (80 / count)); // Spread from 10% to 90%
+        const yEnd = 45 + (i * (10 / count));   // Converge to center 45-55%
+
+        // Manhattan routing points
+        const xStart = side === "left" ? "0%" : "100%";
+        const xEnd = "50%";
+        const midX = side === "left" ? "30%" : "70%";
+
+        // Path logic: Start -> Horizontal to Mid -> Vertical to EndY -> Horizontal to Center
+        // Using straightforward L-shapes for "circuit" look
+        const pathData = side === "left"
+            ? `M 0 ${yStart}% H ${15 + (i % 3) * 5}% V ${yEnd}% H 50%`
+            : `M 100% ${yStart}% H ${85 - (i % 3) * 5}% V ${yEnd}% H 50%`;
+
+        return { id: i, d: pathData, delay: i * 0.1 };
+    });
+
+    return (
+        <g>
+            {paths.map((p) => (
+                <g key={p.id}>
+                    {/* Background Trace */}
+                    <path
+                        d={p.d}
+                        fill="none"
+                        stroke="rgba(255,255,255,0.03)"
+                        strokeWidth="1"
+                        className="transition-all duration-500"
+                        style={{ stroke: isActive ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.03)" }}
+                    />
+
+                    {/* Active Data Packet */}
+                    <motion.path
+                        d={p.d}
+                        fill="none"
+                        stroke="url(#trace-gradient)"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        initial={{ pathLength: 0, opacity: 0 }}
+                        animate={{
+                            pathLength: [0, 0.3, 0], // Moving dash effect
+                            opacity: [0, 1, 0],
+                            pathOffset: [0, 1]       // Move along path
+                        }}
+                        transition={{
+                            duration: isActive ? 1 + Math.random() : 3 + Math.random() * 2,
+                            repeat: Infinity,
+                            ease: "linear",
+                            delay: Math.random() * 2,
+                            repeatDelay: isActive ? 0 : Math.random()
+                        }}
+                    />
+                </g>
+            ))}
+        </g>
+    );
 }
