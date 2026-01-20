@@ -13,6 +13,14 @@ load_dotenv()
 _db_client: Optional[Client] = None
 _db_error: Optional[str] = None
 
+# Constants
+ROLES = {
+    'OWNER': 'owner',
+    'ADMIN': 'admin',
+    'MEMBER': 'member'
+}
+VALID_ROLES = [ROLES['OWNER'], ROLES['ADMIN'], ROLES['MEMBER']]
+
 def is_db_configured() -> bool:
     """Check if database environment variables are set"""
     url = os.getenv('SUPABASE_URL')
@@ -208,6 +216,10 @@ def create_user(
     }
     # Add role if provided (may not exist in database yet)
     if role:
+        if role not in VALID_ROLES and role != 'user': # allowing 'user' for backwards compatibility/platform admin
+             # Check if it is a system role or just default to member? 
+             # For now, warn but allow if it might be 'superadmin' etc.
+             pass
         data['role'] = role
     if company_id:
         data['company_id'] = company_id
@@ -530,24 +542,71 @@ def get_company_users(company_id: str) -> List[Dict]:
 
 
 
-def assign_user_to_company(user_id: str, company_id: str, role: str = None) -> bool:
+
+def assign_user_to_company(user_id: str, company_id: str, role: str = 'member') -> bool:
     """Assign user to a company"""
     try:
         update_data = {'company_id': company_id}
         if role:
+            if role not in VALID_ROLES:
+                 print(f"Warning: Invalid role '{role}', defaulting to member")
+                 role = 'member'
             update_data['role'] = role
+            
         get_db().table('users').update(update_data).eq('id', user_id).execute()
         return True
     except:
         return False
 
 def remove_user_from_company(user_id: str) -> bool:
-    """Remove user from company (set company_id to None)"""
+    """Remove user from company (set company_id to None and role to user)"""
     try:
-        get_db().table('users').update({'company_id': None}).eq('id', user_id).execute()
+        get_db().table('users').update({'company_id': None, 'role': 'user'}).eq('id', user_id).execute()
         return True
     except:
         return False
+
+def get_company_members(company_id: str) -> List[Dict]:
+    """Get all members of a company with role info"""
+    try:
+        # Sort by role priority (owner, admin, member) - explicit sort difficult in simple SQL, 
+        # so we sort in python or just by created_at
+        result = get_db().table('users').select('*').eq('company_id', company_id).order('created_at', desc=True).execute()
+        return result.data or []
+    except:
+        return []
+
+def invite_member_to_company(company_id: str, email: str, role: str = 'member') -> Dict:
+    """
+    Invite a user to a company. 
+    1. If user exists, assign them.
+    2. If not, create them (with temporary password/flag) and assign.
+    """
+    # Check if user exists
+    existing = get_user_by_email(email)
+    if existing:
+        if existing.get('company_id') == company_id:
+             return {'status': 'already_member', 'user': existing}
+        
+        # Assign
+        assign_user_to_company(existing['id'], company_id, role)
+        return {'status': 'assigned', 'user': existing}
+    
+    # Create new user
+    import uuid
+    temp_name = email.split('@')[0]
+    # In a real app we'd send an email here. For now we just create the record.
+    new_user = create_user(
+        name=temp_name, # Fallback, user should update profile
+        role=role,
+        company_id=company_id
+    )
+    # Update email since create_user might not set it if it relies on name derived logic
+    # (Actually create_user doesn't take email, we need to fix that or update it after)
+    update_user(new_user['id'], {'email': email})
+    new_user['email'] = email
+    
+    return {'status': 'invited', 'user': new_user}
 
 
 

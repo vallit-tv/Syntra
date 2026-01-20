@@ -34,16 +34,36 @@ export default function DashboardLayout({
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
     const [userEmail, setUserEmail] = useState<string | null>(null)
 
+    const [companyName, setCompanyName] = useState<string | null>(null)
+
     useEffect(() => {
-        // Fetch user email for display
-        const getUser = async () => {
+        // Fetch user email and company
+        const getUserAndCompany = async () => {
             const { createClient } = await import("@/utils/supabase/client")
             const supabase = createClient()
-            const { data: { user } } = await supabase.auth.getUser()
-            if (user?.email) setUserEmail(user.email)
+            const { data: { session } } = await supabase.auth.getSession()
+
+            if (session?.user?.email) setUserEmail(session.user.email)
+
+            if (session) {
+                try {
+                    const res = await fetch("/api/company/me", {
+                        headers: { "Authorization": `Bearer ${session.access_token}` }
+                    })
+                    const data = await res.json()
+                    if (data.company) {
+                        setCompanyName(data.company.name)
+                    } else if (pathname !== '/dashboard/company/create') {
+                        // Redirect to create company if none exists
+                        window.location.href = '/dashboard/company/create'
+                    }
+                } catch (e) {
+                    console.error("Failed to fetch company", e)
+                }
+            }
         }
-        getUser()
-    }, [])
+        getUserAndCompany()
+    }, [pathname])
 
     const handleLogout = async () => {
         try {
@@ -86,20 +106,22 @@ export default function DashboardLayout({
             >
                 {/* Header (Company) */}
                 <div className="h-12 flex items-center px-3 border-b border-white/[0.04]">
-                    <button className={cn(
+                    <Link href={companyName ? "/dashboard" : "/dashboard/company/create"} className={cn(
                         "flex items-center gap-2 hover:bg-white/[0.04] p-1.5 rounded-md transition-colors w-full text-left",
                         isSidebarCollapsed && "justify-center p-0 hover:bg-transparent"
                     )}>
                         <div className="w-5 h-5 rounded-sm bg-emerald-600 flex items-center justify-center text-[10px] font-bold text-white shrink-0 shadow-sm">
-                            S
+                            {companyName ? companyName.charAt(0) : <Plus className="w-3 h-3" />}
                         </div>
                         {!isSidebarCollapsed && (
                             <>
-                                <span className="font-medium text-[13px] text-white/90 truncate flex-1 tracking-tight">Syntra Admin</span>
+                                <span className="font-medium text-[13px] text-white/90 truncate flex-1 tracking-tight">
+                                    {companyName || "Create Company"}
+                                </span>
                                 <ChevronDown className="w-3.5 h-3.5 text-white/40" />
                             </>
                         )}
-                    </button>
+                    </Link>
                 </div>
 
                 {/* Quick Actions */}

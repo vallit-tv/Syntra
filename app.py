@@ -1657,6 +1657,89 @@ def api_setup_payment_method():
     return jsonify({'setup_url': 'https://billing.syntra.app/setup'})
 
 # ============================================================================
+# COMPANY API ROUTES
+# ============================================================================
+
+@app.route('/api/company', methods=['POST'])
+@auth.login_required
+def api_create_company():
+    """Create a new company"""
+    user = auth.current_user()
+    data = request.json
+    name = data.get('name')
+    slug = data.get('slug', '').lower()
+    
+    if not name:
+        return jsonify({'error': 'Company name is required'}), 400
+        
+    try:
+        # Create company
+        description = data.get('description', '')
+        # TODO: Add description to DB model if needed, currently only name/slug
+        
+        company = db.create_company(name, slug)
+        
+        # Assign creator as owner
+        db.assign_user_to_company(user['id'], company['id'], role='owner')
+        
+        return jsonify({'status': 'success', 'company': company}), 201
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        print(f"Create company error: {e}")
+        return jsonify({'error': 'An error occurred'}), 500
+
+@app.route('/api/company/me', methods=['GET'])
+@auth.login_required
+def api_get_my_company():
+    """Get current user's company"""
+    user = auth.current_user()
+    if not user.get('company_id'):
+        return jsonify({'company': None}), 200
+        
+    company = db.get_company_by_id(user['company_id'])
+    return jsonify({'company': company}), 200
+
+@app.route('/api/company/members', methods=['GET'])
+@auth.login_required
+def api_get_company_members():
+    """Get members of current user's company"""
+    user = auth.current_user()
+    company_id = user.get('company_id')
+    if not company_id:
+        return jsonify({'error': 'No company associated'}), 400
+        
+    members = db.get_company_members(company_id)
+    return jsonify({'members': members}), 200
+
+@app.route('/api/company/members/invite', methods=['POST'])
+@auth.login_required
+def api_invite_member():
+    """Invite member to company"""
+    user = auth.current_user()
+    company_id = user.get('company_id')
+    
+    # Check permissions (Owner/Admin only)
+    if not company_id:
+        return jsonify({'error': 'No company associated'}), 400
+    if user.get('role') not in ['owner', 'admin']:
+        return jsonify({'error': 'Permission denied'}), 403
+        
+    data = request.json
+    email = data.get('email')
+    role = data.get('role', 'member')
+    
+    if not email:
+        return jsonify({'error': 'Email is required'}), 400
+        
+    try:
+        result = db.invite_member_to_company(company_id, email, role)
+        return jsonify(result), 200
+    except Exception as e:
+        print(f"Invite error: {e}")
+        return jsonify({'error': 'An error occurred'}), 500
+
+# ============================================================================
 # CHAT WIDGET API ROUTES
 # ============================================================================
 
@@ -1750,7 +1833,7 @@ def chat_message():
                 system_prompt=system_prompt,
                 db_module=db,
                 company_id=company_id,
-                session_id=session_id,  # Need UUID for appt
+                session_id=session_id,
                 enable_tools=enable_scheduling
             )
         
