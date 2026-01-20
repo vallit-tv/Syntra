@@ -32,9 +32,21 @@ export async function POST(request: Request) {
         const storedCode = user.user_metadata?.access_code;
         const needsSetup = user.user_metadata?.setup_required;
 
+        console.log("Verifying setup:", {
+            email,
+            receivedCode: code,
+            storedCode: storedCode,
+            needsSetup: needsSetup,
+            metadata: user.user_metadata
+        });
+
         // Ensure we strictly check for setup_required to prevent overwriting active users
-        if (!needsSetup || storedCode !== code) {
-            return NextResponse.json({ error: "Invalid access code" }, { status: 401 });
+        // Loose comparison for code to handle string/number mismatches
+        if (!needsSetup || String(storedCode).trim() !== String(code).trim()) {
+            return NextResponse.json({
+                error: "Invalid access code",
+                details: `Stored: ${storedCode}, Recv: ${code}, Setup: ${needsSetup}` // Debugging details in response
+            }, { status: 401 });
         }
 
         // 3. Update Password & Clear Metadata
