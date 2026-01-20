@@ -595,9 +595,42 @@ def invite_member_to_company(company_id: str, email: str, role: str = 'member') 
     # Create new user
     import uuid
     temp_name = email.split('@')[0]
-    # In a real app we'd send an email here. For now we just create the record.
+    # In a real app we'd send an email here. For now, we just create the record.
     new_user = create_user(
         name=temp_name, # Fallback, user should update profile
+        role=role,
+        company_id=company_id
+    )
+    # create_user already tries to assign, so we are good.
+    return {'status': 'invited', 'user': new_user}
+
+def get_company_knowledge(company_id: str) -> str:
+    """Get formatted knowledge base content for a company"""
+    try:
+        db_client = get_db()
+        if not db_client:
+            return ""
+        
+        # Fetch active knowledge base entries
+        result = db_client.table('company_knowledge_base').select('title, content').eq('company_id', company_id).eq('is_active', True).execute()
+        
+        if not result.data:
+            return ""
+            
+        knowledge_text = "\n\n### Company Knowledge Base:\n"
+        for entry in result.data:
+            title = entry.get('title', 'Unknown')
+            content = entry.get('content', '')
+            if len(content) > 2000:
+                content = content[:2000] + "...(truncated)"
+            
+            knowledge_text += f"---\nTitle: {title}\nContent:\n{content}\n"
+            
+        return knowledge_text
+        
+    except Exception as e:
+        print(f"Error fetching knowledge base: {e}")
+        return ""
         role=role,
         company_id=company_id
     )

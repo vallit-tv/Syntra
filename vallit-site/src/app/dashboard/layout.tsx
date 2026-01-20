@@ -25,6 +25,8 @@ import {
 import { cn } from "@/lib/utils"
 import { AnimatePresence, motion } from "framer-motion"
 
+import { CompanySwitcher } from "@/components/dashboard/company-switcher"
+
 export default function DashboardLayout({
     children,
 }: {
@@ -34,7 +36,8 @@ export default function DashboardLayout({
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
     const [userEmail, setUserEmail] = useState<string | null>(null)
 
-    const [companyName, setCompanyName] = useState<string | null>(null)
+    // Store full company object
+    const [company, setCompany] = useState<{ id: string; name: string; slug: string } | null>(null)
 
     useEffect(() => {
         // Fetch user email and company
@@ -52,7 +55,7 @@ export default function DashboardLayout({
                     })
                     const data = await res.json()
                     if (data.company) {
-                        setCompanyName(data.company.name)
+                        setCompany(data.company)
                     } else if (pathname !== '/dashboard/company/create') {
                         // Redirect to create company if none exists
                         window.location.href = '/dashboard/company/create'
@@ -106,22 +109,7 @@ export default function DashboardLayout({
             >
                 {/* Header (Company) */}
                 <div className="h-12 flex items-center px-3 border-b border-white/[0.04]">
-                    <Link href={companyName ? "/dashboard" : "/dashboard/company/create"} className={cn(
-                        "flex items-center gap-2 hover:bg-white/[0.04] p-1.5 rounded-md transition-colors w-full text-left",
-                        isSidebarCollapsed && "justify-center p-0 hover:bg-transparent"
-                    )}>
-                        <div className="w-5 h-5 rounded-sm bg-emerald-600 flex items-center justify-center text-[10px] font-bold text-white shrink-0 shadow-sm">
-                            {companyName ? companyName.charAt(0) : <Plus className="w-3 h-3" />}
-                        </div>
-                        {!isSidebarCollapsed && (
-                            <>
-                                <span className="font-medium text-[13px] text-white/90 truncate flex-1 tracking-tight">
-                                    {companyName || "Create Company"}
-                                </span>
-                                <ChevronDown className="w-3.5 h-3.5 text-white/40" />
-                            </>
-                        )}
-                    </Link>
+                    <CompanySwitcher currentCompany={company} isCollapsed={isSidebarCollapsed} />
                 </div>
 
                 {/* Quick Actions */}

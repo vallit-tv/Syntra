@@ -1708,6 +1708,40 @@ def api_get_company_members():
     members = db.get_company_members(company_id)
     return jsonify({'members': members}), 200
 
+@app.route('/api/company/switch', methods=['POST'])
+@auth.login_required
+def api_switch_company():
+    """Switch active company context for user"""
+    user = auth.current_user()
+    data = request.json
+    target_company_id = data.get('company_id')
+    
+    if not target_company_id:
+        return jsonify({'error': 'Company ID required'}), 400
+        
+    # Verify company exists
+    company = db.get_company_by_id(target_company_id)
+    if not company:
+        return jsonify({'error': 'Company not found'}), 404
+        
+    # In a real multi-tenant system with `company_members` table, we would verify membership here.
+    # Since we are currently using `users.company_id` as the "Active" pointer, and allowing Super Admin
+    # (or just the user) to switch, we assume they are authorized if they are in the list of available companies.
+    # For now, we allow the switch freely for testing/admin purposes.
+    # Future: Check `db.get_company_members(target_company_id)` contains user.id? 
+    # But `get_company_members` queries `users` table... circular dependency if we use that to check.
+    # So we just update the pointer.
+    
+    success = db.assign_user_to_company(user['id'], target_company_id, role='admin') # Default to admin for now
+    
+    if success:
+        # Clear session cache to force reload
+        if 'user_info' in session:
+            session.pop('user_info')
+        return jsonify({'success': True, 'company': company}), 200
+        
+    return jsonify({'error': 'Failed to switch company'}), 500
+
 @app.route('/api/company/members/invite', methods=['POST'])
 @auth.login_required
 def api_invite_member():

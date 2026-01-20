@@ -57,9 +57,8 @@ class CompanyBot:
         """Construct the full system prompt including context"""
         base_prompt = self.config.get('system_prompt', '')
         
-        # company_context_str = self.db.get_company_knowledge(self.company_id)
+        company_context_str = self.db.get_company_knowledge(self.company_id)
         # For now, we'll keep the simple knowledge base fetch or upgrade it later
-        # We can also inject dynamic variables here (e.g. time, date)
         
         prompt = f"""You are {self.config.get('name')}, an AI assistant.
         
