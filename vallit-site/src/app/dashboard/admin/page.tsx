@@ -171,5 +171,6 @@ export default async function AdminPage() {
                     </table>
                 </div>
             </div>
-            )
+        </div>
+    )
 }
