@@ -62,72 +62,114 @@ export default async function AdminPage() {
     // LIST USERS (Service Role)
     const { data: { users }, error } = await supabase.auth.admin.listUsers()
 
+    // LIST COMPANIES (Service Role)
+    const { data: companies } = await supabase.from('companies').select('*')
+
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-lg font-medium text-white">Members</h1>
-                    <p className="text-[13px] text-white/40">Manage your team and workspace access.</p>
+        <div className="space-y-10">
+            {/* Companies Section */}
+            <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-lg font-medium text-white">Companies</h1>
+                        <p className="text-[13px] text-white/40">Manage registered organizations.</p>
+                    </div>
+                    {/* <button className="h-8 px-3 bg-white text-black text-[13px] font-medium rounded-md hover:bg-white/90 transition-colors">
+                        Create Company
+                    </button> */}
                 </div>
-                <button className="h-8 px-3 bg-white text-black text-[13px] font-medium rounded-md hover:bg-white/90 transition-colors">
-                    Invite Member
-                </button>
+
+                <div className="border border-white/[0.08] rounded-lg overflow-hidden bg-[#0C0C0C]">
+                    <table className="w-full text-left text-[13px]">
+                        <thead className="bg-white/[0.02] border-b border-white/[0.08]">
+                            <tr>
+                                <th className="px-4 py-3 font-medium text-white/40 font-normal">Name</th>
+                                <th className="px-4 py-3 font-medium text-white/40 font-normal">Slug</th>
+                                <th className="px-4 py-3 font-medium text-white/40 font-normal text-right">Created</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/[0.04]">
+                            {companies?.map((c) => (
+                                <tr key={c.id} className="group hover:bg-white/[0.02] transition-colors">
+                                    <td className="px-4 py-3 font-medium text-white/90">
+                                        {c.name}
+                                    </td>
+                                    <td className="px-4 py-3 text-white/60 font-mono">
+                                        {c.slug}
+                                    </td>
+                                    <td className="px-4 py-3 text-right text-white/40 font-mono text-[12px]">
+                                        {new Date(c.created_at).toLocaleDateString()}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
-            <div className="border border-white/[0.08] rounded-lg overflow-hidden bg-[#0C0C0C]">
-                <table className="w-full text-left text-[13px]">
-                    <thead className="bg-white/[0.02] border-b border-white/[0.08]">
-                        <tr>
-                            <th className="px-4 py-3 font-medium text-white/40 font-normal">User</th>
-                            <th className="px-4 py-3 font-medium text-white/40 font-normal">Role</th>
-                            <th className="px-4 py-3 font-medium text-white/40 font-normal">Status</th>
-                            <th className="px-4 py-3 font-medium text-white/40 font-normal">Joined</th>
-                            <th className="px-4 py-3 font-medium text-white/40 font-normal text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/[0.04]">
-                        {users?.map((u) => (
-                            <tr key={u.id} className="group hover:bg-white/[0.02] transition-colors">
-                                <td className="px-4 py-3">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-gray-700 to-gray-600 flex items-center justify-center text-[10px] font-bold text-white border border-white/10">
-                                            {u.email?.charAt(0).toUpperCase()}
-                                        </div>
-                                        <div>
-                                            <div className="font-medium text-white/90">{u.email}</div>
-                                            {/* <div className="text-[11px] text-white/30">{u.id}</div> */}
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className="px-4 py-3 text-white/60">
-                                    <span className="capitalize">{u.user_metadata?.role || 'Member'}</span>
-                                </td>
-                                <td className="px-4 py-3">
-                                    {u.user_metadata?.setup_required ? (
-                                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20 text-[11px]">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                                            Pending Setup
-                                        </div>
-                                    ) : (
-                                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-[11px]">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                            Active
-                                        </div>
-                                    )}
-                                </td>
-                                <td className="px-4 py-3 text-white/40 font-mono text-[12px]">
-                                    {new Date(u.created_at).toLocaleDateString()}
-                                </td>
-                                <td className="px-4 py-3 text-right">
-                                    <button className="text-white/20 hover:text-white transition-colors">
-                                        ...
-                                    </button>
-                                </td>
+            {/* Users Section */}
+            <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-lg font-medium text-white">Members</h1>
+                        <p className="text-[13px] text-white/40">Manage your team and workspace access.</p>
+                    </div>
+                </div>
+
+                <div className="border border-white/[0.08] rounded-lg overflow-hidden bg-[#0C0C0C]">
+                    <table className="w-full text-left text-[13px]">
+                        <thead className="bg-white/[0.02] border-b border-white/[0.08]">
+                            <tr>
+                                <th className="px-4 py-3 font-medium text-white/40 font-normal">User</th>
+                                <th className="px-4 py-3 font-medium text-white/40 font-normal">Role</th>
+                                <th className="px-4 py-3 font-medium text-white/40 font-normal">Status</th>
+                                <th className="px-4 py-3 font-medium text-white/40 font-normal">Joined</th>
+                                <th className="px-4 py-3 font-medium text-white/40 font-normal text-right">Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody className="divide-y divide-white/[0.04]">
+                            {users?.map((u) => (
+                                <tr key={u.id} className="group hover:bg-white/[0.02] transition-colors">
+                                    <td className="px-4 py-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-gray-700 to-gray-600 flex items-center justify-center text-[10px] font-bold text-white border border-white/10">
+                                                {u.email?.charAt(0).toUpperCase()}
+                                            </div>
+                                            <div>
+                                                <div className="font-medium text-white/90">{u.email}</div>
+                                                {/* <div className="text-[11px] text-white/30">{u.id}</div> */}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-4 py-3 text-white/60">
+                                        <span className="capitalize">{u.user_metadata?.role || 'Member'}</span>
+                                    </td>
+                                    <td className="px-4 py-3">
+                                        {u.user_metadata?.setup_required ? (
+                                            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20 text-[11px]">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                                                Pending Setup
+                                            </div>
+                                        ) : (
+                                            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-[11px]">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                                Active
+                                            </div>
+                                        )}
+                                    </td>
+                                    <td className="px-4 py-3 text-white/40 font-mono text-[12px]">
+                                        {new Date(u.created_at).toLocaleDateString()}
+                                    </td>
+                                    <td className="px-4 py-3 text-right">
+                                        <button className="text-white/20 hover:text-white transition-colors">
+                                            ...
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
-    )
+            )
 }

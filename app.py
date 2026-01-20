@@ -1062,26 +1062,7 @@ def api_check_user():
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
-@app.route('/api/auth/login', methods=['POST'])
-def api_login():
-    """Login with name and password"""
-    data = request.get_json() or {}
-    name = (data.get('name') or '').strip()
-    password = data.get('password') or ''
-    if not name or not password:
-        return jsonify({'error': 'Name and password required'}), 400
-    
-    # Get client IP for rate limiting
-    ip_address = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
-    if ip_address:
-        ip_address = ip_address.split(',')[0].strip()
-    
-    try:
-        user = auth.login(name, password, ip_address)
-        
-        # Ensure session is saved after login - CRITICAL for session persistence
-        session.permanent = True
-        session.modified = True
+
         
         # Determine redirect based on role and company assignment
         role = user.get('role', 'worker')
