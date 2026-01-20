@@ -32,9 +32,7 @@ export async function POST(request: Request) {
         const storedCode = user.user_metadata?.access_code;
         const needsSetup = user.user_metadata?.setup_required;
 
-        // 2. Verify Code
-        const storedCode = user.user_metadata?.access_code;
-        const needsSetup = user.user_metadata?.setup_required;
+
 
         // Debug logging removed for security
         // console.log("Verifying setup:", { ... });
