@@ -52,7 +52,18 @@ export default function LoginPage() {
         }
     }
 
+    const [cooldown, setCooldown] = useState(0)
+
+    useEffect(() => {
+        if (cooldown > 0) {
+            const timer = setInterval(() => setCooldown(c => c - 1), 1000)
+            return () => clearInterval(timer)
+        }
+    }, [cooldown])
+
     const handleResetPassword = async () => {
+        if (cooldown > 0) return
+
         setIsLoading(true)
         setError("")
         setMessage("")
@@ -66,6 +77,7 @@ export default function LoginPage() {
                 setError(error.message)
             } else {
                 setMessage("Check your email for the password reset link.")
+                setCooldown(60)
             }
         } catch (err) {
             setError("Failed to send reset email.")
@@ -139,6 +151,7 @@ export default function LoginPage() {
                                         setPassword("")
                                         setError("")
                                         setMessage("")
+                                        setCooldown(0)
                                     }}
                                     className="text-[10px] text-white/40 hover:text-white transition-colors"
                                 >
@@ -173,9 +186,12 @@ export default function LoginPage() {
                                 <button
                                     type="button"
                                     onClick={handleResetPassword}
-                                    className="text-[11px] text-white/30 hover:text-white transition-colors"
+                                    disabled={cooldown > 0}
+                                    className="text-[11px] text-white/30 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    First time here? <span className="underline">Set up password</span>
+                                    {cooldown > 0
+                                        ? `Resend available in ${cooldown}s`
+                                        : "First time here? Set up password"}
                                 </button>
                             </div>
                         </motion.form>
