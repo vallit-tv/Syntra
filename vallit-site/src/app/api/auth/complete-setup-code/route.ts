@@ -21,7 +21,7 @@ export async function POST(request: Request) {
         }
 
         // 1. Find User
-        const { data: { users } } = await supabase.auth.admin.listUsers();
+        const { data: { users } } = await supabase.auth.admin.listUsers({ perPage: 1000 });
         const user = users.find(u => u.email?.toLowerCase() === email.toLowerCase());
 
         if (!user) {
@@ -32,13 +32,12 @@ export async function POST(request: Request) {
         const storedCode = user.user_metadata?.access_code;
         const needsSetup = user.user_metadata?.setup_required;
 
-        console.log("Verifying setup:", {
-            email,
-            receivedCode: code,
-            storedCode: storedCode,
-            needsSetup: needsSetup,
-            metadata: user.user_metadata
-        });
+        // 2. Verify Code
+        const storedCode = user.user_metadata?.access_code;
+        const needsSetup = user.user_metadata?.setup_required;
+
+        // Debug logging removed for security
+        // console.log("Verifying setup:", { ... });
 
         // Ensure we strictly check for setup_required to prevent overwriting active users
         // Loose comparison for code to handle string/number mismatches

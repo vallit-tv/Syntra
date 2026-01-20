@@ -109,7 +109,12 @@ export default function LoginPage() {
 
             if (signInError) throw signInError
 
-            router.push("/dashboard")
+            if (signInError) throw signInError
+
+            setMessage("Setup complete! Redirecting to dashboard...")
+
+            // Use hard redirect to ensure session cookies are picked up cleanly
+            window.location.href = "/dashboard"
 
         } catch (err: any) {
             setError(err.message)
@@ -172,7 +177,8 @@ export default function LoginPage() {
 
     const handleResetPassword = async () => {
         if (cooldown > 0) return
-        // ... existing reset logic ...
+        // Manually trigger setup flow (effectively a password reset)
+        setStep("setup")
     }
 
     return (

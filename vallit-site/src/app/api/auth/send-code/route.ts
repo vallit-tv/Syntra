@@ -10,12 +10,8 @@ const supabase = createClient(
 );
 
 // Configure Nodemailer
-console.log("SMTP Config Loading:", {
-    host: process.env.SMTP_HOST,
-    port: process.env.SMTP_PORT,
-    user: process.env.SMTP_USER,
-    sender: process.env.SMTP_SENDER
-});
+// Configure Nodemailer
+// console.log("SMTP Config Loading...", { ... });
 
 if (!process.env.SMTP_HOST) {
     throw new Error("SMTP_HOST is not defined in environment variables. Please restart the server.");
@@ -39,8 +35,8 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Email required" }, { status: 400 });
         }
 
-        // 1. Find User
-        const { data: { users } } = await supabase.auth.admin.listUsers();
+        // 1. Find User (limit to 1000 to catch more users)
+        const { data: { users } } = await supabase.auth.admin.listUsers({ perPage: 1000 });
         const user = users.find(u => u.email?.toLowerCase() === email.toLowerCase());
 
         if (!user) {

@@ -17,7 +17,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Email required" }, { status: 400 });
         }
 
-        const { data: { users }, error } = await supabase.auth.admin.listUsers();
+        const { data: { users }, error } = await supabase.auth.admin.listUsers({ perPage: 1000 });
 
         if (error) throw error;
 
