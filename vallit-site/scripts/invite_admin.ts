@@ -77,7 +77,7 @@ async function inviteAdmin() {
                 full_name: 'Admin User',
                 role: 'admin'
             },
-            redirectTo: 'http://localhost:3000/update-password' // Redirect to new page
+            redirectTo: 'https://vallit.net/auth/callback?next=/update-password'
         });
 
         let userId: string | undefined;

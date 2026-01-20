@@ -8,9 +8,10 @@ import { cn } from "@/lib/utils"
 
 export default function LoginPage() {
     const router = useRouter()
-    const [step, setStep] = useState<"email" | "password">("email")
+    const [step, setStep] = useState<"email" | "password" | "setup">("email")
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
+    const [accessCode, setAccessCode] = useState("")
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState("")
     const [message, setMessage] = useState("")
@@ -23,7 +24,31 @@ export default function LoginPage() {
     const handleEmailSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         if (!email) return
-        setStep("password")
+
+        setIsLoading(true)
+        setError("")
+
+        try {
+            // Check user status
+            const res = await fetch("/api/auth/lookup-user", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email })
+            })
+
+            const data = await res.json()
+
+            if (data.status === 'setup_required') {
+                setStep("setup")
+            } else {
+                setStep("password")
+            }
+        } catch (err) {
+            // Fallback to password step on error to avoid leaking info or blocking
+            setStep("password")
+        } finally {
+            setIsLoading(false)
+        }
     }
 
     const handleLogin = async (e: React.FormEvent) => {
@@ -47,6 +72,47 @@ export default function LoginPage() {
             }
         } catch (err) {
             setError("An error occurred. Please try again.")
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    const handleSetup = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setIsLoading(true)
+        setError("")
+
+        try {
+            const res = await fetch("/api/auth/complete-setup-code", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, code: accessCode, password })
+            })
+
+            const data = await res.json()
+
+            if (!res.ok) {
+                throw new Error(data.error || "Setup failed")
+            }
+
+            // Auto login after setup? Or just redirect to login with password field
+            // Let's auto login if possible. But we don't have session.
+            // Client needs to sign in now.
+
+            const { createClient } = await import("@/utils/supabase/client")
+            const supabase = createClient()
+
+            const { error: signInError } = await supabase.auth.signInWithPassword({
+                email,
+                password
+            })
+
+            if (signInError) throw signInError
+
+            router.push("/dashboard")
+
+        } catch (err: any) {
+            setError(err.message)
         } finally {
             setIsLoading(false)
         }
@@ -94,8 +160,12 @@ export default function LoginPage() {
                     <div className="w-10 h-10 bg-white rounded-xl mx-auto mb-6 flex items-center justify-center shadow-lg shadow-white/10">
                         <div className="w-4 h-4 bg-black rounded-sm" />
                     </div>
-                    <h1 className="text-xl font-medium tracking-tight text-white mb-2">Sign in to Syntra</h1>
-                    <p className="text-[13px] text-white/40">Welcome back to the workspace.</p>
+                    <h1 className="text-xl font-medium tracking-tight text-white mb-2">
+                        {step === 'setup' ? 'Setup Account' : 'Sign in to Syntra'}
+                    </h1>
+                    <p className="text-[13px] text-white/40">
+                        {step === 'setup' ? 'Enter your temporary access code' : 'Welcome back to the workspace.'}
+                    </p>
                 </div>
 
                 <AnimatePresence mode="wait">
@@ -122,10 +192,69 @@ export default function LoginPage() {
                             </div>
                             <button
                                 type="submit"
-                                disabled={!email}
+                                disabled={!email || isLoading}
                                 className="w-full h-10 bg-white text-black text-[13px] font-medium rounded-md hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                             >
-                                Continue <ArrowRight className="w-3.5 h-3.5" />
+                                {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <>Continue <ArrowRight className="w-3.5 h-3.5" /></>}
+                            </button>
+                        </motion.form>
+                    ) : step === "setup" ? (
+                        <motion.form
+                            key="setup-form"
+                            initial={{ opacity: 0, x: 10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -10 }}
+                            onSubmit={handleSetup}
+                            className="space-y-4"
+                        >
+                            <div className="flex items-center gap-3 mb-2 p-2 rounded-lg bg-white/5 border border-white/5">
+                                <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-blue-500/20 to-blue-500/0 flex items-center justify-center border border-blue-500/20 text-[10px] text-blue-500 font-bold">
+                                    {email.charAt(0).toUpperCase()}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="text-[12px] font-medium text-white truncate">{email}</div>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => { setStep("email"); setError(""); }}
+                                    className="text-[10px] text-white/40 hover:text-white transition-colors"
+                                >
+                                    Change
+                                </button>
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-[11px] font-medium text-white/40 uppercase tracking-wider ml-1">Access Code</label>
+                                <input
+                                    type="text"
+                                    value={accessCode}
+                                    onChange={(e) => setAccessCode(e.target.value)}
+                                    placeholder="6-digit code"
+                                    className="w-full h-10 px-3 bg-[#111] border border-white/10 rounded-md text-[13px] text-white placeholder:text-white/20 focus:outline-none focus:border-white/20 focus:ring-1 focus:ring-white/10 transition-all"
+                                    autoFocus
+                                    required
+                                />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-[11px] font-medium text-white/40 uppercase tracking-wider ml-1">New Password</label>
+                                <input
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="Choose a password"
+                                    className="w-full h-10 px-3 bg-[#111] border border-white/10 rounded-md text-[13px] text-white placeholder:text-white/20 focus:outline-none focus:border-white/20 focus:ring-1 focus:ring-white/10 transition-all"
+                                    required
+                                    minLength={6}
+                                />
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={isLoading || !accessCode || !password}
+                                className="w-full h-10 bg-white text-black text-[13px] font-medium rounded-md hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                            >
+                                {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Complete Setup & Sign In"}
                             </button>
                         </motion.form>
                     ) : (
@@ -151,7 +280,6 @@ export default function LoginPage() {
                                         setPassword("")
                                         setError("")
                                         setMessage("")
-                                        setCooldown(0)
                                     }}
                                     className="text-[10px] text-white/40 hover:text-white transition-colors"
                                 >
