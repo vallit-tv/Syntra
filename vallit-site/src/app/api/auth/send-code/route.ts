@@ -10,8 +10,14 @@ const supabase = createClient(
 );
 
 // Configure Nodemailer
-const transporter = nodemailer.createTransport({
+console.log("SMTP Config:", {
     host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT,
+    user: process.env.SMTP_USER
+});
+
+const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST || 'smtps.domainfactory.de', // Fallback hardcoded for safety check
     port: parseInt(process.env.SMTP_PORT || '465'),
     secure: true, // true for 465, false for other ports
     auth: {
