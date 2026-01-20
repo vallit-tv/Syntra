@@ -16,16 +16,19 @@ export default function UpdatePasswordPage() {
     const [success, setSuccess] = useState(false)
     const supabase = createClient()
 
+    const [verifyingSession, setVerifyingSession] = useState(true)
+
     useEffect(() => {
-        // Handle code exchange if present in URL (for invites acting as password reset/recovery)
-        // Although better handled in callback, client side auth can snatch the session too
         const handleSession = async () => {
-            const { data: { session } } = await supabase.auth.getSession()
-            if (!session) {
-                // If no session, try to exchange hash/code?
-                // supabase-js client automatically handles hash fragment token exchange.
-                // But for code flow with SSR, we might need manual exchange if callback wasn't hit.
-                // Let's assume the user is validly logged in or the client handles it.
+            try {
+                const { data: { session } } = await supabase.auth.getSession()
+                if (!session) {
+                    setError("Invalid or expired link. Please request a new password reset.")
+                }
+            } catch (err) {
+                setError("Failed to verify session.")
+            } finally {
+                setVerifyingSession(false)
             }
         }
         handleSession()
@@ -56,7 +59,8 @@ export default function UpdatePasswordPage() {
             }, 2000)
 
         } catch (err: any) {
-            setError(err.message || "Failed to update password")
+            console.error("Update error:", err)
+            setError(err.message || "Failed to update password. Please try signing in again.")
         } finally {
             setIsLoading(false)
         }
@@ -75,7 +79,12 @@ export default function UpdatePasswordPage() {
                 </div>
 
                 <AnimatePresence mode="wait">
-                    {!success ? (
+                    {verifyingSession ? (
+                        <div key="loading" className="flex flex-col items-center justify-center py-12 text-white/40 space-y-4">
+                            <Loader2 className="w-6 h-6 animate-spin" />
+                            <p className="text-[12px]">Verifying secure link...</p>
+                        </div>
+                    ) : !success ? (
                         <motion.form
                             key="reset-form"
                             initial={{ opacity: 0, scale: 0.95 }}
@@ -91,10 +100,11 @@ export default function UpdatePasswordPage() {
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="Minimum 6 characters"
-                                    className="w-full h-10 px-3 bg-[#111] border border-white/10 rounded-md text-[13px] text-white placeholder:text-white/20 focus:outline-none focus:border-white/20 focus:ring-1 focus:ring-white/10 transition-all"
+                                    className="w-full h-10 px-3 bg-[#111] border border-white/10 rounded-md text-[13px] text-white placeholder:text-white/20 focus:outline-none focus:border-white/20 focus:ring-1 focus:ring-white/10 transition-all disabled:opacity-50"
                                     autoFocus
                                     required
                                     minLength={6}
+                                    disabled={!!error && !isLoading}
                                 />
                             </div>
 
@@ -105,15 +115,16 @@ export default function UpdatePasswordPage() {
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
                                     placeholder="Re-enter password"
-                                    className="w-full h-10 px-3 bg-[#111] border border-white/10 rounded-md text-[13px] text-white placeholder:text-white/20 focus:outline-none focus:border-white/20 focus:ring-1 focus:ring-white/10 transition-all"
+                                    className="w-full h-10 px-3 bg-[#111] border border-white/10 rounded-md text-[13px] text-white placeholder:text-white/20 focus:outline-none focus:border-white/20 focus:ring-1 focus:ring-white/10 transition-all disabled:opacity-50"
                                     required
                                     minLength={6}
+                                    disabled={!!error && !isLoading}
                                 />
                             </div>
 
                             <button
                                 type="submit"
-                                disabled={isLoading || !password || !confirmPassword}
+                                disabled={isLoading || !password || !confirmPassword || !!error}
                                 className="w-full h-10 bg-white text-black text-[13px] font-medium rounded-md hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                             >
                                 {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Update Password"}
@@ -137,14 +148,24 @@ export default function UpdatePasswordPage() {
                     )}
                 </AnimatePresence>
 
-                {error && (
+                {error && !verifyingSession && (
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         className="mt-6 p-3 rounded-lg bg-red-500/5 border border-red-500/10 flex items-start gap-3"
                     >
                         <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-                        <span className="text-[12px] text-red-400 leading-relaxed">{error}</span>
+                        <div>
+                            <span className="text-[12px] text-red-400 leading-relaxed block">{error}</span>
+                            {error.includes("Invalid or expired") && (
+                                <button
+                                    onClick={() => router.push("/login")}
+                                    className="text-[11px] text-red-400/60 hover:text-red-400 mt-1 underline"
+                                >
+                                    Return to login
+                                </button>
+                            )}
+                        </div>
                     </motion.div>
                 )}
             </div>
