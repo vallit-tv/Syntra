@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { Loader2, ArrowRight, AlertCircle } from "lucide-react"
@@ -121,16 +121,19 @@ export default function LoginPage() {
     const [cooldown, setCooldown] = useState(0)
     const [isSendingCode, setIsSendingCode] = useState(false)
 
+    const sendingRef = useRef(false)
+
     // Effect to send code when entering setup step
     useEffect(() => {
-        if (step === 'setup' && !isSendingCode && !accessCode) {
+        if (step === 'setup' && !accessCode && !sendingRef.current) {
             sendAccessCode()
         }
     }, [step])
 
     const sendAccessCode = async () => {
-        if (cooldown > 0) return
+        if (cooldown > 0 || sendingRef.current) return
 
+        sendingRef.current = true
         setIsSendingCode(true)
         setError("")
         setMessage("")
@@ -153,8 +156,10 @@ export default function LoginPage() {
 
         } catch (err: any) {
             setError(err.message)
+            sendingRef.current = false // Allow retry on error
         } finally {
             setIsSendingCode(false)
+            // Note: We keep sendingRef.current = true on success to prevent auto-resend on re-renders
         }
     }
 
