@@ -32,8 +32,8 @@ export default function LoginPage() {
         setError("")
 
         try {
-            // Dynamic import to avoid SSR issues
-            const { supabase } = await import("@/lib/supabase")
+            const { createClient } = await import("@/utils/supabase/client")
+            const supabase = createClient()
 
             const { data, error: authError } = await supabase.auth.signInWithPassword({
                 email: email,
@@ -57,7 +57,8 @@ export default function LoginPage() {
         setError("")
         setMessage("")
         try {
-            const { supabase } = await import("@/lib/supabase")
+            const { createClient } = await import("@/utils/supabase/client")
+            const supabase = createClient()
             const { error } = await supabase.auth.resetPasswordForEmail(email, {
                 redirectTo: `${window.location.origin}/auth/callback?next=/update-password`,
             })

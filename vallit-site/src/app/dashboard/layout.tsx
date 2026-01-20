@@ -32,7 +32,8 @@ export default function DashboardLayout({
 
     const handleLogout = async () => {
         try {
-            const { supabase } = await import("@/lib/supabase")
+            const { createClient } = await import("@/utils/supabase/client")
+            const supabase = createClient()
             await supabase.auth.signOut()
             router.push("/login")
         } catch (error) {

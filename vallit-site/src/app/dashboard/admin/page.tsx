@@ -14,7 +14,8 @@ export default function AdminDashboard() {
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const { supabase } = await import("@/lib/supabase")
+                const { createClient } = await import("@/utils/supabase/client")
+                const supabase = createClient()
                 const { data: { session } } = await supabase.auth.getSession()
 
                 if (!session) {

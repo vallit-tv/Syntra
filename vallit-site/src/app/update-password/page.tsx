@@ -5,7 +5,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { Loader2, ArrowRight, AlertCircle, CheckCircle2 } from "lucide-react"
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import { createClient } from "@/utils/supabase/client"
 
 export default function UpdatePasswordPage() {
     const router = useRouter()
@@ -14,7 +14,7 @@ export default function UpdatePasswordPage() {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState("")
     const [success, setSuccess] = useState(false)
-    const supabase = createClientComponentClient()
+    const supabase = createClient()
 
     useEffect(() => {
         // Handle code exchange if present in URL (for invites acting as password reset/recovery)
