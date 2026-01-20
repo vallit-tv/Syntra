@@ -13,8 +13,17 @@ const supabase = createClient(
 console.log("SMTP Config:", {
     host: process.env.SMTP_HOST,
     port: process.env.SMTP_PORT,
-    user: process.env.SMTP_USER
-});
+    // Configure Nodemailer
+    console.log("SMTP Config Loading:", {
+        host: process.env.SMTP_HOST,
+        port: process.env.SMTP_PORT,
+        user: process.env.SMTP_USER,
+        sender: process.env.SMTP_SENDER
+    });
+
+    if(!process.env.SMTP_HOST) {
+    throw new Error("SMTP_HOST is not defined in environment variables. Please restart the server.");
+}
 
 const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
