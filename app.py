@@ -44,6 +44,26 @@ if not _secret_key:
     _secret_key = hashlib.sha256(b'SyntraDefaultSecretKey2024').hexdigest()
 app.secret_key = _secret_key
 
+# Global Error Handlers to ensure JSON response
+@app.errorhandler(500)
+def internal_error(error):
+    # Only return JSON for API routes to keep HTML pages working
+    if request.path.startswith('/api/'):
+        return jsonify({'error': 'Internal Server Error', 'message': str(error)}), 500
+    return render_template('error.html', error_code=500, error_message='Internal Server Error'), 500
+
+@app.errorhandler(404)
+def not_found_error(error):
+    if request.path.startswith('/api/'):
+        return jsonify({'error': 'Not Found', 'message': 'API endpoint not found'}), 404
+    return render_template('error.html', error_code=404, error_message='Page Not Found'), 404
+
+@app.errorhandler(405)
+def method_not_allowed_error(error):
+    if request.path.startswith('/api/'):
+         return jsonify({'error': 'Method Not Allowed', 'message': f'Method {request.method} not allowed for this endpoint'}), 405
+    return "Method Not Allowed", 405
+
 # Increase session lifetime for better user experience
 app.permanent_session_lifetime = timedelta(days=365)  # 365 days to keep users logged in
 app.config['SESSION_COOKIE_HTTPONLY'] = True
