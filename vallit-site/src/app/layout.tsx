@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/layout/footer";
+import { NavbarWrapper } from "@/components/layout/navbar-wrapper";
+import { FooterWrapper } from "@/components/layout/footer-wrapper";
 import { KianWidget } from "@/components/kian-widget/kian-widget";
 
 const inter = Inter({
@@ -65,13 +65,13 @@ export default function RootLayout({
         <div className="global-glow" aria-hidden="true" />
 
         {/* Navigation */}
-        <Navbar />
+        <NavbarWrapper />
 
         {/* Main Content */}
         <main id="main-content">{children}</main>
 
         {/* Footer */}
-        <Footer />
+        <FooterWrapper />
 
         {/* Kian Chatbot Widget */}
         <KianWidget />

@@ -1742,6 +1742,36 @@ def api_switch_company():
         
     return jsonify({'error': 'Failed to switch company'}), 500
 
+@app.route('/api/companies', methods=['GET'])
+@auth.login_required
+def api_list_companies():
+    """List available companies for the user (All for superadmin)"""
+    user = auth.current_user()
+    
+    # Check if superadmin
+    # We need to trust the role in the user object or fetch fresh
+    # For now, let's fetch fresh user to be sure
+    db_user = db.get_user_by_email(user.get('email'))
+    
+    if db_user and db_user.get('role') == 'superadmin':
+        # Return all companies
+        try:
+            result = db.get_db().table('companies').select('id, name, slug').execute()
+            return jsonify({'companies': result.data}), 200
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+            
+    # Regular user: return just their current company (no switching unless we add many-to-many)
+    # Or if we have a members table later.
+    current_company_id = user.get('company_id')
+    companies = []
+    if current_company_id:
+        comp = db.get_company_by_id(current_company_id)
+        if comp:
+            companies.append({'id': comp['id'], 'name': comp['name'], 'slug': comp['slug']})
+            
+    return jsonify({'companies': companies}), 200
+
 @app.route('/api/company/members/invite', methods=['POST'])
 @auth.login_required
 def api_invite_member():
