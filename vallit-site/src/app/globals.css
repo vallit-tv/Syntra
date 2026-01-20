@@ -76,6 +76,20 @@
   --radius-full: 9999px;
 }
 
+[data-theme='light'] {
+  --bg-body: #ffffff;
+  --bg-elevated: #f3f4f6;
+  --bg-card: rgba(0, 0, 0, 0.02);
+  --bg-card-hover: rgba(0, 0, 0, 0.04);
+  --bg-nav: rgba(255, 255, 255, 0.85);
+
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-tertiary: #9ca3af;
+  --border-subtle: rgba(0, 0, 0, 0.08);
+  --border-hover: rgba(0, 0, 0, 0.12);
+}
+
 @theme inline {
   --color-background: var(--bg-body);
   --color-foreground: var(--text-primary);

@@ -1536,8 +1536,23 @@ def api_update_profile():
     """Update user profile"""
     user = auth.current_user()
     data = request.get_json() or {}
-    # Placeholder - to be replaced with actual profile update logic
-    return jsonify({'message': 'Profile updated'})
+    
+    updates = {}
+    if 'name' in data and data['name']:
+        updates['name'] = data['name'].strip()
+        
+    # Example: Allow email update if we were integrated fully, 
+    # but for now restrict to name to avoid auth desync.
+    
+    if updates:
+        try:
+            db.update_user(user['id'], updates)
+            return jsonify({'message': 'Profile updated', 'user': {**user, **updates}})
+        except Exception as e:
+            print(f"Error updating profile: {e}")
+            return jsonify({'error': 'Failed to update profile'}), 500
+            
+    return jsonify({'message': 'No changes made'})
 
 @app.route('/api/user/password', methods=['POST'])
 @auth.login_required
