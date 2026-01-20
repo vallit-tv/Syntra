@@ -12,14 +12,36 @@ export default function AdminDashboard() {
     const [filterRole, setFilterRole] = useState<string | null>(null)
 
     useEffect(() => {
-        fetch("/api/admin/users")
-            .then(res => {
-                if (res.ok) return res.json()
-                throw new Error("Failed to fetch")
-            })
-            .then(data => setUsers(data))
-            .catch(err => console.error(err))
-            .finally(() => setIsLoading(false))
+        const fetchUsers = async () => {
+            try {
+                const { supabase } = await import("@/lib/supabase")
+                const { data: { session } } = await supabase.auth.getSession()
+
+                if (!session) {
+                    console.error("No session found")
+                    return
+                }
+
+                const res = await fetch("/api/admin/users", {
+                    headers: {
+                        "Authorization": `Bearer ${session.access_token}`
+                    }
+                })
+
+                if (res.ok) {
+                    const data = await res.json()
+                    setUsers(data)
+                } else {
+                    console.error("Failed to fetch users")
+                }
+            } catch (err) {
+                console.error(err)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+
+        fetchUsers()
     }, [])
 
     const filteredUsers = users.filter(user => {

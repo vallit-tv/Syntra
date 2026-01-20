@@ -18,11 +18,30 @@ export default function DashboardOverview() {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        fetch("/api/users/me")
-            .then(res => res.json())
-            .then(data => setUser(data))
-            .catch(err => console.error(err))
-            .finally(() => setLoading(false))
+        const fetchData = async () => {
+            try {
+                const { supabase } = await import("@/lib/supabase")
+                const { data: { session } } = await supabase.auth.getSession()
+
+                if (!session) {
+                    console.error("No session found")
+                    return
+                }
+
+                const res = await fetch("/api/users/me", {
+                    headers: {
+                        "Authorization": `Bearer ${session.access_token}`
+                    }
+                })
+                const data = await res.json()
+                setUser(data)
+            } catch (err) {
+                console.error(err)
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchData()
     }, [])
 
     // Mock data for "Linear"-like widgets until we hook up real issue tracking
@@ -139,8 +158,8 @@ export default function DashboardOverview() {
                                             <div className="h-full bg-white/20 rounded-full" style={{ width: `${project.progress}%` }} />
                                         </div>
                                         <div className={`text-[11px] px-2 py-0.5 rounded border ${project.status === 'In Progress' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' :
-                                                project.status === 'Done' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
-                                                    'bg-white/5 text-white/40 border-white/5'
+                                            project.status === 'Done' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
+                                                'bg-white/5 text-white/40 border-white/5'
                                             }`}>
                                             {project.status}
                                         </div>

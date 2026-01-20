@@ -125,6 +125,50 @@ def get_user_by_name(name: str) -> Optional[Dict]:
         return None
 
 
+def get_user_by_email(email: str) -> Optional[Dict]:
+    """Get user by email"""
+    try:
+        db_client = get_db()
+        if db_client is None:
+            return None
+        # Note: 'users' table might not have 'email' column if it relies purely on name.
+        # But if we want to reverse lookup from Supabase Auth (which has confirmed email),
+        # we might need to rely on matching name if email structure is known, OR add email to users table.
+        # For this specific project, we constructed email as "{name}@syntra.internal".
+        # So we can reverse it: extract name from email.
+        if '@syntra.internal' in email:
+            name = email.split('@')[0]
+            return get_user_by_name(name)
+        
+        # Fallback: try to Query by email column if it exists
+        try:
+            result = db_client.table('users').select('*').eq('email', email).execute()
+            if result.data:
+                return result.data[0]
+        except:
+            pass
+            
+        return None
+    except Exception as e:
+        print(f"Error getting user by email '{email}': {e}")
+        return None
+
+
+def verify_supabase_token(token: str) -> Optional[Dict]:
+    """
+    Verify Supabase JWT and return Supabase User object.
+    """
+    try:
+        db_client = get_db()
+        if db_client is None:
+            return None
+        res = db_client.auth.get_user(token)
+        return res.user if res else None
+    except Exception as e:
+        # print(f"Token verification failed: {e}")
+        return None
+
+
 def get_user_by_id(user_id: str) -> Optional[Dict]:
     """Get user by ID"""
     try:

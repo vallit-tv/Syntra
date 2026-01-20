@@ -32,7 +32,8 @@ export default function DashboardLayout({
 
     const handleLogout = async () => {
         try {
-            await fetch("/api/auth/logout", { method: "POST" })
+            const { supabase } = await import("@/lib/supabase")
+            await supabase.auth.signOut()
             router.push("/login")
         } catch (error) {
             console.error("Logout failed", error)

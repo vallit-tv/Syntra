@@ -342,18 +342,30 @@ def current_user() -> Optional[dict]:
     # Check for API Key in header (for external automation)
     try:
         auth_header = request.headers.get('Authorization')
-        print(f"DEBUG: Authorization header: {auth_header[:50] if auth_header else 'None'}...")
         if auth_header and auth_header.startswith('Bearer '):
-            api_key = auth_header.split(' ', 1)[1].strip()  # Get everything after 'Bearer '
-            print(f"DEBUG: Extracted API key: {api_key[:20]}...")
-            user = db.get_user_by_api_key(api_key)
+            token = auth_header.split(' ', 1)[1].strip()  # Get everything after 'Bearer '
+            
+            # 1. Try as Supabase JWT
+            # Note: This verifies the token with Supabase and gets the user identity
+            supabase_user = db.verify_supabase_token(token)
+            if supabase_user:
+                email = supabase_user.email
+                if email:
+                    # Map back to internal user
+                    internal_user = db.get_user_by_email(email)
+                    if internal_user:
+                        # Ensure role is set correctly (especially for Theo/Vyrez)
+                        # We might need to sync role from metadata? For now trust internal DB status.
+                        return internal_user
+
+            # 2. Try as API Key
+            # print(f"DEBUG: Extracted token: {token[:10]}...") 
+            user = db.get_user_by_api_key(token)
             if user:
                 print(f"DEBUG: User found via API key: {user.get('name')}")
                 return user
-            else:
-                print(f"DEBUG: No user found for API key")
     except Exception as e:
-        print(f"API Key auth error: {e}")
+        print(f"Auth token error: {e}")
         traceback.print_exc()
         
     user_id = session.get('user_id')
