@@ -64,6 +64,16 @@ def method_not_allowed_error(error):
          return jsonify({'error': 'Method Not Allowed', 'message': f'Method {request.method} not allowed for this endpoint'}), 405
     return "Method Not Allowed", 405
 
+@app.errorhandler(Exception)
+def handle_unexpected_error(error):
+    # Only return JSON for API routes to keep HTML pages working
+    if request.path.startswith('/api/'):
+        print(f"Global API Error: {error}") # Log it
+        return jsonify({'error': 'Internal Server Error', 'message': str(error)}), 500
+    # For HTML routes, standard 500 behaviour (Flask will show debugger or 500)
+    # But to be safe let's return our 500 template
+    return render_template('error.html', error_code=500, error_message='Internal System Error'), 500
+
 # Increase session lifetime for better user experience
 app.permanent_session_lifetime = timedelta(days=365)  # 365 days to keep users logged in
 app.config['SESSION_COOKIE_HTTPONLY'] = True
