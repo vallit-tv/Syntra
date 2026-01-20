@@ -17,9 +17,9 @@ console.log("SMTP Config:", {
 });
 
 const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtps.domainfactory.de', // Fallback hardcoded for safety check
-    port: parseInt(process.env.SMTP_PORT || '465'),
-    secure: true, // true for 465, false for other ports
+    host: process.env.SMTP_HOST,
+    port: parseInt(process.env.SMTP_PORT || '587'),
+    secure: process.env.SMTP_PORT === '465', // false for 587 (STARTTLS)
     auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
@@ -68,7 +68,7 @@ export async function POST(request: Request) {
 
         // 4. Send Email
         const mailOptions = {
-            from: `"Syntra Auth" <${process.env.SMTP_USER}>`,
+            from: `"Syntra Auth" <${process.env.SMTP_SENDER || process.env.SMTP_USER}>`,
             to: email,
             subject: 'Your Syntra Access Code',
             text: `Your access code is: ${accessCode}\n\nEnter this code to set up your account password.`,

@@ -134,11 +134,15 @@
         }
 
         init() {
-            this.injectStyles();
-            this.createWidget();
-            this.attachEventListeners();
-            this.loadHistory();
-            this.loadRemoteConfig(); // Fetch server-side settings
+            try {
+                this.injectStyles();
+                this.createWidget();
+                this.attachEventListeners();
+                this.loadHistory();
+                this.loadRemoteConfig(); // Fetch server-side settings
+            } catch (e) {
+                console.error('Vallit Widget Init Error:', e);
+            }
         }
 
         async loadRemoteConfig() {
@@ -151,52 +155,60 @@
 
                 const remoteConfig = await response.json();
 
+                if (!remoteConfig) return;
+
                 // Merge config, preferring remote for editable fields
+                // Validate strings before using
+
                 // Update Welcome Message
-                if (remoteConfig.welcome_message) {
+                if (remoteConfig.welcome_message && typeof remoteConfig.welcome_message === 'string') {
                     this.config.welcomeMessage = remoteConfig.welcome_message;
                     // If we haven't started chatting yet (messages empty or just 1 welcome msg), update it
                     if (this.messages.length <= 1) {
-                        // Check if we already have a welcome message
-                        const hasWelcome = this.messages.some(m => m.role === 'assistant');
-                        if (!hasWelcome || this.messages.length === 0) {
-                            // Just set it for next usage
-                        } else if (this.messages.length === 1 && this.messages[0].role === 'assistant') {
-                            // Replace the existing welcome message
-                            this.messages[0].content = this.config.welcomeMessage;
+                        try {
+                            // Check if we already have a welcome message
+                            const hasWelcome = this.messages.some(m => m.role === 'assistant');
+                            if (!hasWelcome || this.messages.length === 0) {
+                                // Just set it for next usage
+                            } else if (this.messages.length === 1 && this.messages[0].role === 'assistant') {
+                                // Replace the existing welcome message
+                                this.messages[0].content = this.config.welcomeMessage;
 
-                            // Re-render DOM regardless of open state
-                            this.messagesContainer.innerHTML = '';
-                            this.renderMessage(this.messages[0], false);
+                                // Re-render DOM regardless of open state
+                                if (this.messagesContainer) {
+                                    this.messagesContainer.innerHTML = '';
+                                    this.renderMessage(this.messages[0], false);
 
-                            // Resume rest of messages if any (unlikely here but safe)
-                            for (let i = 1; i < this.messages.length; i++) {
-                                this.renderMessage(this.messages[i], false);
+                                    // Resume rest of messages if any (unlikely here but safe)
+                                    for (let i = 1; i < this.messages.length; i++) {
+                                        this.renderMessage(this.messages[i], false);
+                                    }
+                                }
                             }
+                        } catch (err) {
+                            console.warn('Error updating welcome message:', err);
                         }
                     }
                 }
 
                 // Update Header Title & Avatar
-                if (remoteConfig.name) {
+                if (remoteConfig.name && typeof remoteConfig.name === 'string') {
                     this.config.headerTitle = remoteConfig.name;
                     // Update DOM elements
-                    const titleEl = this.container.querySelector('.syntra-header-title');
-                    if (titleEl) titleEl.textContent = this.config.headerTitle;
+                    if (this.container) {
+                        const titleEl = this.container.querySelector('.syntra-header-title');
+                        if (titleEl) titleEl.textContent = this.config.headerTitle;
 
-                    const avatarEl = this.container.querySelector('.syntra-avatar');
-                    if (avatarEl) avatarEl.textContent = this.config.headerTitle.charAt(0);
+                        const avatarEl = this.container.querySelector('.syntra-avatar');
+                        if (avatarEl) avatarEl.textContent = this.config.headerTitle.charAt(0);
+                    }
                 }
 
-                // Update other settings if provided (e.g. theme, title)
-                /*
-                if (remoteConfig.theme && remoteConfig.theme !== this.config.theme) {
-                    this.container.classList.replace(`syntra-theme-${this.config.theme}`, `syntra-theme-${remoteConfig.theme}`);
-                    this.config.theme = remoteConfig.theme;
+                // Update theme/position if present (and valid)
+                if (remoteConfig.theme && typeof remoteConfig.theme === 'string') {
+                    // Check if valid theme or just rely on CSS
+                    // Ideally we would replace the class
                 }
-                */
-
-                // Store standard session ID if backend rotates it? No, keep local logic.
 
             } catch (e) {
                 console.warn('Failed to load remote config:', e);
@@ -221,9 +233,13 @@
         // ... (previous code)
 
         createWidget() {
+            // Ensure valid class names
+            const theme = this.config.theme || 'glassmorphism';
+            const position = this.config.position || 'bottom-right';
+
             // Create container
             this.container = document.createElement('div');
-            this.container.className = `syntra-widget syntra-theme-${this.config.theme} syntra-position-${this.config.position}`;
+            this.container.className = `syntra-widget syntra-theme-${theme} syntra-position-${position}`;
 
             // Generate HTML
             this.container.innerHTML = `

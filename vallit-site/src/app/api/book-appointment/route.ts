@@ -107,11 +107,11 @@ function generateICS(
         return date.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
     };
 
-    const uid = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}@wtm-consulting.de`;
+    const uid = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}@vallit.net`;
 
     return `BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//Vallit//WTM Consulting//EN
+PRODID:-//Vallit//Vallit Network//EN
 CALSCALE:GREGORIAN
 METHOD:REQUEST
 BEGIN:VEVENT
@@ -137,7 +137,7 @@ export async function POST(req: Request) {
         // 1. Get Zoom Token & Create Meeting
         console.log("Creating Zoom Meeting...");
         const zoomToken = await getZoomAccessToken();
-        const meetingTopic = `WTM Consulting: Call with ${company} (${name})`;
+        const meetingTopic = `Vallit Network: Call with ${company} (${name})`;
         const zoomMeeting = await createZoomMeeting(zoomToken, meetingTopic, date);
 
         console.log("Zoom Meeting Created:", zoomMeeting.id);
@@ -160,13 +160,13 @@ export async function POST(req: Request) {
             meetingTopic,
             `Topic: ${customField}\n\nJoin Zoom Meeting:\n${zoomMeeting.join_url}`,
             zoomMeeting.join_url,
-            "WTM Consulting",
-            "Kontakt@wtm-consulting.de"
+            "Vallit Network",
+            "info@vallit.net"
         );
 
         // 4. Send Confirmation Email to User
         const userMailOptions = {
-            from: '"WTM Consulting" <Kontakt@wtm-consulting.de>',
+            from: '"Vallit Network" <info@vallit.net>',
             to: email,
             subject: `Confirmation: ${meetingTopic}`,
             html: `
@@ -175,7 +175,7 @@ export async function POST(req: Request) {
                 <h2 style="color: #22c55e;">Appointment Confirmed</h2>
             </div>
             <p>Hi ${name},</p>
-            <p>Your appointment with <strong>WTM Consulting</strong> has been successfully scheduled.</p>
+            <p>Your appointment with <strong>Vallit Network</strong> has been successfully scheduled.</p>
             
             <div style="background-color: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #eee; margin: 20px 0;">
                 <p><strong>Topic:</strong> ${customField}</p>
@@ -185,7 +185,7 @@ export async function POST(req: Request) {
             
             <p>A calendar invitation is attached to this email. Please add it to your calendar.</p>
             
-            <p>Best regards,<br>The WTM Consulting Team</p>
+            <p>Best regards,<br>The Vallit Network Team</p>
           </div>
         `,
             icalEvent: {
@@ -195,10 +195,10 @@ export async function POST(req: Request) {
             }
         };
 
-        // 5. Send Notification Email to WTM (also includes ICS for easy adding)
+        // 5. Send Notification Email to Vallit (also includes ICS for easy adding)
         const adminMailOptions = {
-            from: '"WTM Bot" <Kontakt@wtm-consulting.de>',
-            to: "Kontakt@wtm-consulting.de",
+            from: '"Vallit Bot" <info@vallit.net>',
+            to: "info@vallit.net",
             subject: `NEW BOOKING: ${company} - ${name}`,
             html: `
           <div style="font-family: Arial, sans-serif; padding: 10px;">

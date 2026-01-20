@@ -13,7 +13,31 @@ interface Message {
     metadata?: any;
 }
 
-export function KianWidget() {
+// Simple Error Boundary Component
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
+    constructor(props: { children: React.ReactNode }) {
+        super(props);
+        this.state = { hasError: false };
+    }
+
+    static getDerivedStateFromError(error: any) {
+        return { hasError: true };
+    }
+
+    componentDidCatch(error: any, errorInfo: any) {
+        console.error("KianWidget Error:", error, errorInfo);
+    }
+
+    render() {
+        if (this.state.hasError) {
+            // Fallback UI - just don't render the widget to avoid breaking the site
+            return null;
+        }
+        return this.props.children;
+    }
+}
+
+function KianWidgetContent() {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState<Message[]>([
         {
@@ -381,5 +405,13 @@ export function KianWidget() {
                 </div>
             </div>
         </>
+    );
+}
+
+export function KianWidget() {
+    return (
+        <ErrorBoundary>
+            <KianWidgetContent />
+        </ErrorBoundary>
     );
 }
