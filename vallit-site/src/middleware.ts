@@ -1,9 +1,25 @@
 
-import { type NextRequest } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
 import { updateSession } from '@/utils/supabase/middleware'
 
 export async function middleware(request: NextRequest) {
-    return await updateSession(request)
+    try {
+        return await updateSession(request)
+    } catch (e) {
+        console.error('Middleware failed:', e)
+        // Ensure API routes return JSON on middleware failure
+        if (request.nextUrl.pathname.startsWith('/api')) {
+            return new NextResponse(
+                JSON.stringify({
+                    error: 'Internal Server Error (Middleware)',
+                    message: "Middleware check failed. Likely missing environment variables."
+                }),
+                { status: 500, headers: { 'content-type': 'application/json' } }
+            )
+        }
+        // Fallback for page routes
+        return NextResponse.next({ request: { headers: request.headers } })
+    }
 }
 
 export const config = {
