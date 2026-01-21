@@ -9,6 +9,14 @@ const nextConfig: NextConfig = {
         source: '/api/:path*',
         destination: 'http://127.0.0.1:5001/api/:path*', // Proxy to Flask server
       },
+      {
+        source: '/widget/:path*',
+        destination: 'http://127.0.0.1:5001/widget/:path*', // Proxy widget scripts
+      },
+      {
+        source: '/static/:path*',
+        destination: 'http://127.0.0.1:5001/static/:path*', // Proxy static files
+      },
     ]
   },
 };
