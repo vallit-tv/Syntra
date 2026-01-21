@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 from dateutil import parser as date_parser
 import auth
 import db
-
+from flask_cors import CORS
 
 load_dotenv()
 
@@ -31,6 +31,9 @@ print(f"SUPABASE_SERVICE_KEY set: {bool(os.getenv('SUPABASE_SERVICE_KEY'))}")
 print("=" * 60)
 
 app = Flask(__name__, static_folder='static', static_url_path='/static', template_folder='templates')
+# Enable CORS for all API and Widget routes to allow external embedding
+CORS(app, resources={r"/api/*": {"origins": "*"}, r"/widget/*": {"origins": "*"}})
+
 # Force redeploy for route fix (Step 1010)
 
 # CRITICAL: Secret key must be stable across deployments on Vercel
