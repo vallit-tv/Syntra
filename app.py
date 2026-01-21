@@ -2144,19 +2144,16 @@ def chat_config():
 
 @app.route('/widget/embed.js', methods=['GET'])
 def widget_embed_script():
-    """Serve the embeddable widget JavaScript"""
+    """Serve the embeddable widget JavaScript (Inline Version)"""
     try:
-        widget_js_path = os.path.join(app.static_folder, 'js', 'chat-widget.js')
-        if os.path.exists(widget_js_path):
-            response = send_file(widget_js_path, mimetype='application/javascript')
-            response.headers['Access-Control-Allow-Origin'] = '*'
-            response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-            return response
-        else:
-            return "// Widget not found", 404
+        from widget_source import WIDGET_JS
+        response = Response(WIDGET_JS, mimetype='application/javascript')
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        return response
     except Exception as e:
         print(f"Widget embed error: {e}")
-        return f"// Error: {str(e)}", 500
+        return jsonify({'error': f"Failed to load widget script: {str(e)}"}), 500
 
 
 @app.route('/widget/styles.css', methods=['GET'])
