@@ -51,28 +51,45 @@ app.secret_key = _secret_key
 @app.errorhandler(500)
 def internal_error(error):
     # Only return JSON for API routes to keep HTML pages working
-    if request.path.startswith('/api/'):
-        return jsonify({'error': 'Internal Server Error', 'message': str(error)}), 500
+    if request.path.startswith('/api/') or request.path.startswith('/widget/'):
+        response = jsonify({'error': 'Internal Server Error', 'message': str(error)})
+        response.status_code = 500
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response
     return render_template('error.html', error_code=500, error_message='Internal Server Error'), 500
 
 @app.errorhandler(404)
 def not_found_error(error):
-    if request.path.startswith('/api/'):
-        return jsonify({'error': 'Not Found', 'message': 'API endpoint not found'}), 404
+    if request.path.startswith('/api/') or request.path.startswith('/widget/'):
+        response = jsonify({'error': 'Not Found', 'message': 'API endpoint not found'})
+        response.status_code = 404
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response
     return render_template('error.html', error_code=404, error_message='Page Not Found'), 404
 
 @app.errorhandler(405)
 def method_not_allowed_error(error):
-    if request.path.startswith('/api/'):
-         return jsonify({'error': 'Method Not Allowed', 'message': f'Method {request.method} not allowed for this endpoint'}), 405
+    if request.path.startswith('/api/') or request.path.startswith('/widget/'):
+         response = jsonify({'error': 'Method Not Allowed', 'message': f'Method {request.method} not allowed for this endpoint'})
+         response.status_code = 405
+         response.headers['Access-Control-Allow-Origin'] = '*'
+         return response
     return "Method Not Allowed", 405
 
 @app.errorhandler(Exception)
 def handle_unexpected_error(error):
     # Only return JSON for API routes to keep HTML pages working
-    if request.path.startswith('/api/'):
+    if request.path.startswith('/api/') or request.path.startswith('/widget/'):
         print(f"Global API Error: {error}") # Log it
-        return jsonify({'error': 'Internal Server Error', 'message': str(error)}), 500
+        # If it's an HTTP exception, use its code
+        code = 500
+        if hasattr(error, 'code'):
+            code = error.code
+            
+        response = jsonify({'error': 'Internal Server Error', 'message': str(error)})
+        response.status_code = code
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response
     # For HTML routes, standard 500 behaviour (Flask will show debugger or 500)
     # But to be safe let's return our 500 template
     return render_template('error.html', error_code=500, error_message='Internal System Error'), 500
