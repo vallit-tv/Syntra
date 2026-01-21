@@ -1859,7 +1859,7 @@ import uuid as uuid_lib
 @app.route('/api/chat/message', methods=['POST', 'OPTIONS'])
 def chat_message():
     """Handle incoming chat messages from the widget"""
-    # Handle CORS preflight
+    # Handle CORS preflight (flask-cors handles this, but keeping explicit for safety if needed)
     if request.method == 'OPTIONS':
         response = jsonify({'status': 'ok'})
         response.headers['Access-Control-Allow-Origin'] = '*'
@@ -1908,95 +1908,82 @@ def chat_message():
         session_id = session.get('id') or session.get('session_key')
         
         # Save user message
-        user_msg = chat_service.save_message(
-            db, session_id, 'user', message
+        chat_service.save_message(
+            db, 
+            session_id, 
+            'user', 
+            message,
+            metadata={'widget_id': widget_id, 'company_id': company_id},
+            company_id=company_id
         )
         
-        # Get conversation history for context
-        history = chat_service.get_conversation_history(db, session_id, limit=20)
-        
-        # Get widget config (optionally filtered by company)
+        # Generate response
+        # 1. Check for system prompt override in widget config
         widget_config = chat_service.get_widget_config(db, widget_id, company_id)
-        if not widget_config:
-            widget_config = chat_service.get_default_widget_config()
+        system_prompt = widget_config.get('system_prompt') if widget_config else None
         
-        system_prompt = widget_config.get('system_prompt') or chat_service.default_system_prompt
+        # 2. Get history
+        history = chat_service.get_conversation_history(db, session_id)
         
-        # Inject Knowledge Base Context (Phase 3)
-        if company_id:
-            knowledge_context = chat_service.get_company_knowledge(db, company_id)
-            if knowledge_context:
-                system_prompt += f"\n\n{knowledge_context}\n\nUse the above Company Knowledge Base to answer questions accurately."
+        # 3. Generate
+        response_text, metadata = chat_service.generate_response(
+            history, 
+            system_prompt=system_prompt,
+            db_module=db,
+            company_id=company_id, # Use new engine if company_id present
+            session_id=session_id,
+            enable_tools=True
+        )
+        
+        if not response_text and metadata and metadata.get('error'):
+             return jsonify({'status': 'error', 'error': metadata['error']}), 500
+             
+        if not response_text:
+            response_text = "I'm sorry, I couldn't generate a response."
+            
+        # Save assistant response
+        tokens = metadata.get('tokens_total', 0) if metadata else 0
+        chat_service.save_message(
+            db, 
+            session_id, 
+            'assistant', 
+            response_text, 
+            tokens_used=tokens,
+            model=metadata.get('model') if metadata else None,
+            company_id=company_id
+        )
+        
+        return jsonify({
+            'status': 'success', 
+            'response': response_text,
+            'session_id': session_key # Return key for client continuity
+        })
 
-
-        
-        # Check if scheduling is enabled
-        enable_scheduling = False
-        if widget_config.get('settings', {}).get('scheduling', {}).get('enabled'):
-            enable_scheduling = True
-            system_prompt += "\n\nYou have access to an appointment booking tool. If the user wants to book, ask for their Name, Email, and Preferred Date/Time needed to use the tool."
-
-        # Direct ChatGPT response (fallback or primary)
-        if chat_service.is_configured():
-            ai_response, response_metadata = chat_service.generate_response(
-                history,
-                system_prompt=system_prompt,
-                db_module=db,
-                company_id=company_id,
-                session_id=session_id,
-                enable_tools=enable_scheduling
-            )
-        
-        if ai_response:
-            # Save AI response
-            ai_msg = chat_service.save_message(
-                db, session_id, 'assistant', ai_response,
-                tokens_used=response_metadata.get('tokens_total'),
-                model=response_metadata.get('model'),
-                metadata=response_metadata
-            )
-            
-            response = jsonify({
-                'status': 'success',
-                'session_id': session_key,
-                'response': ai_response,
-                'message_id': ai_msg['id'] if ai_msg else None,
-                'metadata': {
-                    'tokens_used': response_metadata.get('tokens_total'),
-                    'model': response_metadata.get('model')
-                }
-            })
-        else:
-            # No AI configured: Fallback to Demo Mode to prevent "Error" state in UI
-            # error_msg = response_metadata.get('error', 'AI service not available')
-            
-            demo_response = "Kian Demo: I'm ready to chat! Please configure your OpenAI API Key in the .env file to enable real intelligence."
-            
-            # Save demo message so history works
-            msg = chat_service.save_message(
-                db, session_id, 'assistant', demo_response,
-                metadata={'is_demo': True}
-            )
-            
-            response = jsonify({
-                'status': 'success',
-                'session_id': session_key,
-                'response': demo_response,
-                'message_id': msg['id'] if msg else None,
-                'metadata': {'demo': True}
-            })
-        
-        response.headers['Access-Control-Allow-Origin'] = '*'
-        return response
-        
     except Exception as e:
-        print(f"Chat message error: {e}")
-        import traceback
-        traceback.print_exc()
-        response = jsonify({'error': 'Internal server error', 'details': str(e)})
-        response.status_code = 500
-        response.headers['Access-Control-Allow-Origin'] = '*'
-        return response
+        print(f"Chat error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/chat/config', methods=['GET'])
+def api_chat_config():
+    """Get chat widget configuration"""
+    widget_id = request.args.get('widget_id', 'default')
+    company_id = request.args.get('company_id')
+    
+    try:
+        service = get_chat_service()
+        config = service.get_widget_config(db, widget_id, company_id)
+        if not config:
+            # Return default if not found
+            config = service.get_default_widget_config()
+            
+        return jsonify(config)
+    except Exception as e:
+        print(f"Chat config error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+
 
 
 @app.route('/api/chat/history/<session_key>', methods=['GET', 'OPTIONS'])
