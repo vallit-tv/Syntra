@@ -115,7 +115,8 @@ END:VCALENDAR"""
 
     @staticmethod
     def send_confirmation_email(user_email, user_name, topic, date_time, zoom_link, ics_content):
-        smtp_host = os.getenv('SMTP_HOST', 'smtps.domainfactory.de')
+        # Update default host to official DomainFactory SSL host
+        smtp_host = os.getenv('SMTP_HOST', 'sslout.df.eu')
         smtp_port = int(os.getenv('SMTP_PORT', 465))
         smtp_user = os.getenv('SMTP_USER')
         smtp_pass = os.getenv('SMTP_PASS')
@@ -156,9 +157,12 @@ END:VCALENDAR"""
         msg.attach(part)
 
         try:
-            with smtplib.SMTP_SSL(smtp_host, smtp_port) as server:
+            # Set timeout to avoid hanging the bot
+            print(f"Connecting to SMTP {smtp_host}:{smtp_port}...")
+            with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=10) as server:
                 server.login(smtp_user, smtp_pass)
                 server.send_message(msg)
+                print("User confirmation email sent successfully.")
                 
             # Send notification to Admin as well
             admin_msg = MIMEMultipart()
@@ -181,9 +185,10 @@ END:VCALENDAR"""
             admin_part['Content-Disposition'] = 'attachment; filename="booking.ics"'
             admin_msg.attach(admin_part)
             
-            with smtplib.SMTP_SSL(smtp_host, smtp_port) as server:
+            with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=10) as server:
                 server.login(smtp_user, smtp_pass)
                 server.send_message(admin_msg)
+                print("Admin notification email sent successfully.")
                 
             return True
         except Exception as e:

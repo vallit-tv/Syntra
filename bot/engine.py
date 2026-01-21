@@ -138,8 +138,10 @@ class CompanyBot:
             )
 
             if response.status_code != 200:
-                logging.error(f"OpenAI Error: {response.text}")
-                return {'error': f"Provider Error: {response.status_code} - {response.text}"}
+                error_msg = f"Provider Error: {response.status_code} - {response.text}"
+                logging.error(f"OpenAI Error: {error_msg}")
+                print(f"FAILED OPENAI CALL: {error_msg}") # Force stdout for user visibility
+                return {'error': error_msg}
 
             data = response.json()
             choice = data['choices'][0]
@@ -147,16 +149,25 @@ class CompanyBot:
             
             # Handle Tool Calls
             if message.get('tool_calls'):
+                print("--- Tool Call Detected ---")
                 tool_calls = message['tool_calls']
                 api_messages.append(message) # Append assistant's tool call message
                 
                 for tool_call in tool_calls:
                     function_name = tool_call['function']['name']
-                    arguments = json.loads(tool_call['function']['arguments'])
+                    arguments_str = tool_call['function']['arguments']
+                    print(f"Tool: {function_name}, Args: {arguments_str}")
                     
+                    try:
+                        arguments = json.loads(arguments_str)
+                    except Exception as json_e:
+                        print(f"JSON Parse Error: {json_e}")
+                        arguments = {}
+
                     if function_name == 'book_appointment':
                         # Execute tool
                         try:
+                            print(f"Executing AppointmentService...")
                             result = AppointmentService.create_appointment(
                                 self.db,
                                 self.company_id,
@@ -166,9 +177,11 @@ class CompanyBot:
                                 arguments.get('date_time'),
                                 arguments.get('purpose', 'General Consultation')
                             )
+                            print(f"Appointment Result: {result}")
                             
                             output_content = json.dumps({"status": "success", "details": str(result)}) if result else json.dumps({"status": "error", "message": "Failed to book appointment"})
                         except Exception as e:
+                            print(f"Tool Execution Error: {str(e)}")
                             output_content = json.dumps({"status": "error", "message": str(e)})
 
                         api_messages.append({
@@ -180,10 +193,8 @@ class CompanyBot:
 
                 # Follow-up request to get final answer
                 payload['messages'] = api_messages
-                # Remove tools for follow-up to prevent loops or force text response? 
-                # Usually best to keep tools enabled but optionally force none if needed. 
-                # For now keep as is.
                 
+                print("Sending Follow-up to OpenAI...")
                 response = requests.post(
                     'https://api.openai.com/v1/chat/completions',
                     headers={
@@ -195,6 +206,9 @@ class CompanyBot:
                 )
                 
                 if response.status_code != 200:
+                    error_msg = f"Provider Error (Follow-up): {response.status_code} - {response.text}"
+                    logging.error(f"OpenAI Error: {error_msg}")
+                    print(f"FAILED OPENAI CALL: {error_msg}")
                     return {'error': "Error generating final response after tool use"}
                     
                 data = response.json()
@@ -214,5 +228,6 @@ class CompanyBot:
         except Exception as e:
             logging.error(f"Generation error: {e}")
             import traceback
-            traceback.print_exc()
+            traceback.print_exc() # Print full stack trace to stdout
+            print(f"CRITICAL BOT ERROR: {str(e)}")
             return {'error': str(e)}
