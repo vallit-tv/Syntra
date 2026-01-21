@@ -631,15 +631,16 @@ def get_company_knowledge(company_id: str) -> str:
     except Exception as e:
         print(f"Error fetching knowledge base: {e}")
         return ""
-        role=role,
-        company_id=company_id
-    )
-    # Update email since create_user might not set it if it relies on name derived logic
-    # (Actually create_user doesn't take email, we need to fix that or update it after)
-    update_user(new_user['id'], {'email': email})
-    new_user['email'] = email
+    # Orphaned code from merge error - fixing syntax
+    #     role=role,
+    #     company_id=company_id
+    # )
+    # # Update email since create_user might not set it if it relies on name derived logic
+    # # (Actually create_user doesn't take email, we need to fix that or update it after)
+    # update_user(new_user['id'], {'email': email})
+    # new_user['email'] = email
     
-    return {'status': 'invited', 'user': new_user}
+    # return {'status': 'invited', 'user': new_user}
 
 
 
