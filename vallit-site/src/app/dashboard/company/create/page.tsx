@@ -46,6 +46,14 @@ export default function CreateCompanyPage() {
                 body: JSON.stringify({ name, slug })
             })
 
+            // Check if response is JSON before parsing
+            const contentType = res.headers.get("content-type")
+            if (!contentType || !contentType.includes("application/json")) {
+                const text = await res.text()
+                console.error("Non-JSON response:", text.substring(0, 200))
+                throw new Error("Server returned an unexpected response. Please try again or contact support.")
+            }
+
             const data = await res.json()
 
             if (!res.ok) {

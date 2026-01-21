@@ -6,17 +6,25 @@
             "use": "@vercel/python"
         },
         {
+            "src": "static/**",
+            "use": "@vercel/static"
+        },
+        {
             "src": "vallit-site/package.json",
             "use": "@vercel/next"
         }
     ],
     "routes": [
         {
+            "src": "/static/(.*)",
+            "dest": "/static/$1"
+        },
+        {
             "src": "/api/(.*)",
             "dest": "/app.py"
         },
         {
-            "src": "/static/(.*)",
+            "src": "/widget/(.*)",
             "dest": "/app.py"
         },
         {
