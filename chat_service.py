@@ -560,12 +560,20 @@ WHATSAPP STYLE MESSAGING:
                     if language:
                         lang_map = {'de': 'German', 'fr': 'French', 'es': 'Spanish', 'en': 'English'}
                         lang_name = lang_map.get(language, 'English')
+                        
                         if language != 'en':
                             lang_prompt = f"\n\nIMPORTANT: You must respond in {lang_name}."
                             if config.get('system_prompt'):
                                 config['system_prompt'] += lang_prompt
                             else:
                                 config['system_prompt'] = self.default_system_prompt + lang_prompt
+                                
+                            # Localize Default Welcome Message if not custom
+                            if language == 'de' and not config.get('welcome_message'):
+                                config['welcome_message'] = "Hallo! Ich bin Kian, Ihr KI-Assistent. Wie kann ich Ihnen helfen?"
+                            elif language == 'de' and config.get('welcome_message') == self.get_default_widget_config().get('welcome_message'):
+                                # Also override if it's just the exact English default
+                                config['welcome_message'] = "Hallo! Ich bin Kian, Ihr KI-Assistent. Wie kann ich Ihnen helfen?"
 
                     # 5. Position
                     if settings.get('position'):
