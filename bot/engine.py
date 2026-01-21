@@ -1,13 +1,10 @@
-"""
-Company Bot Engine
-Encapsulates all logic for a specific company's chatbot instance.
-"""
 import os
 import json
 import logging
 import requests
 from typing import Dict, List, Optional, Any
 from datetime import datetime
+from appointment_service import AppointmentService
 
 class CompanyBot:
     def __init__(self, company_id: str, db_module, config: Dict = None):
@@ -53,54 +50,83 @@ class CompanyBot:
             logging.error(f"Error loading bot config for {self.company_id}: {e}")
             return {}
 
-    def get_system_prompt(self) -> str:
-        """Construct the full system prompt including context"""
-        base_prompt = self.config.get('system_prompt', '')
-        
-        company_context_str = self.db.get_company_knowledge(self.company_id)
-        # For now, we'll keep the simple knowledge base fetch or upgrade it later
-        
-        prompt = f"""You are {self.config.get('name')}, an AI assistant.
-        
-{base_prompt}
+    def get_appointment_tool_def(self):
+        """Define the appointment booking tool for OpenAI"""
+        return {
+            "type": "function",
+            "function": {
+                "name": "book_appointment",
+                "description": "Book a consultation or appointment for the user. Call this ONLY when you have collected the user's Name, Email, and Preferred Date/Time.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The user's full name"
+                        },
+                        "email": {
+                            "type": "string",
+                            "description": "The user's email address"
+                        },
+                        "date_time": {
+                            "type": "string",
+                            "description": "The preferred date and time for the appointment (ISO format or clear description like 'Next Monday at 10am')"
+                        },
+                        "purpose": {
+                            "type": "string",
+                            "description": "The reason for the appointment"
+                        }
+                    },
+                    "required": ["name", "email", "date_time"]
+                }
+            }
+        }
 
-IMPORTANT:
-- Answer based on the provided context if available.
-- Be concise and professional.
-- Current Time: {datetime.utcnow().isoformat()}
-"""
-        return prompt
-
-    def generate_response(self, messages: List[Dict], user_context: Dict = None) -> Dict:
+    def generate_response(self, messages: List[Dict], 
+                        user_context: Dict = None, 
+                        system_prompt: str = None, 
+                        enable_tools: bool = False,
+                        session_id: str = None) -> Dict:
         """
-        Generate a response for the user.
-        messages: List of {'role': 'user'|'assistant', 'content': '...'}
+        Generate a response with optional tool support
         """
         if not self.openai_api_key:
             return {'error': 'OpenAI API not configured'}
 
-        system_prompt = self.get_system_prompt()
+        # Priority: Passed system_prompt > Config system_prompt
+        final_system_prompt = system_prompt or self.config.get('system_prompt', '')
         
-        # Context Injection (RAG lite)
-        last_msg = messages[-1]['content'] if messages else ""
-        if last_msg:
-            # Reuse the existing context logic or a new one
-            # context = self.db.get_rag_context(self.company_id, last_msg)
-            # if context: system_prompt += f"\n\nCONTEXT:\n{context}"
-            pass
+        # Inject Company Knowledge Base
+        try:
+            knowledge = self.db.get_company_knowledge(self.company_id)
+            if knowledge:
+                 final_system_prompt += f"\n\n### INTERNAL KNOWLEDGE BASE ###\n{knowledge}\n"
+        except Exception as e:
+            logging.error(f"Failed to inject knowledge base: {e}")
 
-        # Format for OpenAI
-        api_messages = [{'role': 'system', 'content': system_prompt}]
+        # Add basic context if not already included in system_prompt
+        if "IMPORTANT:" not in final_system_prompt:
+             final_system_prompt += f"\n\nIMPORTANT: Current Time: {datetime.utcnow().isoformat()}"
+
+        # Context Injection (RAG lite) - if enabled in future
+        # For now, we rely on what passed in via system_prompt or base knowledge
+        
+        api_messages = [{'role': 'system', 'content': final_system_prompt}]
         for m in messages:
             api_messages.append({'role': m['role'], 'content': m['content']})
 
+        payload = {
+            'model': self.config.get('model', self.openai_model),
+            'messages': api_messages,
+            'temperature': self.config.get('temperature', 0.7)
+        }
+
+        if enable_tools:
+            payload['tools'] = [self.get_appointment_tool_def()]
+            payload['tool_choice'] = "auto"
+
         try:
-            payload = {
-                'model': self.config.get('model', self.openai_model),
-                'messages': api_messages,
-                'temperature': self.config.get('temperature', 0.7)
-            }
-            
+            logging.info(f"Sending request to OpenAI using model: {payload['model']}")
             response = requests.post(
                 'https://api.openai.com/v1/chat/completions',
                 headers={
@@ -110,14 +136,72 @@ IMPORTANT:
                 json=payload,
                 timeout=30
             )
-            
+
             if response.status_code != 200:
                 logging.error(f"OpenAI Error: {response.text}")
-                return {'error': f"Provider Error: {response.status_code}"}
-                
+                return {'error': f"Provider Error: {response.status_code} - {response.text}"}
+
             data = response.json()
-            content = data['choices'][0]['message']['content']
-             
+            choice = data['choices'][0]
+            message = choice['message']
+            
+            # Handle Tool Calls
+            if message.get('tool_calls'):
+                tool_calls = message['tool_calls']
+                api_messages.append(message) # Append assistant's tool call message
+                
+                for tool_call in tool_calls:
+                    function_name = tool_call['function']['name']
+                    arguments = json.loads(tool_call['function']['arguments'])
+                    
+                    if function_name == 'book_appointment':
+                        # Execute tool
+                        try:
+                            result = AppointmentService.create_appointment(
+                                self.db,
+                                self.company_id,
+                                session_id,
+                                arguments.get('name'),
+                                arguments.get('email'),
+                                arguments.get('date_time'),
+                                arguments.get('purpose', 'General Consultation')
+                            )
+                            
+                            output_content = json.dumps({"status": "success", "details": str(result)}) if result else json.dumps({"status": "error", "message": "Failed to book appointment"})
+                        except Exception as e:
+                            output_content = json.dumps({"status": "error", "message": str(e)})
+
+                        api_messages.append({
+                            "role": "tool",
+                            "tool_call_id": tool_call['id'],
+                            "name": function_name,
+                            "content": output_content
+                        })
+
+                # Follow-up request to get final answer
+                payload['messages'] = api_messages
+                # Remove tools for follow-up to prevent loops or force text response? 
+                # Usually best to keep tools enabled but optionally force none if needed. 
+                # For now keep as is.
+                
+                response = requests.post(
+                    'https://api.openai.com/v1/chat/completions',
+                    headers={
+                        'Authorization': f'Bearer {self.openai_api_key}',
+                        'Content-Type': 'application/json'
+                    },
+                    json=payload,
+                    timeout=30
+                )
+                
+                if response.status_code != 200:
+                    return {'error': "Error generating final response after tool use"}
+                    
+                data = response.json()
+                content = data['choices'][0]['message']['content']
+            else:
+                content = message['content']
+
             return {
                 'role': 'assistant',
                 'content': content,
@@ -126,7 +210,9 @@ IMPORTANT:
                     'tokens': data['usage']['total_tokens']
                 }
             }
-            
+
         except Exception as e:
             logging.error(f"Generation error: {e}")
+            import traceback
+            traceback.print_exc()
             return {'error': str(e)}

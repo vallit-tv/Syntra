@@ -340,7 +340,12 @@ WHATSAPP STYLE MESSAGING:
                 
                 # Transform messages for engine (it expects dicts)
                 # Engine handles system prompt and context internally
-                response_data = bot.generate_response(messages)
+                response_data = bot.generate_response(
+                    messages, 
+                    system_prompt=system_prompt,
+                    enable_tools=enable_tools,
+                    session_id=session_id
+                )
                 
                 if 'error' in response_data:
                     return None, {'error': response_data['error']}
