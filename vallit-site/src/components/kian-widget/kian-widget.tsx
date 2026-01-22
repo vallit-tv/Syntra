@@ -79,10 +79,9 @@ function KianWidgetContent() {
         setIsTyping(true);
 
         try {
-            // Call Python Backend API
-            // In production (Vercel), we use relative path to hit the rewrite rule in vercel.json
-            // Locally, we use .env.local to point to Flask
-            const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+            // Use relative path to ensure we hit the same domain (Vercel routing)
+            // Hardcoding to empty string forces relative path usage
+            const API_URL = "";
 
             // Generate or get session ID (simple local storage or memory for now)
             let sessionId = localStorage.getItem("vallit_session_id");
@@ -91,9 +90,14 @@ function KianWidgetContent() {
                 localStorage.setItem("vallit_session_id", sessionId);
             }
 
+            console.log("Sending chat request to:", `${API_URL}/api/chat/message`);
+
             const response = await fetch(`${API_URL}/api/chat/message`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json" // Explicitly request JSON
+                },
                 body: JSON.stringify({
                     message: text,
                     session_id: sessionId,
@@ -102,7 +106,19 @@ function KianWidgetContent() {
                 })
             });
 
-            const data = await response.json();
+            console.log("Response status:", response.status);
+
+            // Safety: Try to read text first to debug if JSON parsing fails
+            const responseText = await response.text();
+            console.log("Raw response:", responseText.substring(0, 200) + "...");
+
+            let data;
+            try {
+                data = JSON.parse(responseText);
+            } catch (jsonError) {
+                console.error("JSON Parse Error:", jsonError);
+                throw new Error("Invalid server response format (not JSON)");
+            }
 
             if (data.status === "success") {
                 const assistantMessage: Message = {
@@ -113,22 +129,23 @@ function KianWidgetContent() {
                 };
                 setMessages((prev) => [...prev, assistantMessage]);
             } else {
+                console.error("Server returned API error:", data);
                 // Fallback for error
                 const errorMessage: Message = {
                     id: (Date.now() + 1).toString(),
                     role: "assistant",
-                    content: "I'm having trouble connecting to my brain right now. Please try again later.",
+                    content: `I'm having trouble connecting. Error: ${data.error || 'Unknown'}`,
                     type: "text",
                 };
                 setMessages((prev) => [...prev, errorMessage]);
             }
 
         } catch (error) {
-            console.error("Chat API Error:", error);
+            console.error("Chat API Error Detailed:", error);
             const errorMessage: Message = {
                 id: (Date.now() + 1).toString(),
                 role: "assistant",
-                content: "Sorry, I can't connect to the server. Please check your internet connection.",
+                content: `Sorry, I can't connect to the server. (${error instanceof Error ? error.message : 'Unknown Error'})`,
                 type: "text",
             };
             setMessages((prev) => [...prev, errorMessage]);

@@ -34,6 +34,10 @@
             "dest": "/app.py"
         },
         {
+            "src": "/status",
+            "dest": "/app.py"
+        },
+        {
             "src": "/(.*)",
             "dest": "/vallit-site/$1"
         }

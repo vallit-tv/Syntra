@@ -98,6 +98,95 @@ def handle_unexpected_error(error):
 app.permanent_session_lifetime = timedelta(days=365)  # 365 days to keep users logged in
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+
+# ============================================================================
+# OBSERVABILITY & DEBUGGING
+# ============================================================================
+from collections import deque
+import time
+import traceback
+
+class LogBuffer:
+    def __init__(self, maxlen=50):
+        self.buffer = deque(maxlen=maxlen)
+    
+    def log(self, level, message, details=None):
+        entry = {
+            'timestamp': datetime.utcnow().isoformat(),
+            'level': level,
+            'message': message,
+            'details': str(details) if details else None
+        }
+        self.buffer.append(entry)
+        print(f"[{level}] {message} - {details}") # Also print to stdout for Vercel logs
+
+    def get_logs(self):
+        return list(self.buffer)
+
+server_logs = LogBuffer()
+
+@app.route('/api/debug/logs')
+def api_debug_logs():
+    """Retrieve recent server logs - PROTECTED"""
+    # Security Check: Require Admin Session or Secret Key
+    auth_key = request.args.get('key')
+    is_admin = session.get('user', {}).get('role') in ['admin', 'superadmin']
+    secret_match = auth_key and auth_key == os.getenv('ADMIN_DEBUG_KEY', 'vallit-debug-secure')
+    
+    if not (is_admin or secret_match):
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    return jsonify({
+        'status': 'ok',
+        'logs': server_logs.get_logs(),
+        'env': {
+            'VERCEL': os.getenv('VERCEL'),
+            'DB_CONNECTED': bool(db.get_db())
+        }
+    })
+
+# Global Error Handlers to ensure JSON response
+@app.errorhandler(500)
+def internal_error(error):
+    # Capture error in log buffer
+    server_logs.log('ERROR', 'Internal Server Error (500)', str(error))
+    server_logs.log('DEBUG', 'Traceback', traceback.format_exc())
+
+    # Only return JSON for API routes to keep HTML pages working
+    if request.path.startswith('/api/') or request.path.startswith('/widget/'):
+        response = jsonify({'error': 'Internal Server Error', 'message': str(error)})
+        response.status_code = 500
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response
+    return render_template('error.html', error_code=500, error_message='Internal Server Error'), 500
+
+@app.errorhandler(404)
+def not_found_error(error):
+    if request.path.startswith('/api/') or request.path.startswith('/widget/'):
+        server_logs.log('WARN', f'404 Not Found: {request.path}')
+        response = jsonify({'error': 'Not Found', 'message': f'API endpoint not found: {request.path}'})
+        response.status_code = 404
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response
+    return render_template('error.html', error_code=404, error_message='Page Not Found'), 404
+
+@app.errorhandler(Exception)
+def handle_unexpected_error(error):
+    server_logs.log('CRITICAL', 'Unexpected Exception', str(error))
+    server_logs.log('DEBUG', 'Traceback', traceback.format_exc())
+
+    # Only return JSON for API routes to keep HTML pages working
+    if request.path.startswith('/api/') or request.path.startswith('/widget/'):
+        code = 500
+        if hasattr(error, 'code'):
+            code = error.code
+            
+        response = jsonify({'error': 'Internal Server Error', 'message': str(error)})
+        response.status_code = code
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response
+    # For HTML routes, standard 500 behaviour
+    return render_template('error.html', error_code=500, error_message='Internal System Error'), 500
 # On Vercel, always use secure cookies (HTTPS is always used)
 # Only use secure cookies in production/vercel, not in local development
 app.config['SESSION_COOKIE_SECURE'] = os.getenv('VERCEL') == '1' or (os.getenv('ENV') == 'production' and os.getenv('USE_SECURE_COOKIES', 'false').lower() == 'true')
@@ -490,6 +579,14 @@ def brand():
         return render_template('brand.html')
     except Exception as e:
         return f"Error loading template: {e} (Current Dir: {os.getcwd()})"
+
+@app.route('/status')
+def status_page():
+    """System Status Dashboard"""
+    # Optional: Basic auth or public?
+    # User requested "Commercial usage" -> Public status pages are common (status.stripe.com)
+    # But logs are secured inside the template fetch.
+    return render_template('status.html')
 
 @app.route('/api/health', methods=['GET'])
 @app.route('/api/health/', methods=['GET'])
