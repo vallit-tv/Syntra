@@ -1881,6 +1881,18 @@ def chat_message():
         if not message:
             return jsonify({'error': 'Message is required'}), 400
         
+        # Infer company_id from widget_id if missing (e.g. script passes widget_id=COMPANY_ID)
+        if not company_id and widget_id and widget_id != 'default':
+             # Simple heuristic: if widget_id is UUID-like, try to use it as company_id
+             if len(widget_id) == 36: # Request ID length
+                  # Verify it exists
+                  try:
+                       comp = db.get_company_by_id(widget_id)
+                       if comp:
+                            company_id = widget_id
+                  except Exception:
+                       pass
+        
         # Generate session key if not provided
         if not session_key:
             session_key = f"widget_{uuid_lib.uuid4().hex[:16]}"
@@ -1953,15 +1965,20 @@ def chat_message():
             company_id=company_id
         )
         
-        return jsonify({
+        response = jsonify({
             'status': 'success', 
             'response': response_text,
             'session_id': session_key # Return key for client continuity
         })
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response
 
     except Exception as e:
         print(f"Chat error: {e}")
-        return jsonify({'error': str(e)}), 500
+        # IMPORTANT: Return JSON error WITH CORS headers so frontend can read it
+        response = jsonify({'error': str(e), 'status': 'error'})
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response, 500
 
 
 @app.route('/api/chat/config', methods=['GET'])
@@ -1969,6 +1986,17 @@ def api_chat_config():
     """Get chat widget configuration"""
     widget_id = request.args.get('widget_id', 'default')
     company_id = request.args.get('company_id')
+    
+    # Infer company_id from widget_id if missing
+    if not company_id and widget_id and widget_id != 'default':
+         if len(widget_id) == 36:
+             try:
+                # We can't import db inside here if not available, but 'db' is global in app.py
+                comp = db.get_company_by_id(widget_id)
+                if comp:
+                    company_id = widget_id
+             except Exception:
+                pass
     
     try:
         service = get_chat_service()
