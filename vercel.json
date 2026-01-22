@@ -30,7 +30,7 @@
             "dest": "/app.py"
         },
         {
-            "src": "/brand",
+            "src": "/brand(.*)",
             "dest": "/app.py"
         },
         {

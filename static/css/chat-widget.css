@@ -265,6 +265,33 @@
     animation: syntra-fade-in 0.3s ease;
 }
 
+.syntra-message.syntra-has-avatar {
+    flex-direction: row;
+    gap: 12px;
+    align-items: flex-end;
+    max-width: 90%;
+}
+
+.syntra-message-avatar {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border-radius: 50%;
+    margin-bottom: 20px;
+    /* Align with text, roughly */
+}
+
+.syntra-message-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-width: 100%;
+}
+
 .syntra-message-user {
     align-self: flex-end;
 }
@@ -285,7 +312,6 @@
 .syntra-message-user .syntra-message-content {
     background: var(--syntra-primary);
     color: var(--syntra-text-light);
-    /* White text */
     border-bottom-right-radius: 4px;
 }
 

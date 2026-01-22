@@ -488,6 +488,11 @@ def brand():
     """Brand assets page"""
     return render_template('brand.html')
 
+@app.route('/api/health')
+def api_health():
+    """Simple connectivity check"""
+    return jsonify({'status': 'ok', 'timestamp': datetime.utcnow().isoformat()})
+
 
 # ============================================================================
 # AUTH API

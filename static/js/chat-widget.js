@@ -766,12 +766,37 @@
             // Parse markdown for assistant
             const contentHtml = message.role === 'assistant' ? parseMarkdown(message.content) : escapeHtml(message.content);
 
-            messageEl.innerHTML = `
-                <div class="syntra-message-content">
-                    ${contentHtml}
-                </div>
-                <div class="syntra-message-time">${time}</div>
-            `;
+            if (message.role === 'assistant') {
+                messageEl.classList.add('syntra-has-avatar');
+
+                // SVG Logo for avatar
+                const avatarHtml = `
+                    <div class="syntra-message-avatar">
+                        <svg width="24" height="24" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%;">
+                            <path d="M20 20H70L60 40H10L20 20Z" fill="currentColor" color="#000"/>
+                            <path d="M25 45H85L75 65H15L25 45Z" fill="currentColor" fill-opacity="0.8" color="#000"/>
+                            <path d="M30 70H60L50 90H20L30 70Z" fill="currentColor" fill-opacity="0.6" color="#000"/>
+                        </svg>
+                    </div>
+                `;
+
+                messageEl.innerHTML = `
+                    ${avatarHtml}
+                    <div class="syntra-message-group">
+                        <div class="syntra-message-content">
+                            ${contentHtml}
+                        </div>
+                        <div class="syntra-message-time">${time}</div>
+                    </div>
+                `;
+            } else {
+                messageEl.innerHTML = `
+                    <div class="syntra-message-content">
+                        ${contentHtml}
+                    </div>
+                    <div class="syntra-message-time">${time}</div>
+                `;
+            }
 
             this.messagesContainer.appendChild(messageEl);
             this.scrollToBottom();
