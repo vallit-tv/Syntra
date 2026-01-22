@@ -36,10 +36,11 @@ export const config = {
          * - api (API routes)
          * - widget (Widget assets)
          * - static (Static files)
+         * - brand, company, status, health (Python pages)
          * - _next/static (static files)
          * - _next/image (image optimization files)
          * - favicon.ico (favicon file)
          */
-        '/((?!api|widget|static|brand|company|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+        '/((?!api|widget|static|brand|company|status|health|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
     ],
 }
