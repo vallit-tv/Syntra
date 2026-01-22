@@ -56,8 +56,13 @@ export function Navbar() {
                     {/* Logo */}
                     <Link
                         href="/"
-                        className="text-xl font-bold text-white hover:opacity-80 transition-opacity"
+                        className="flex items-center gap-2 text-xl font-bold text-white hover:opacity-80 transition-opacity"
                     >
+                        <svg width="24" height="24" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-white">
+                            <path d="M20 20H70L60 40H10L20 20Z" fill="currentColor" />
+                            <path d="M25 45H85L75 65H15L25 45Z" fill="currentColor" fillOpacity="0.8" />
+                            <path d="M30 70H60L50 90H20L30 70Z" fill="currentColor" fillOpacity="0.6" />
+                        </svg>
                         Vallit
                     </Link>
 
