@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vallit Logo Prototypes - Set 10</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #050505;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px;
+            margin: 0;
+        }
+
+        h1 {
+            font-weight: 300;
+            letter-spacing: -0.02em;
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+
+        h2 {
+            font-weight: 300;
+            font-size: 1.2em;
+            margin-top: 60px;
+            margin-bottom: 30px;
+            color: #888;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+        }
+
+        p {
+            margin-bottom: 40px;
+            color: #888;
+            max-width: 600px;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 50px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .card {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 16px;
+            padding: 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            aspect-ratio: 1;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .card:hover {
+            border-color: #444;
+            background: #161616;
+            transform: translateY(-2px);
+        }
+
+        .card svg {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 25px;
+        }
+
+        .label {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 10px;
+            font-family: monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .desc {
+            font-size: 0.8em;
+            color: #444;
+            margin-top: 5px;
+            text-align: center;
+        }
+
+        /* Favorites styling */
+        .favorites-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .favorites-grid .card {
+            border-color: #5D8AA8;
+            background: #0d1216;
+            padding: 30px;
+            aspect-ratio: 1;
+        }
+
+        .favorites-grid .card svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Vallit Logo Concepts</h1>
+    <p>Set 10: Refining "The Velocity".<br>Exploring variations of stacked momentum: Solidity, Spacing, and Angles.</p>
+
+    <div class="grid">
+
+        <!-- CONCEPT 50: SOLID VELOCITY (No Opacity) -->
+        <div class="card">
+            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- 3 Solid stacked parallelograms with gaps -->
+                <path d="M20 15H70L60 35H10L20 15Z" fill="white" />
+                <path d="M25 40H75L65 60H15L25 40Z" fill="white" />
+                <path d="M30 65H80L70 85H20L30 65Z" fill="white" />
+            </svg>
+            <div class="label">50. Solid Stack</div>
+            <div class="desc">High contrast, no fade.</div>
+        </div>
+
+        <!-- CONCEPT 51: ACCELERATION (Increasing Size) -->
+        <div class="card">
+            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Small to Large -->
+                <path d="M35 25H65L60 40H30L35 25Z" fill="white" fill-opacity="0.5" />
+                <path d="M25 45H75L70 65H20L25 45Z" fill="white" fill-opacity="0.75" />
+                <path d="M15 70H85L80 90H10L15 70Z" fill="white" fill-opacity="1" />
+            </svg>
+            <div class="label">51. The Acceleration</div>
+            <div class="desc">Growth and momentum.</div>
+        </div>
+
+        <!-- CONCEPT 52: SHARP VELOCITY (Steeper Angle) -->
+        <div class="card">
+            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- More skewed 3 stacks -->
+                <path d="M35 15H75L55 35H15L35 15Z" fill="white" />
+                <path d="M40 40H80L60 60H20L40 40Z" fill="white" fill-opacity="0.8" />
+                <path d="M45 65H85L65 85H25L45 65Z" fill="white" fill-opacity="0.6" />
+            </svg>
+            <div class="label">52. Sharp Velocity</div>
+            <div class="desc">More aggressive angle.</div>
+        </div>
+
+        <!-- CONCEPT 53: THE DUAL STACK (Simplification) -->
+        <div class="card">
+            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Just two thicker blocks -->
+                <path d="M20 20H80L70 45H10L20 20Z" fill="white" />
+                <path d="M30 55H90L80 80H20L30 55Z" fill="white" fill-opacity="0.6" />
+            </svg>
+            <div class="label">53. The Major Velocity</div>
+            <div class="desc">Simplified to two elements.</div>
+        </div>
+
+        <!-- CONCEPT 54: THE INTEGRATED STACK (Touching) -->
+        <div class="card">
+            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Blocks touching/connected -->
+                <path d="M20 20H70L62 40H12L20 20Z" fill="white" />
+                <path d="M28 40H78L70 60H20L28 40Z" fill="white" fill-opacity="0.8" />
+                <path d="M36 60H86L78 80H28L36 60Z" fill="white" fill-opacity="0.6" />
+            </svg>
+            <div class="label">54. The Integrated Flow</div>
+            <div class="desc">Connected stream.</div>
+        </div>
+
+        <!-- CONCEPT 55: THE TRAIL (Leading Edge) -->
+        <div class="card">
+            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Top block solid, others fading -->
+                <path d="M20 20H70L60 40H10L20 20Z" fill="white" fill-opacity="1" />
+                <path d="M25 45H75L65 65H15L25 45Z" fill="white" fill-opacity="0.5" />
+                <path d="M30 70H80L70 90H20L30 70Z" fill="white" fill-opacity="0.25" />
+            </svg>
+            <div class="label">55. The Afterburner</div>
+            <div class="desc">Focus on the leading edge.</div>
+        </div>
+
+    </div>
+
+    <!-- FAVORITES SECTION -->
+    <h2>Your Favorites</h2>
+    <div class="favorites-grid">
+
+        <!-- FAVORITE: 44 (The Velocity) - NEW! -->
+        <div class="card">
+            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 20H70L60 40H10L20 20Z" fill="white" />
+                <path d="M25 45H85L75 65H15L25 45Z" fill="white" fill-opacity="0.8" />
+                <path d="M30 70H60L50 90H20L30 70Z" fill="white" fill-opacity="0.6" />
+            </svg>
+            <div class="label">44. The Velocity</div>
+        </div>
+
+        <!-- FAVORITE: 32 (The Shift) -->
+        <div class="card">
+            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 25H60L50 50H10L20 25Z" fill="white" />
+                <path d="M50 50H90L80 75H40L50 50Z" fill="white" fill-opacity="0.6" />
+            </svg>
+            <div class="label">32. The Shift</div>
+        </div>
+
+        <div class="card">
+            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd"
+                    d="M50 10L85 30V70L50 90L15 70V30L50 10ZM50 35L62 42V58L50 65L38 58V42L50 35Z" fill="white" />
+            </svg>
+            <div class="label">09. The Hex Node</div>
+        </div>
+
+        <div class="card">
+            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 10C50 35 65 50 90 50C65 50 50 65 50 90C50 65 35 50 10 50C35 50 50 35 50 10Z"
+                    fill="white" />
+            </svg>
+            <div class="label">20. The Spark</div>
+        </div>
+
+        <div class="card">
+            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 10L60 38L90 50L60 62L50 90L40 62L10 50L40 38L50 10Z" fill="white" />
+            </svg>
+            <div class="label">22. The Nova</div>
+        </div>
+
+    </div>
+
+</body>
+
+</html>

@@ -38,7 +38,14 @@
     <header class="navbar" id="navbar">
         <div class="container">
             <div class="navbar-inner">
-                <a href="{{ url_for('index') }}" class="navbar-logo">
+                <a href="{{ url_for('index') }}" class="navbar-logo"
+                    style="display: flex; align-items: center; gap: 8px;">
+                    <svg width="24" height="24" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"
+                        style="color: inherit;">
+                        <path d="M20 20H70L60 40H10L20 20Z" fill="currentColor" />
+                        <path d="M25 45H85L75 65H15L25 45Z" fill="currentColor" fill-opacity="0.8" />
+                        <path d="M30 70H60L50 90H20L30 70Z" fill="currentColor" fill-opacity="0.6" />
+                    </svg>
                     <span>Vallit</span>
                 </a>
 
@@ -93,7 +100,14 @@
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-brand">
-                    <a href="{{ url_for('index') }}" class="navbar-logo">
+                    <a href="{{ url_for('index') }}" class="navbar-logo"
+                        style="display: flex; align-items: center; gap: 8px;">
+                        <svg width="24" height="24" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"
+                            style="color: inherit;">
+                            <path d="M20 20H70L60 40H10L20 20Z" fill="currentColor" />
+                            <path d="M25 45H85L75 65H15L25 45Z" fill="currentColor" fill-opacity="0.8" />
+                            <path d="M30 70H60L50 90H20L30 70Z" fill="currentColor" fill-opacity="0.6" />
+                        </svg>
                         <span>Vallit</span>
                     </a>
                     <p>AI Automation für moderne Unternehmen. Kian versteht dein Business und automatisiert, was
@@ -131,6 +145,7 @@
                     <h4>Unternehmen</h4>
                     <ul>
                         <li><a href="{{ url_for('about') }}">Über uns</a></li>
+                        <li><a href="{{ url_for('brand') }}">Brand</a></li>
                         <li><a href="{{ url_for('pricing') }}#contact">Kontakt</a></li>
                     </ul>
                 </div>

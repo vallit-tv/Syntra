@@ -483,6 +483,12 @@ def before_request():
 #     return render_template('legal/datenschutz.html')
 
 
+@app.route('/brand')
+def brand():
+    """Brand assets page"""
+    return render_template('brand.html')
+
+
 # ============================================================================
 # AUTH API
 # ============================================================================
