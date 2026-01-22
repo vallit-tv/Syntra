@@ -486,12 +486,20 @@ def before_request():
 @app.route('/brand')
 def brand():
     """Brand assets page"""
-    return render_template('brand.html')
+    try:
+        return render_template('brand.html')
+    except Exception as e:
+        return f"Error loading template: {e} (Current Dir: {os.getcwd()})"
 
-@app.route('/api/health')
+@app.route('/api/health', methods=['GET'])
+@app.route('/api/health/', methods=['GET'])
 def api_health():
     """Simple connectivity check"""
-    return jsonify({'status': 'ok', 'timestamp': datetime.utcnow().isoformat()})
+    return jsonify({
+        'status': 'ok', 
+        'timestamp': datetime.utcnow().isoformat(),
+        'env': os.getenv('VERCEL_ENV', 'unknown')
+    })
 
 
 # ============================================================================
