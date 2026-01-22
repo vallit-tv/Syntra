@@ -199,8 +199,8 @@
                         const titleEl = this.container.querySelector('.syntra-header-title');
                         if (titleEl) titleEl.textContent = this.config.headerTitle;
 
-                        const avatarEl = this.container.querySelector('.syntra-avatar');
-                        if (avatarEl) avatarEl.textContent = this.config.headerTitle.charAt(0);
+                        // const avatarEl = this.container.querySelector('.syntra-avatar');
+                        // if (avatarEl) avatarEl.textContent = this.config.headerTitle.charAt(0);
                     }
                 }
 
@@ -246,8 +246,10 @@
                 <!-- Toggle Button -->
                 <button class="syntra-toggle-btn">
                     <div class="syntra-icon-chat">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        <svg width="24" height="24" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%;">
+                            <path d="M20 20H70L60 40H10L20 20Z" fill="currentColor"/>
+                            <path d="M25 45H85L75 65H15L25 45Z" fill="currentColor" fill-opacity="0.8"/>
+                            <path d="M30 70H60L50 90H20L30 70Z" fill="currentColor" fill-opacity="0.6"/>
                         </svg>
                     </div>
                     <div class="syntra-icon-close">
@@ -264,7 +266,11 @@
                     <div class="syntra-header">
                         <div class="syntra-header-info">
                             <div class="syntra-avatar">
-                                ${this.config.headerTitle.charAt(0)}
+                                <svg width="24" height="24" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 60%; height: 60%;">
+                                    <path d="M20 20H70L60 40H10L20 20Z" fill="white"/>
+                                    <path d="M25 45H85L75 65H15L25 45Z" fill="white" fill-opacity="0.8"/>
+                                    <path d="M30 70H60L50 90H20L30 70Z" fill="white" fill-opacity="0.6"/>
+                                </svg>
                             </div>
                             <div class="syntra-header-text">
                                 <div class="syntra-header-title">${this.config.headerTitle}</div>

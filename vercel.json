@@ -30,6 +30,10 @@
             "dest": "/app.py"
         },
         {
+            "src": "/brand",
+            "dest": "/app.py"
+        },
+        {
             "src": "/(.*)",
             "dest": "/vallit-site/$1"
         }
