@@ -1,4 +1,12 @@
-from app import app
+import os
+import sys
 
-# Vercel expects a variable named 'app' (or 'handler', 'application')
-# This file serves as the entry point for Vercel Serverless Function
+# Get the directory containing this file (api/)
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Add it to sys.path so we can import siblings like app.py, db.py, etc.
+# This fixes "ModuleNotFoundError: No module named 'app'" on Vercel
+if current_dir not in sys.path:
+    sys.path.insert(0, current_dir)
+
+from app import app
