@@ -32,7 +32,7 @@ print("=" * 60)
 
 app = Flask(__name__, static_folder='static', static_url_path='/static', template_folder='templates')
 # Enable CORS for all API and Widget routes to allow external embedding
-CORS(app, resources={r"/api/*": {"origins": "*"}, r"/widget/*": {"origins": "*"}})
+CORS(app, resources={r"/api/*": {"origins": "*"}, r"/widget/*": {"origins": "*"}}, supports_credentials=True, allow_headers=["Content-Type", "Authorization", "X-Requested-With"])
 
 # Force redeploy for route fix (Step 1010)
 
@@ -1975,13 +1975,7 @@ import uuid as uuid_lib
 @app.route('/api/chat/message', methods=['POST', 'OPTIONS'])
 def chat_message():
     """Handle incoming chat messages from the widget"""
-    # Handle CORS preflight (flask-cors handles this, but keeping explicit for safety if needed)
-    if request.method == 'OPTIONS':
-        response = jsonify({'status': 'ok'})
-        response.headers['Access-Control-Allow-Origin'] = '*'
-        response.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
-        response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
-        return response
+    # CORS is handled by Flask-CORS decorator or global config
     
     try:
         data = request.get_json()
