@@ -739,15 +739,7 @@ def api_admin_integrations_status():
         'timestamp': datetime.utcnow().isoformat()
     }), 200
 
-        
-        return render_template('admin/widget_customize.html',
-                             user=user,
-                             company=company)
-    except Exception as e:
-        print(f"Admin widget customize error: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return redirect(url_for('admin_widgets'))
+
 
 # Widget Settings API Routes
 @app.route('/api/admin/companies/<company_id>/widget-settings', methods=['GET'])
