@@ -197,7 +197,7 @@ END:VCALENDAR"""
             return False
 
     @staticmethod
-    def create_appointment(db_module, company_id, session_id, name, email, date_time, purpose="General"):
+    def create_appointment(db_module, company_id, session_id, name, email, date_time, purpose="General", company_name=None, topic_type="General"):
         try:
             print(f"Creating appointment for {name} ({email}) at {date_time}...")
 
@@ -241,8 +241,12 @@ END:VCALENDAR"""
             # 1. Zoom
             zoom_token = AppointmentService.get_zoom_access_token()
             
-            topic = f"WTM Consulting: {purpose} with {name}"
-            zoom_meeting = AppointmentService.create_zoom_meeting(zoom_token, topic, iso_start_time)
+            # Construct rich topic
+            display_topic = f"WTM {topic_type}: {purpose}"
+            if company_name:
+                display_topic += f" ({company_name})"
+            
+            zoom_meeting = AppointmentService.create_zoom_meeting(zoom_token, display_topic, iso_start_time)
             
             zoom_join_url = zoom_meeting.get('join_url') if zoom_meeting else "Pending (Zoom Error)"
             zoom_start_url = zoom_meeting.get('start_url') if zoom_meeting else ""
@@ -250,13 +254,19 @@ END:VCALENDAR"""
 
             # 2. Save to DB using Supabase client
             try:
+                # Enrich purpose for DB storage
+                db_purpose = f"[{topic_type}] {purpose}"
+                if company_name:
+                    db_purpose += f" | Company: {company_name}"
+                db_purpose += f" | Zoom: {zoom_join_url}"
+                
                 appointment_data = {
                     "company_id": company_id,
                     "chat_session_id": session_id,
                     "customer_name": name,
                     "customer_email": email,
                     "appointment_date": iso_start_time, # Store ISO
-                    "purpose": f"{purpose} | Zoom: {zoom_join_url}",
+                    "purpose": db_purpose,
                     "status": "confirmed"
                 }
                 
@@ -270,15 +280,15 @@ END:VCALENDAR"""
             ics_content = AppointmentService.generate_ics(
                 iso_start_time, 
                 60, 
-                topic, 
-                f"Topic: {purpose}\\nZoom: {zoom_join_url}", 
+                display_topic, 
+                f"Topic: {display_topic}\\nZoom: {zoom_join_url}\\nClient: {name}\\nCompany: {company_name or 'N/A'}", 
                 zoom_join_url, 
                 "WTM Consulting", 
                 "kontakt@wtm-consulting.de"
             )
             
             email_sent = AppointmentService.send_confirmation_email(
-                email, name, topic, iso_start_time, zoom_join_url, ics_content
+                email, name, display_topic, iso_start_time, zoom_join_url, ics_content
             )
 
             return record

@@ -56,7 +56,7 @@ class CompanyBot:
             "type": "function",
             "function": {
                 "name": "book_appointment",
-                "description": "Book a consultation or appointment for the user. Call this ONLY when you have collected the user's Name, Email, and Preferred Date/Time.",
+                "description": "Book a consultation or appointment for the user. Call this ONLY after completing the full data collection process (Name, Company, Email, Time).",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -64,20 +64,29 @@ class CompanyBot:
                             "type": "string",
                             "description": "The user's full name"
                         },
+                        "company_name": {
+                            "type": "string",
+                            "description": "The name of the user's company (Required for B2B booking)"
+                        },
                         "email": {
                             "type": "string",
                             "description": "The user's email address"
                         },
                         "date_time": {
                             "type": "string",
-                            "description": "The preferred date and time for the appointment (ISO format or clear description like 'Next Monday at 10am')"
+                            "description": "The preferred date and time for the appointment (ISO format)"
+                        },
+                        "topic_type": {
+                            "type": "string",
+                            "enum": ["Seminar", "Coaching", "Team Building", "General"],
+                            "description": "The type of service the user is interested in"
                         },
                         "purpose": {
                             "type": "string",
-                            "description": "The reason for the appointment"
+                            "description": "Detailed reason or specific seminar name"
                         }
                     },
-                    "required": ["name", "email", "date_time"]
+                    "required": ["name", "company_name", "email", "date_time", "topic_type"]
                 }
             }
         }
@@ -175,7 +184,9 @@ class CompanyBot:
                                 arguments.get('name'),
                                 arguments.get('email'),
                                 arguments.get('date_time'),
-                                arguments.get('purpose', 'General Consultation')
+                                arguments.get('purpose', 'General Consultation'),
+                                company_name=arguments.get('company_name'),
+                                topic_type=arguments.get('topic_type')
                             )
                             print(f"Appointment Result: {result}")
                             
