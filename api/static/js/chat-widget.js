@@ -615,16 +615,25 @@
 
         // ... messages ...
 
-        async sendMessage() {
-            const message = this.inputField.value.trim();
+        async sendMessage(content = null, displayText = null) {
+            let message = content;
+            const usingInput = !content;
+
+            if (usingInput) {
+                message = this.inputField.value.trim();
+                displayText = message;
+            }
+
             if (!message || this.isLoading) return;
 
-            // Clear input
-            this.inputField.value = '';
-            this.inputField.style.height = 'auto';
+            // Clear input if using form
+            if (usingInput) {
+                this.inputField.value = '';
+                this.inputField.style.height = 'auto';
+            }
 
             // Add user message
-            this.addMessage('user', message);
+            this.addMessage('user', displayText || message);
             this.isLoading = true;
             this.showTypingIndicator();
 
@@ -645,7 +654,8 @@
 
                 if (data.status === 'success') {
                     this.removeTypingIndicator();
-                    this.addMessage('assistant', data.response);
+                    // Pass full data object to renderMessage to handle actions
+                    this.addMessage('assistant', data.response, true, data.action);
                     this.isLoading = false;
                 } else if (data.status === 'pending') {
                     // n8n processing
@@ -700,14 +710,14 @@
             poll();
         }
 
-        addMessage(role, content, animate = true) {
+        addMessage(role, content, animate = true, action = null) {
             // Check for multi-message delimiter (|||)
             if (role === 'assistant' && content && content.includes('|||')) {
                 const parts = content.split('|||').map(p => p.trim()).filter(p => p);
 
                 if (parts.length > 0) {
                     // Render first part immediately
-                    this.doAddMessage(role, parts[0], animate);
+                    this.doAddMessage(role, parts[0], animate, action);
 
                     // Render subsequent parts with delay simulation
                     let cumulativeDelay = 0;
@@ -731,22 +741,23 @@
 
                         setTimeout(() => {
                             this.removeTypingIndicator();
-                            this.doAddMessage(role, part, animate);
+                            this.doAddMessage(role, part, animate, null);
                         }, cumulativeDelay);
                     });
                 }
                 return;
             }
 
-            this.doAddMessage(role, content, animate);
+            this.doAddMessage(role, content, animate, action);
         }
 
-        doAddMessage(role, content, animate) {
+        doAddMessage(role, content, animate, action) {
             const message = {
                 id: Date.now() + Math.random(),
                 role: role,
                 content: content,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                action: action
             };
 
             this.messages.push(message);
@@ -789,6 +800,11 @@
                         <div class="syntra-message-time">${time}</div>
                     </div>
                 `;
+
+                // CHECK FOR ACTION: request_date
+                if (message.action === 'request_date') {
+                    this.renderDatePicker(messageEl.querySelector('.syntra-message-group'));
+                }
             } else {
                 messageEl.innerHTML = `
                     <div class="syntra-message-content">
@@ -1200,6 +1216,123 @@
             } else {
                 modal.remove();
             }
+        }
+
+        renderDatePicker(container) {
+            const pickerId = 'dp-' + Date.now();
+            const pickerHtml = `
+                <div class="syntra-date-picker" id="${pickerId}">
+                    <span class="syntra-picker-label">Select a Date</span>
+                    <div class="syntra-date-scroll"></div>
+                    
+                    <span class="syntra-picker-label" style="display:none;" id="${pickerId}-time-lbl">Available Times</span>
+                    <div class="syntra-time-grid" id="${pickerId}-time-grid"></div>
+                    
+                    <div class="syntra-picker-footer">
+                        <button class="syntra-picker-confirm" id="${pickerId}-confirm">Confirm Booking</button>
+                    </div>
+                </div>
+            `;
+
+            const pickerWrapper = document.createElement('div');
+            pickerWrapper.innerHTML = pickerHtml;
+            container.appendChild(pickerWrapper);
+
+            const scrollContainer = pickerWrapper.querySelector('.syntra-date-scroll');
+            const timeGrid = pickerWrapper.querySelector(`#${pickerId}-time-grid`);
+            const timeLabel = pickerWrapper.querySelector(`#${pickerId}-time-lbl`);
+            const confirmBtn = pickerWrapper.querySelector(`#${pickerId}-confirm`);
+
+            let selectedDate = null;
+            let selectedTime = null;
+
+            // Generate next 14 weekdays
+            const today = new Date();
+            let daysGenerated = 0;
+            let currentDay = new Date(today);
+            currentDay.setDate(currentDay.getDate() + 2); // Start +2 days (36h rule safety)
+
+            // Generate Chips
+            while (daysGenerated < 14) {
+                // Skip weekends
+                if (currentDay.getDay() !== 0 && currentDay.getDay() !== 6) {
+                    const dateStr = currentDay.toISOString().split('T')[0];
+                    const dayName = currentDay.toLocaleDateString('en-US', { weekday: 'short' });
+                    const dayNum = currentDay.getDate();
+
+                    const chip = document.createElement('div');
+                    chip.className = 'syntra-date-chip';
+                    chip.dataset.date = dateStr;
+                    chip.innerHTML = `<span class="syntra-date-day">${dayName}</span><span class="syntra-date-num">${dayNum}</span>`;
+
+                    chip.addEventListener('click', () => {
+                        // Deselect all
+                        scrollContainer.querySelectorAll('.syntra-date-chip').forEach(c => c.classList.remove('selected'));
+                        chip.classList.add('selected');
+
+                        selectedDate = dateStr;
+                        selectedTime = null;
+
+                        // Show times
+                        timeLabel.style.display = 'block';
+                        this.renderTimeSlots(timeGrid, dateStr, (time) => {
+                            selectedTime = time;
+                            confirmBtn.classList.add('active');
+                        });
+                        confirmBtn.classList.remove('active');
+                    });
+
+                    scrollContainer.appendChild(chip);
+                    daysGenerated++;
+                }
+                currentDay.setDate(currentDay.getDate() + 1);
+            }
+
+            // Confirm Action
+            confirmBtn.addEventListener('click', () => {
+                if (!selectedDate || !selectedTime) return;
+
+                // Construct ISO format: YYYY-MM-DDTHH:mm:00
+                const isoString = `${selectedDate}T${selectedTime}:00`;
+
+                // Visual feedback
+                pickerWrapper.innerHTML = `
+                    <div style="padding: 10px; background: #e8f5e9; border-radius: 8px; color: #2e7d32; font-size: 13px; margin-top: 8px;">
+                        Selected: ${selectedDate} at ${selectedTime}
+                    </div>
+                 `;
+
+                // Send hidden booking message
+                this.sendMessage(`BOOKING_ISO: ${isoString}`, `Selected: ${selectedDate} at ${selectedTime}`);
+            });
+
+            this.scrollToBottom();
+        }
+
+        renderTimeSlots(grid, dateStr, onSelect) {
+            grid.innerHTML = '';
+            grid.classList.add('active');
+
+            // Generate slots 8:00 - 18:00
+            const times = [];
+            for (let i = 8; i < 18; i++) {
+                times.push(`${i < 10 ? '0' + i : i}:00`);
+                times.push(`${i < 10 ? '0' + i : i}:30`);
+            }
+
+            times.forEach(time => {
+                const slot = document.createElement('div');
+                slot.className = 'syntra-time-slot';
+                slot.textContent = time;
+
+                slot.addEventListener('click', () => {
+                    grid.querySelectorAll('.syntra-time-slot').forEach(s => s.classList.remove('selected'));
+                    slot.classList.add('selected');
+                    onSelect(time);
+                });
+
+                grid.appendChild(slot);
+            });
         }
 
         destroy() {

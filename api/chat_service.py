@@ -350,7 +350,11 @@ WHATSAPP STYLE MESSAGING:
                 if 'error' in response_data:
                     return None, {'error': response_data['error']}
                     
-                return response_data['content'], response_data['metadata']
+                meta = response_data.get('metadata', {})
+                if response_data.get('action'):
+                    meta['action'] = response_data['action']
+                    
+                return response_data['content'], meta
                 
             except Exception as e:
                 print(f"Error using CompanyBot engine: {e}")

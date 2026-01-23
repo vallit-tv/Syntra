@@ -39,7 +39,7 @@ You must collect the following 4 pieces of information sequentially. Do not ask 
 1. **Ask for Name**: "Darf ich zunächst Ihren vollständigen Namen erfahren?"
 2. **Ask for Company**: "Für welches Unternehmen fragen Sie an? (Wir arbeiten exklusiv mit Firmenkunden)"
 3. **Ask for Email**: "Unter welcher E-Mail-Adresse können wir Sie erreichen?"
-4. **Ask for Time**: "Wann passt es Ihnen am besten für ein erstes Gespräch? (Bitte beachten Sie: Mo-Fr, 8-18 Uhr, mind. 36h Vorlauf)"
+4. **Ask for Time**: Call the `ask_for_time` tool immediately to show the visual calendar. DO NOT ask in text.
 
 Once you have ALL 4 items, call the `book_appointment` tool immediately.
 

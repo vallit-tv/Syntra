@@ -91,6 +91,25 @@ class CompanyBot:
             }
         }
 
+    def get_date_picker_tool_def(self):
+        return {
+            "type": "function",
+            "function": {
+                "name": "ask_for_time",
+                "description": "Trigger a visual date picker for the user to select an appointment time. Use this INSTEAD of asking for a time in text.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "company_id": {
+                            "type": "string",
+                            "description": "The company ID (context)"
+                        }
+                    },
+                    "required": ["company_id"]
+                }
+            }
+        }
+
     def generate_response(self, messages: List[Dict], 
                         user_context: Dict = None, 
                         system_prompt: str = None, 
@@ -131,8 +150,10 @@ class CompanyBot:
         }
 
         if enable_tools:
-            payload['tools'] = [self.get_appointment_tool_def()]
+            payload['tools'] = [self.get_appointment_tool_def(), self.get_date_picker_tool_def()]
             payload['tool_choice'] = "auto"
+
+        triggered_action = None
 
         try:
             logging.info(f"Sending request to OpenAI using model: {payload['model']}")
@@ -173,7 +194,12 @@ class CompanyBot:
                         print(f"JSON Parse Error: {json_e}")
                         arguments = {}
 
-                    if function_name == 'book_appointment':
+                    if function_name == 'ask_for_time':
+                        print("Triggering Date Picker Tool...")
+                        triggered_action = 'request_date'
+                        output_content = json.dumps({"status": "success", "message": "Date picker displayed."})
+
+                    elif function_name == 'book_appointment':
                         # Execute tool
                         try:
                             print(f"Executing AppointmentService...")
@@ -195,12 +221,12 @@ class CompanyBot:
                             print(f"Tool Execution Error: {str(e)}")
                             output_content = json.dumps({"status": "error", "message": str(e)})
 
-                        api_messages.append({
-                            "role": "tool",
-                            "tool_call_id": tool_call['id'],
-                            "name": function_name,
-                            "content": output_content
-                        })
+                    api_messages.append({
+                        "role": "tool",
+                        "tool_call_id": tool_call['id'],
+                        "name": function_name,
+                        "content": output_content
+                    })
 
                 # Follow-up request to get final answer
                 payload['messages'] = api_messages
@@ -230,6 +256,7 @@ class CompanyBot:
             return {
                 'role': 'assistant',
                 'content': content,
+                'action': triggered_action,
                 'metadata': {
                     'model': data['model'],
                     'tokens': data['usage']['total_tokens']

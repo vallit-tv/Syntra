@@ -2134,7 +2134,8 @@ def chat_message():
         response = jsonify({
             'status': 'success', 
             'response': response_text,
-            'session_id': session_key # Return key for client continuity
+            'session_id': session_key, # Return key for client continuity
+            'action': metadata.get('action') if metadata else None
         })
         response.headers['Access-Control-Allow-Origin'] = '*'
         return response
