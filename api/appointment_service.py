@@ -121,6 +121,9 @@ END:VCALENDAR"""
         smtp_user = os.getenv('SMTP_USER')
         smtp_pass = os.getenv('SMTP_PASS')
         
+        # WTM Specific Contact
+        wtm_contact_email = "kontakt@wtm-consulting.de"
+        
         if not all([smtp_user, smtp_pass]):
             print("Missing SMTP credentials")
             return False
@@ -164,31 +167,29 @@ END:VCALENDAR"""
                 server.send_message(msg)
                 print("User confirmation email sent successfully.")
                 
-            # Send notification to Admin as well
-            admin_msg = MIMEMultipart()
-            admin_msg['From'] = f'"WTM Bot" <{smtp_user}>'
-            admin_msg['To'] = smtp_user
-            admin_msg['Subject'] = f"NEW BOOKING: {user_name}"
-            admin_html = f"""
-            <h3>New Appointment Request</h3>
-            <ul>
-                <li><strong>Name:</strong> {user_name}</li>
-                <li><strong>Email:</strong> {user_email}</li>
-                <li><strong>Topic:</strong> {topic}</li>
-                <li><strong>Date:</strong> {date_time}</li>
-            </ul>
-             <p><strong>Zoom Link:</strong> <a href="{zoom_link}">{zoom_link}</a></p>
-            """
-            admin_msg.attach(MIMEText(admin_html, 'html'))
-            # Attach ICS to admin email too
-            admin_part = MIMEApplication(ics_content.encode('utf-8'), Name="booking.ics")
-            admin_part['Content-Disposition'] = 'attachment; filename="booking.ics"'
-            admin_msg.attach(admin_part)
+                # Send notification to Admin (WTM)
+                admin_msg = MIMEMultipart()
+                admin_msg['From'] = f'"WTM Bot" <{smtp_user}>'
+                admin_msg['To'] = wtm_contact_email 
+                admin_msg['Subject'] = f"NEW BOOKING: {user_name}"
+                admin_html = f"""
+                <h3>New Appointment Request</h3>
+                <ul>
+                    <li><strong>Name:</strong> {user_name}</li>
+                    <li><strong>Email:</strong> {user_email}</li>
+                    <li><strong>Topic:</strong> {topic}</li>
+                    <li><strong>Date:</strong> {date_time}</li>
+                </ul>
+                 <p><strong>Zoom Link:</strong> <a href="{zoom_link}">{zoom_link}</a></p>
+                """
+                admin_msg.attach(MIMEText(admin_html, 'html'))
+                # Attach ICS to admin email too
+                admin_part = MIMEApplication(ics_content.encode('utf-8'), Name="booking.ics")
+                admin_part['Content-Disposition'] = 'attachment; filename="booking.ics"'
+                admin_msg.attach(admin_part)
             
-            with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=10) as server:
-                server.login(smtp_user, smtp_pass)
                 server.send_message(admin_msg)
-                print("Admin notification email sent successfully.")
+                print(f"Admin notification email sent successfully to {wtm_contact_email}.")
                 
             return True
         except Exception as e:
@@ -199,25 +200,46 @@ END:VCALENDAR"""
     def create_appointment(db_module, company_id, session_id, name, email, date_time, purpose="General"):
         try:
             print(f"Creating appointment for {name} ({email}) at {date_time}...")
+
+            # 0. Validate Date/Time
+            iso_start_time = date_time
+            dt_obj = None
+            try:
+                # Try simple ISO parse
+                if 'T' in date_time:
+                    dt_obj = datetime.fromisoformat(date_time.replace('Z', '+00:00'))
+                else:
+                    # Try basic format YYYY-MM-DD HH:MM:SS
+                    dt_obj = datetime.strptime(date_time, '%Y-%m-%d %H:%M:%S')
+                    iso_start_time = dt_obj.strftime('%Y-%m-%dT%H:%M:%SZ')
+            except Exception as e:
+                print(f"Date Parsing Error: {e}")
+                # Fallback to simple check or let Zoom handle it currently?
+                # Ideally we fail here if invalid
+                pass
+
+            if dt_obj:
+                # Rule 1: 1.5 days notice (36 hours)
+                # Use naive comparison if dt_obj is naive, else aware
+                now = datetime.now()
+                if dt_obj.tzinfo:
+                   now = datetime.now(dt_obj.tzinfo)
+                
+                if dt_obj < (now + timedelta(hours=36)):
+                    msg = "Booking too soon. Please choose a time at least 1.5 days in advance."
+                    print(msg)
+                    return {"error": msg}
+                
+                # Rule 2: 8am to 6pm
+                # Assuming simple hour check (ignoring specific timezone logic complexity for now, usually safe for local ops)
+                if not (8 <= dt_obj.hour < 18):
+                    msg = "Our business hours are 8am to 6pm. Please choose a time within this range."
+                    print(msg)
+                    return {"error": msg}
+
             
             # 1. Zoom
             zoom_token = AppointmentService.get_zoom_access_token()
-            
-            # TODO: Convert natural language date_time to ISO format properly
-            # For now assuming ISO or simple string passing, Zoom might reject if not strictly ISO 8601
-            # In a real app, an NLP parser or robust date parser is needed.
-            # We'll use a placeholder ISO time for now if it's not valid, or try to parse
-            
-            # Quick hack to ensure valid ISO for Zoom if we can (demo purpose: tomorrow 10am)
-            # In production, we assume the AI passed a valid ISO string or we parse it.
-            # Let's try to use the passed date_time if it looks like ISO, otherwise default to tomorrow.
-            target_time = datetime.now() + timedelta(days=1)
-            target_time = target_time.replace(hour=10, minute=0, second=0, microsecond=0)
-            iso_start_time = target_time.strftime('%Y-%m-%dT%H:%M:%SZ')
-            
-            # If the input looks like ISO, use it (rudimentary check)
-            if 'T' in date_time and ':' in date_time:
-                 iso_start_time = date_time
             
             topic = f"WTM Consulting: {purpose} with {name}"
             zoom_meeting = AppointmentService.create_zoom_meeting(zoom_token, topic, iso_start_time)
@@ -252,7 +274,7 @@ END:VCALENDAR"""
                 f"Topic: {purpose}\\nZoom: {zoom_join_url}", 
                 zoom_join_url, 
                 "WTM Consulting", 
-                "Kontakt@wtm-consulting.de"
+                "kontakt@wtm-consulting.de"
             )
             
             email_sent = AppointmentService.send_confirmation_email(

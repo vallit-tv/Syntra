@@ -6,12 +6,14 @@ import analytics_helper
 import json
 import os
 import statistics
+import smtplib
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, abort, send_file, Response
 from dotenv import load_dotenv
 from dateutil import parser as date_parser
 import auth
 import db
 from flask_cors import CORS
+from appointment_service import AppointmentService
 
 load_dotenv()
 
@@ -681,6 +683,61 @@ def api_admin_system():
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/api/admin/integrations/status')
+@auth.admin_required
+def api_admin_integrations_status():
+    """Check status of external integrations"""
+    status = {
+        'database': {'status': 'unknown', 'message': ''},
+        'zoom': {'status': 'unknown', 'message': ''},
+        'smtp': {'status': 'unknown', 'message': ''}
+    }
+    
+    # 1. Database
+    try:
+        db_conn, db_err = db.test_db_connection()
+        status['database']['status'] = 'ok' if db_conn else 'error'
+        status['database']['message'] = str(db_err) if db_err else 'Connected'
+    except Exception as e:
+        status['database']['status'] = 'error'
+        status['database']['message'] = str(e)
+
+    # 2. Zoom
+    try:
+        token = AppointmentService.get_zoom_access_token()
+        if token:
+            status['zoom']['status'] = 'ok'
+            status['zoom']['message'] = 'Token retrieved successfully'
+        else:
+            status['zoom']['status'] = 'error'
+            status['zoom']['message'] = 'Failed to retrieve token'
+    except Exception as e:
+        status['zoom']['status'] = 'error'
+        status['zoom']['message'] = str(e)
+
+    # 3. SMTP
+    try:
+        host = os.getenv('SMTP_HOST', 'sslout.df.eu')
+        port = int(os.getenv('SMTP_PORT', 465))
+        user = os.getenv('SMTP_USER')
+        password = os.getenv('SMTP_PASS')
+        
+        with smtplib.SMTP_SSL(host, port, timeout=5) as server:
+            server.login(user, password)
+            status['smtp']['status'] = 'ok'
+            status['smtp']['message'] = 'Connected and authenticated'
+    except Exception as e:
+        status['smtp']['status'] = 'error'
+        status['smtp']['message'] = str(e)
+
+    overall = 'ok' if all(s['status'] == 'ok' for s in status.values()) else 'warning'
+    
+    return jsonify({
+        'status': overall,
+        'details': status,
+        'timestamp': datetime.utcnow().isoformat()
+    }), 200
 
         
         return render_template('admin/widget_customize.html',
@@ -2050,13 +2107,18 @@ def chat_message():
         history = chat_service.get_conversation_history(db, session_id)
         
         # 3. Generate
+        # RESTRICT TOOLS TO WTM CONSULTING ONLY
+        # This prevents other companies from triggering WTM-branded booking flows
+        wtm_id = '5f929157-5f9e-48e3-b7f7-a6dcd0e24142'
+        should_enable_tools = (company_id == wtm_id)
+        
         response_text, metadata = chat_service.generate_response(
             history, 
             system_prompt=system_prompt,
             db_module=db,
             company_id=company_id, # Use new engine if company_id present
             session_id=session_id,
-            enable_tools=True
+            enable_tools=should_enable_tools
         )
         
         if not response_text and metadata and metadata.get('error'):
