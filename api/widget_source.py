@@ -651,7 +651,10 @@ WIDGET_JS = r"""/**
             } catch (error) {
                 console.error('Send error:', error);
                 this.removeTypingIndicator();
-                this.addMessage('assistant', 'Sorry, I encountered an error. Please try again.', false);
+                // DEBUG: Show actual error in UI
+                let errorMsg = error.message || error.toString();
+                if (errorMsg === '[object Object]') errorMsg = JSON.stringify(error);
+                this.addMessage('assistant', `Debug Error: ${errorMsg}`, false);
                 this.isLoading = false;
             }
         }
