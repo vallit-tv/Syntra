@@ -6,7 +6,7 @@ import analytics_helper
 import json
 import os
 import statistics
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify, abort, send_file
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, abort, send_file, Response
 from dotenv import load_dotenv
 from dateutil import parser as date_parser
 import auth
