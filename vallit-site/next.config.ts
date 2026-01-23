@@ -3,25 +3,10 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
-  async rewrites() {
-    if (process.env.NODE_ENV === 'development') {
-      return [
-        {
-          source: '/api/:path*',
-          destination: 'http://127.0.0.1:5001/api/:path*', // Proxy to Flask server
-        },
-        {
-          source: '/widget/:path*',
-          destination: 'http://127.0.0.1:5001/widget/:path*', // Proxy widget scripts
-        },
-        {
-          source: '/static/:path*',
-          destination: 'http://127.0.0.1:5001/static/:path*', // Proxy static files
-        },
-      ];
-    }
-    return [];
-  },
+  // Rewrites removed to allow vercel.json routes to take precedence in Production
+  // Development proxying for localhost:5001 is now handled manually or via .env.local if needed
+  // or we can restore dev-only rewrites if we are careful. 
+  // Let's remove them to be SAFE and rely on vercel.json.
 };
 
 export default nextConfig;
