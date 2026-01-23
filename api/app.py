@@ -1975,7 +1975,9 @@ import uuid as uuid_lib
 @app.route('/api/chat/message', methods=['POST', 'OPTIONS'])
 def chat_message():
     """Handle incoming chat messages from the widget"""
-    # CORS is handled by Flask-CORS decorator or global config
+    # Handle CORS preflight explicitly to prevent 500 error on get_json()
+    if request.method == 'OPTIONS':
+        return Response(status=200)
     
     try:
         data = request.get_json()
