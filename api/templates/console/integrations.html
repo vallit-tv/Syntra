@@ -1,0 +1,127 @@
+{% extends "layout_console_v3.html" %}
+
+{% block page_title %}Integrations{% endblock %}
+
+{% block content %}
+<div class="flex flex-col gap-6">
+
+    <p class="text-muted">Connect external services to power your AI agents with intelligence and data sources.</p>
+
+    <!-- INTEGRATIONS GRID -->
+    <div class="integration-grid">
+
+        <!-- OpenAI -->
+        <div class="integration-card">
+            <div class="integration-header">
+                <div class="integration-icon">
+                    <i data-lucide="brain" width="20" height="20"></i>
+                </div>
+                <div class="integration-info">
+                    <div class="integration-name">OpenAI</div>
+                    <div class="integration-description">GPT-4o, Embeddings, Intelligence</div>
+                </div>
+                <span class="badge {% if openai_connected %}badge-success{% else %}badge-default{% endif %}">
+                    {{ 'Connected' if openai_connected else 'Not connected' }}
+                </span>
+            </div>
+            <div class="integration-actions">
+                {% if openai_connected %}
+                <a href="{{ url_for('dashboard_api_keys') }}" class="btn btn-secondary btn-sm">
+                    <i data-lucide="settings" width="14" height="14"></i>
+                    Manage
+                </a>
+                {% else %}
+                <a href="{{ url_for('dashboard_api_keys') }}?type=OpenAI" class="btn btn-primary btn-sm">
+                    <i data-lucide="plug" width="14" height="14"></i>
+                    Connect
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Notion -->
+        <div class="integration-card">
+            <div class="integration-header">
+                <div class="integration-icon">
+                    <i data-lucide="file-text" width="20" height="20"></i>
+                </div>
+                <div class="integration-info">
+                    <div class="integration-name">Notion</div>
+                    <div class="integration-description">Knowledge base source</div>
+                </div>
+                <span class="badge {% if notion_connected %}badge-success{% else %}badge-default{% endif %}">
+                    {{ 'Connected' if notion_connected else 'Not connected' }}
+                </span>
+            </div>
+            <div class="integration-actions">
+                {% if notion_connected %}
+                <a href="{{ url_for('dashboard_api_keys') }}" class="btn btn-secondary btn-sm">
+                    <i data-lucide="settings" width="14" height="14"></i>
+                    Manage
+                </a>
+                {% else %}
+                <a href="{{ url_for('dashboard_api_keys') }}?type=Notion" class="btn btn-primary btn-sm">
+                    <i data-lucide="plug" width="14" height="14"></i>
+                    Connect
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Slack (Coming Soon) -->
+        <div class="integration-card" style="opacity: 0.6;">
+            <div class="integration-header">
+                <div class="integration-icon">
+                    <i data-lucide="message-square" width="20" height="20"></i>
+                </div>
+                <div class="integration-info">
+                    <div class="integration-name">Slack</div>
+                    <div class="integration-description">Team notifications</div>
+                </div>
+                <span class="badge badge-default">Coming soon</span>
+            </div>
+            <div class="integration-actions">
+                <button class="btn btn-secondary btn-sm" disabled>
+                    <i data-lucide="plug" width="14" height="14"></i>
+                    Connect
+                </button>
+            </div>
+        </div>
+
+        <!-- Zapier (Coming Soon) -->
+        <div class="integration-card" style="opacity: 0.6;">
+            <div class="integration-header">
+                <div class="integration-icon">
+                    <i data-lucide="zap" width="20" height="20"></i>
+                </div>
+                <div class="integration-info">
+                    <div class="integration-name">Zapier</div>
+                    <div class="integration-description">Workflow automation</div>
+                </div>
+                <span class="badge badge-default">Coming soon</span>
+            </div>
+            <div class="integration-actions">
+                <button class="btn btn-secondary btn-sm" disabled>
+                    <i data-lucide="plug" width="14" height="14"></i>
+                    Connect
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- INFO CARD -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="heading-md">Need more integrations?</h3>
+        </div>
+        <div class="card-body">
+            <p class="text-muted">
+                We're constantly adding new integrations. If you need a specific service connected,
+                let us know and we'll prioritize it.
+            </p>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

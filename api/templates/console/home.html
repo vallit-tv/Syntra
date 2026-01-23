@@ -1,0 +1,140 @@
+{% extends "layout_console_v3.html" %}
+
+{% block page_title %}Overview{% endblock %}
+
+{% block content %}
+<div class="flex flex-col gap-6">
+
+    <!-- WELCOME HEADER -->
+    <div class="mb-2">
+        <h1 class="heading-xl mb-2">Welcome back, {{ user.name.split()[0] if user.name else 'there' }}</h1>
+        <p class="text-muted">Here's what's happening with your agents today.</p>
+    </div>
+
+    <!-- STATS GRID -->
+    <div class="stat-grid">
+        <div class="stat-card">
+            <div class="stat-label">API Keys</div>
+            <div class="stat-value">{{ api_keys_count }}</div>
+            <div class="stat-meta">
+                <span class="status-dot {% if api_keys_count > 0 %}active{% endif %}"></span>
+                {% if api_keys_count > 0 %}Active{% else %}Configure keys{% endif %}
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Integrations</div>
+            <div class="stat-value">{{ integrations_count }}</div>
+            <div class="stat-meta">
+                <span class="status-dot {% if integrations_count > 0 %}active{% endif %}"></span>
+                {% if integrations_count > 0 %}Connected{% else %}Not connected{% endif %}
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">System</div>
+            <div class="stat-value" style="font-size: 16px; display: flex; align-items: center; gap: 8px;">
+                <span class="status-dot active"></span>
+                Online
+            </div>
+            <div class="stat-meta">
+                All systems operational
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Database</div>
+            <div class="stat-value" style="font-size: 16px; display: flex; align-items: center; gap: 8px;">
+                <span class="status-dot active"></span>
+                Connected
+            </div>
+            <div class="stat-meta">
+                Supabase
+            </div>
+        </div>
+    </div>
+
+    <!-- QUICK ACTIONS -->
+    <div>
+        <h2 class="heading-md mb-4">Quick Actions</h2>
+        <div class="quick-actions">
+            <a href="{{ url_for('dashboard_api_keys') }}" class="quick-action">
+                <div class="quick-action-icon">
+                    <i data-lucide="key" width="18" height="18"></i>
+                </div>
+                <div class="quick-action-content">
+                    <div class="quick-action-title">Manage API Keys</div>
+                    <div class="quick-action-description">OpenAI, Anthropic, Notion</div>
+                </div>
+                <i data-lucide="chevron-right" width="16" height="16" class="quick-action-arrow"></i>
+            </a>
+
+            <a href="{{ url_for('dashboard_integrations') }}" class="quick-action">
+                <div class="quick-action-icon">
+                    <i data-lucide="plug" width="18" height="18"></i>
+                </div>
+                <div class="quick-action-content">
+                    <div class="quick-action-title">Integrations</div>
+                    <div class="quick-action-description">Connect external services</div>
+                </div>
+                <i data-lucide="chevron-right" width="16" height="16" class="quick-action-arrow"></i>
+            </a>
+
+            <a href="{{ url_for('admin_widgets') }}" class="quick-action">
+                <div class="quick-action-icon">
+                    <i data-lucide="bot" width="18" height="18"></i>
+                </div>
+                <div class="quick-action-content">
+                    <div class="quick-action-title">Chat Agents</div>
+                    <div class="quick-action-description">Configure and deploy widgets</div>
+                </div>
+                <i data-lucide="chevron-right" width="16" height="16" class="quick-action-arrow"></i>
+            </a>
+
+            <a href="{{ url_for('dashboard_settings') }}" class="quick-action">
+                <div class="quick-action-icon">
+                    <i data-lucide="settings" width="18" height="18"></i>
+                </div>
+                <div class="quick-action-content">
+                    <div class="quick-action-title">Settings</div>
+                    <div class="quick-action-description">Account and preferences</div>
+                </div>
+                <i data-lucide="chevron-right" width="16" height="16" class="quick-action-arrow"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- ACTIVITY LOG -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="heading-md">Recent Activity</h3>
+        </div>
+        <div class="card-body">
+            <div class="activity-feed">
+                <div class="activity-item">
+                    <div class="activity-dot success"></div>
+                    <div class="activity-content">
+                        <div class="activity-text">System initialized successfully</div>
+                        <div class="activity-time">{{ now_utc }}</div>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-dot info"></div>
+                    <div class="activity-content">
+                        <div class="activity-text">Session started for <strong>{{ user.email }}</strong></div>
+                        <div class="activity-time">Just now</div>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-dot info"></div>
+                    <div class="activity-content">
+                        <div class="activity-text">Dashboard upgraded to Console v3</div>
+                        <div class="activity-time">New design system active</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

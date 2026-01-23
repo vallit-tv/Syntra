@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ error_code }} – Vallit{% endblock %}
+
+{% block content %}
+<section class="hero" style="min-height: 70vh; display: flex; align-items: center;">
+    <div class="container">
+        <div class="hero-content text-center">
+            <h1 class="hero-title" style="font-size: 6rem; margin-bottom: 0;">{{ error_code }}</h1>
+            <p class="hero-subtitle">{{ error_message }}</p>
+            <div class="hero-actions">
+                <a href="{{ url_for('index') }}" class="btn btn-primary">Zurück zur Startseite</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

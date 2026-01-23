@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="de" style="scroll-behavior: smooth;">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Vallit – AI Automation für moderne Unternehmen{% endblock %}</title>
+    <meta name="description"
+        content="{% block description %}Vallit liefert AI-Automation und Kian – dein intelligentes AI-System für Support, Scheduling und Workflows. Für Start-ups und Unternehmen.{% endblock %}">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='images/logo.svg') }}">
+
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Design System -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/vallit.css') }}?v=1">
+    {% block extra_css %}{% endblock %}
+
+    <!-- SEO Meta Tags -->
+    <meta name="googlebot" content="index, follow">
+    <link rel="canonical" href="https://vallit.net{{ request.path }}">
+    <meta property="og:title" content="{% block og_title %}Vallit – AI Automation{% endblock %}">
+    <meta property="og:description" content="AI-Automation und Kian für moderne Unternehmen.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://vallit.net{{ request.path }}">
+
+    <!-- Vercel Analytics -->
+    <script defer src="/_vercel/insights/script.js"></script>
+</head>
+
+<body class="{% block body_class %}{% endblock %}">
+    <!-- Skip to content (Accessibility) -->
+    <a href="#main-content" class="skip-link">Zum Hauptinhalt springen</a>
+
+    <!-- Navigation -->
+    <header class="navbar" id="navbar">
+        <div class="container">
+            <div class="navbar-inner">
+                <a href="{{ url_for('index') }}" class="navbar-logo"
+                    style="display: flex; align-items: center; gap: 8px;">
+                    <svg width="24" height="24" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"
+                        style="color: inherit;">
+                        <path d="M20 20H70L60 40H10L20 20Z" fill="currentColor" />
+                        <path d="M25 45H85L75 65H15L25 45Z" fill="currentColor" fill-opacity="0.8" />
+                        <path d="M30 70H60L50 90H20L30 70Z" fill="currentColor" fill-opacity="0.6" />
+                    </svg>
+                    <span>Vallit</span>
+                </a>
+
+                <nav>
+                    <ul class="navbar-nav">
+                        <li><a href="{{ url_for('index') }}" {% if request.endpoint=='index' %}class="active" {% endif
+                                %}>Home</a></li>
+                        <li><a href="{{ url_for('features') }}" {% if request.endpoint=='features' %}class="active" {%
+                                endif %}>Features</a></li>
+                        <li><a href="{{ url_for('solutions') }}" {% if request.endpoint=='solutions' %}class="active" {%
+                                endif %}>Solutions</a></li>
+                        <li><a href="{{ url_for('pricing') }}" {% if request.endpoint=='pricing' %}class="active" {%
+                                endif %}>Pricing</a></li>
+                        <li><a href="{{ url_for('about') }}" {% if request.endpoint=='about' %}class="active" {% endif
+                                %}>About</a></li>
+                    </ul>
+                </nav>
+
+                <div class="navbar-actions">
+                    <a href="{{ url_for('pricing') }}#contact" class="btn btn-primary btn-sm">Kontakt</a>
+                </div>
+
+                <button class="navbar-toggle" aria-label="Menü öffnen" aria-expanded="false">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="container" style="padding-top: 5rem;">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category if category != 'message' else 'info' }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <main id="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="{{ url_for('index') }}" class="navbar-logo"
+                        style="display: flex; align-items: center; gap: 8px;">
+                        <svg width="24" height="24" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"
+                            style="color: inherit;">
+                            <path d="M20 20H70L60 40H10L20 20Z" fill="currentColor" />
+                            <path d="M25 45H85L75 65H15L25 45Z" fill="currentColor" fill-opacity="0.8" />
+                            <path d="M30 70H60L50 90H20L30 70Z" fill="currentColor" fill-opacity="0.6" />
+                        </svg>
+                        <span>Vallit</span>
+                    </a>
+                    <p>AI Automation für moderne Unternehmen. Kian versteht dein Business und automatisiert, was
+                        automatisiert gehört.</p>
+                    <div class="footer-social">
+                        <a href="#" aria-label="LinkedIn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path
+                                    d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+                                <rect x="2" y="9" width="4" height="12" />
+                                <circle cx="4" cy="4" r="2" />
+                            </svg>
+                        </a>
+                        <a href="#" aria-label="Twitter / X">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path
+                                    d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="footer-links">
+                    <h4>Produkt</h4>
+                    <ul>
+                        <li><a href="{{ url_for('features') }}">Features</a></li>
+                        <li><a href="{{ url_for('solutions') }}">Solutions</a></li>
+                        <li><a href="{{ url_for('pricing') }}">Pricing</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-links">
+                    <h4>Unternehmen</h4>
+                    <ul>
+                        <li><a href="{{ url_for('about') }}">Über uns</a></li>
+                        <li><a href="{{ url_for('brand') }}">Brand</a></li>
+                        <li><a href="{{ url_for('pricing') }}#contact">Kontakt</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-links">
+                    <h4>Rechtliches</h4>
+                    <ul>
+                        <li><a href="{{ url_for('impressum') }}">Impressum</a></li>
+                        <li><a href="{{ url_for('datenschutz') }}">Datenschutz</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2025 Vallit. Alle Rechte vorbehalten.</p>
+                <nav>
+                    <a href="{{ url_for('impressum') }}">Impressum</a>
+                    <a href="{{ url_for('datenschutz') }}">Datenschutz</a>
+                </nav>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/vallit.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>

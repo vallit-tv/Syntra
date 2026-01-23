@@ -1,0 +1,557 @@
+{% extends "base.html" %}
+
+{% block title %}AI Chat Widget Demo – Syntra{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chat-widget.css') }}?v=1">
+<style>
+    /* Demo Page Styles */
+    .demo-hero {
+        background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%);
+        padding: 120px 0 80px;
+        color: white;
+        text-align: center;
+    }
+
+    .demo-hero h1 {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        background: linear-gradient(to right, #c4b5fd, #f0abfc);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .demo-hero p {
+        font-size: 1.25rem;
+        opacity: 0.9;
+        max-width: 600px;
+        margin: 0 auto 2rem;
+    }
+
+    .demo-section {
+        padding: 80px 0;
+    }
+
+    .demo-section:nth-child(even) {
+        background: #f8fafc;
+    }
+
+    .demo-section h2 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: #1e293b;
+    }
+
+    .demo-section p.lead {
+        color: #64748b;
+        font-size: 1.125rem;
+        margin-bottom: 2rem;
+    }
+
+    /* Theme Selector */
+    .theme-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 1rem;
+        margin: 2rem 0;
+    }
+
+    .theme-card {
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 2px solid #e2e8f0;
+        background: white;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+    }
+
+    .theme-card:hover {
+        border-color: #6366f1;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.15);
+    }
+
+    .theme-card.active {
+        border-color: #6366f1;
+        background: linear-gradient(135deg, #eef2ff 0%, #faf5ff 100%);
+    }
+
+    .theme-card .theme-preview {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        margin: 0 auto 0.75rem;
+    }
+
+    .theme-card h4 {
+        font-size: 0.95rem;
+        font-weight: 600;
+        margin: 0;
+        color: #1e293b;
+    }
+
+    /* Theme Preview Colors */
+    .theme-minimal .theme-preview {
+        background: #18181b;
+    }
+
+    .theme-glassmorphism .theme-preview {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    }
+
+    .theme-corporate .theme-preview {
+        background: #1e3a5f;
+    }
+
+    .theme-dark .theme-preview {
+        background: #1e1e2e;
+        border: 2px solid #313244;
+    }
+
+    .theme-gradient .theme-preview {
+        background: linear-gradient(135deg, #f472b6, #ec4899, #8b5cf6);
+    }
+
+    .theme-rounded .theme-preview {
+        background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+    }
+
+    /* Embed Code Section */
+    .embed-code-container {
+        background: #1e293b;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 2rem 0;
+        position: relative;
+    }
+
+    .embed-code-container pre {
+        margin: 0;
+        color: #e2e8f0;
+        font-family: 'SF Mono', 'Fira Code', monospace;
+        font-size: 0.875rem;
+        line-height: 1.6;
+        overflow-x: auto;
+        white-space: pre-wrap;
+        word-break: break-all;
+    }
+
+    .embed-code-container code {
+        color: #a5f3fc;
+    }
+
+    .embed-code-container .token-attr {
+        color: #f0abfc;
+    }
+
+    .embed-code-container .token-value {
+        color: #86efac;
+    }
+
+    .copy-btn {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        padding: 0.5rem 1rem;
+        background: #6366f1;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.2s ease;
+    }
+
+    .copy-btn:hover {
+        background: #4f46e5;
+    }
+
+    .copy-btn.copied {
+        background: #10b981;
+    }
+
+    /* Feature Cards */
+    .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .feature-card {
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        background: white;
+    }
+
+    .feature-card h4 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .feature-card p {
+        color: #64748b;
+        font-size: 0.95rem;
+        margin: 0;
+    }
+
+    .feature-icon {
+        width: 28px;
+        height: 28px;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+    }
+
+    /* Configuration Panel */
+    .config-panel {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        padding: 1.5rem;
+        margin: 2rem 0;
+    }
+
+    .config-panel h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    .config-row {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .config-row label {
+        min-width: 120px;
+        font-weight: 500;
+        color: #1e293b;
+    }
+
+    .config-row input,
+    .config-row select {
+        flex: 1;
+        min-width: 200px;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        font-size: 0.9rem;
+    }
+
+    .config-row input:focus,
+    .config-row select:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .demo-hero h1 {
+            font-size: 2rem;
+        }
+
+        .demo-hero p {
+            font-size: 1rem;
+        }
+
+        .theme-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="demo-hero">
+    <div class="container">
+        <h1>AI Chat Widget</h1>
+        <p>Embed a powerful AI assistant on any website. Connect to n8n workflows or use ChatGPT directly.</p>
+        <a href="#embed-section" class="btn-hero-primary" style="background: white; color: #4f46e5;">
+            Get Embed Code
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+        </a>
+    </div>
+</section>
+
+<!-- Theme Selector Section -->
+<section class="demo-section" id="themes-section">
+    <div class="container">
+        <h2>Choose Your Theme</h2>
+        <p class="lead">Six premium themes designed to match any website aesthetic.</p>
+
+        <div class="theme-grid">
+            <div class="theme-card theme-minimal" data-theme="minimal">
+                <div class="theme-preview"></div>
+                <h4>Minimal</h4>
+            </div>
+            <div class="theme-card theme-glassmorphism active" data-theme="glassmorphism">
+                <div class="theme-preview"></div>
+                <h4>Glassmorphism</h4>
+            </div>
+            <div class="theme-card theme-corporate" data-theme="corporate">
+                <div class="theme-preview"></div>
+                <h4>Corporate</h4>
+            </div>
+            <div class="theme-card theme-dark" data-theme="dark">
+                <div class="theme-preview"></div>
+                <h4>Dark</h4>
+            </div>
+            <div class="theme-card theme-gradient" data-theme="gradient">
+                <div class="theme-preview"></div>
+                <h4>Gradient</h4>
+            </div>
+            <div class="theme-card theme-rounded" data-theme="rounded">
+                <div class="theme-preview"></div>
+                <h4>Rounded</h4>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Configuration Panel -->
+<section class="demo-section" id="config-section">
+    <div class="container">
+        <h2>Configuration</h2>
+        <p class="lead">Customize your widget settings.</p>
+
+        <div class="config-panel">
+            <div class="config-row">
+                <label for="config-position">Position</label>
+                <select id="config-position">
+                    <option value="bottom-right" selected>Bottom Right</option>
+                    <option value="bottom-left">Bottom Left</option>
+                    <option value="top-right">Top Right</option>
+                    <option value="top-left">Top Left</option>
+                </select>
+            </div>
+            <div class="config-row">
+                <label for="config-title">Header Title</label>
+                <input type="text" id="config-title" value="AI Assistant" placeholder="AI Assistant">
+            </div>
+            <div class="config-row">
+                <label for="config-welcome">Welcome Message</label>
+                <input type="text" id="config-welcome" value="Hi! 👋 How can I help you today?"
+                    placeholder="Welcome message">
+            </div>
+            <div class="config-row">
+                <label for="config-placeholder">Input Placeholder</label>
+                <input type="text" id="config-placeholder" value="Type your message..."
+                    placeholder="Type your message...">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Embed Code Section -->
+<section class="demo-section" id="embed-section">
+    <div class="container">
+        <h2>Embed Code</h2>
+        <p class="lead">Copy this code and paste it before the closing <code>&lt;/body&gt;</code> tag of your website.
+        </p>
+
+        <div class="embed-code-container">
+            <button class="copy-btn" onclick="copyEmbedCode()">Copy Code</button>
+            <pre><code id="embed-code">&lt;script 
+  <span class="token-attr">src</span>=<span class="token-value">"{{ request.host_url }}widget/embed.js"</span>
+  <span class="token-attr">data-widget-id</span>=<span class="token-value">"default"</span>
+  <span class="token-attr">data-theme</span>=<span class="token-value">"glassmorphism"</span>
+  <span class="token-attr">data-position</span>=<span class="token-value">"bottom-right"</span>
+  <span class="token-attr">data-title</span>=<span class="token-value">"AI Assistant"</span>
+  <span class="token-attr">data-welcome-message</span>=<span class="token-value">"Hi! 👋 How can I help you today?"</span>&gt;&lt;/script&gt;</code></pre>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="demo-section">
+    <div class="container">
+        <h2>Features</h2>
+        <p class="lead">Everything you need for a world-class chat experience.</p>
+
+        <div class="feature-grid">
+            <div class="feature-card">
+                <h4>
+                    <span class="feature-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                        </svg>
+                    </span>
+                    ChatGPT Powered
+                </h4>
+                <p>Direct integration with OpenAI's GPT models for intelligent responses.</p>
+            </div>
+            <div class="feature-card">
+                <h4>
+                    <span class="feature-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M12 2a10 10 0 1 0 10 10H12V2z" />
+                        </svg>
+                    </span>
+                    n8n Integration
+                </h4>
+                <p>Connect to n8n workflows for advanced automation and data processing.</p>
+            </div>
+            <div class="feature-card">
+                <h4>
+                    <span class="feature-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        </svg>
+                    </span>
+                    Session Persistence
+                </h4>
+                <p>Conversations persist across page loads with local storage support.</p>
+            </div>
+            <div class="feature-card">
+                <h4>
+                    <span class="feature-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                    </span>
+                    Fully Customizable
+                </h4>
+                <p>6 themes, custom colors, positioning, and branding options.</p>
+            </div>
+            <div class="feature-card">
+                <h4>
+                    <span class="feature-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <rect x="5" y="2" width="14" height="20" rx="2" />
+                            <line x1="12" y1="18" x2="12" y2="18" />
+                        </svg>
+                    </span>
+                    Mobile Responsive
+                </h4>
+                <p>Optimized for all screen sizes with touch-friendly interactions.</p>
+            </div>
+            <div class="feature-card">
+                <h4>
+                    <span class="feature-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <polyline points="16 18 22 12 16 6" />
+                            <polyline points="8 6 2 12 8 18" />
+                        </svg>
+                    </span>
+                    Easy Integration
+                </h4>
+                <p>Single script tag to add the widget to any website.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<!-- Initialize widget with default theme -->
+<script src="{{ url_for('static', filename='js/chat-widget.js') }}?v=1" data-widget-id="demo" data-theme="glassmorphism"
+    data-position="bottom-right" data-title="AI Assistant"
+    data-welcome-message="Hi! 👋 I'm a demo of the Syntra chat widget. Try sending me a message!">
+    </script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Theme switching
+        const themeCards = document.querySelectorAll('.theme-card');
+
+        themeCards.forEach(card => {
+            card.addEventListener('click', function () {
+                const theme = this.dataset.theme;
+
+                // Update active state
+                themeCards.forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+
+                // Update widget theme
+                if (window.syntraChat) {
+                    window.syntraChat.setTheme(theme);
+                }
+
+                // Update embed code
+                updateEmbedCode();
+            });
+        });
+
+        // Configuration changes
+        const configInputs = document.querySelectorAll('#config-section input, #config-section select');
+        configInputs.forEach(input => {
+            input.addEventListener('change', updateEmbedCode);
+            input.addEventListener('input', updateEmbedCode);
+        });
+
+        // Update embed code based on current settings
+        function updateEmbedCode() {
+            const activeTheme = document.querySelector('.theme-card.active')?.dataset.theme || 'glassmorphism';
+            const position = document.getElementById('config-position').value;
+            const title = document.getElementById('config-title').value;
+            const welcome = document.getElementById('config-welcome').value;
+            const placeholder = document.getElementById('config-placeholder').value;
+
+            const baseUrl = window.location.origin;
+
+            const code = `&lt;script 
+  <span class="token-attr">src</span>=<span class="token-value">"${baseUrl}/widget/embed.js"</span>
+  <span class="token-attr">data-widget-id</span>=<span class="token-value">"default"</span>
+  <span class="token-attr">data-theme</span>=<span class="token-value">"${activeTheme}"</span>
+  <span class="token-attr">data-position</span>=<span class="token-value">"${position}"</span>
+  <span class="token-attr">data-title</span>=<span class="token-value">"${escapeHtml(title)}"</span>
+  <span class="token-attr">data-welcome-message</span>=<span class="token-value">"${escapeHtml(welcome)}"</span>&gt;&lt;/script&gt;`;
+
+            document.getElementById('embed-code').innerHTML = code;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    });
+
+    function copyEmbedCode() {
+        const codeElement = document.getElementById('embed-code');
+        const code = codeElement.textContent
+            .replace(/</g, '<')
+            .replace(/>/g, '>');
+
+        navigator.clipboard.writeText(code).then(() => {
+            const btn = document.querySelector('.copy-btn');
+            btn.textContent = 'Copied!';
+            btn.classList.add('copied');
+
+            setTimeout(() => {
+                btn.textContent = 'Copy Code';
+                btn.classList.remove('copied');
+            }, 2000);
+        });
+    }
+</script>
+{% endblock %}
