@@ -2121,6 +2121,12 @@ def chat_message():
             
         # Save assistant response
         tokens = metadata.get('tokens_total', 0) if metadata else 0
+        
+        # Prepare metadata for saving
+        msg_metadata = {'model': metadata.get('model')} if metadata else {}
+        if metadata and metadata.get('action'):
+            msg_metadata['action'] = metadata.get('action')
+            
         chat_service.save_message(
             db, 
             session_id, 
@@ -2128,6 +2134,7 @@ def chat_message():
             response_text, 
             tokens_used=tokens,
             model=metadata.get('model') if metadata else None,
+            metadata=msg_metadata,
             company_id=company_id
         )
         

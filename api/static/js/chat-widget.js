@@ -856,11 +856,14 @@
                         const role = msg.role || msg.sender;
                         const content = msg.content || msg.text;
                         const timestamp = msg.timestamp || new Date().toISOString();
+                        const action = msg.action || (msg.metadata ? msg.metadata.action : null);
+
                         const msgObj = {
                             id: Date.now() + Math.random(),
                             role: role,
                             content: content,
-                            timestamp: timestamp
+                            timestamp: timestamp,
+                            action: action
                         };
                         this.messages.push(msgObj);
                         this.renderMessage(msgObj, false);
