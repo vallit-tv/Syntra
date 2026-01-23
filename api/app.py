@@ -32,7 +32,7 @@ print("=" * 60)
 
 app = Flask(__name__, static_folder='static', static_url_path='/static', template_folder='templates')
 # Enable CORS for all API and Widget routes to allow external embedding
-CORS(app, resources={r"/api/*": {"origins": "*"}, r"/widget/*": {"origins": "*"}}, supports_credentials=True, allow_headers=["Content-Type", "Authorization", "X-Requested-With"])
+CORS(app, resources={r"/api/*": {"origins": "*"}, r"/widget/*": {"origins": "*"}}, supports_credentials=False, allow_headers=["Content-Type", "Authorization", "X-Requested-With", "Accept"])
 
 # Force redeploy for route fix (Step 1010)
 
