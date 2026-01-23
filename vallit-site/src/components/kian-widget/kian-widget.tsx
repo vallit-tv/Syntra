@@ -131,10 +131,14 @@ function KianWidgetContent() {
             } else {
                 console.error("Server returned API error:", data);
                 // Fallback for error
+                let errorDetails = data.error || 'Unknown';
+                if (typeof errorDetails === 'object') {
+                    errorDetails = JSON.stringify(errorDetails);
+                }
                 const errorMessage: Message = {
                     id: (Date.now() + 1).toString(),
                     role: "assistant",
-                    content: `I'm having trouble connecting. Error: ${data.error || 'Unknown'}`,
+                    content: `I'm having trouble connecting. Error: ${errorDetails}`,
                     type: "text",
                 };
                 setMessages((prev) => [...prev, errorMessage]);
