@@ -654,6 +654,7 @@
 
                 if (data.status === 'success') {
                     this.removeTypingIndicator();
+                    console.log('Received response from API:', data); // DEBUG
                     // Pass full data object to renderMessage to handle actions
                     this.addMessage('assistant', data.response, true, data.action);
                     this.isLoading = false;
