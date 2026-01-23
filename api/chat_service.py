@@ -520,9 +520,11 @@ WHATSAPP STYLE MESSAGING:
             
             if company_id:
                 # Read from companies table (where Admin UI saves it)
-                settings_result = db_client.table('companies').select('widget_settings').eq('id', company_id).execute()
+                settings_result = db_client.table('companies').select('name, widget_settings').eq('id', company_id).execute()
                 if settings_result.data:
-                    settings = settings_result.data[0].get('widget_settings', {})
+                    company_data = settings_result.data[0]
+                    company_name = company_data.get('name', 'this company')
+                    settings = company_data.get('widget_settings', {})
                     
                     # Support both nested (legacy/planned) and flat (current admin) structures
                     # Flat structure: { bot_name, welcome_message, theme, language, position, primary_color, ... }
@@ -553,7 +555,9 @@ WHATSAPP STYLE MESSAGING:
                         instructions = settings.get('instructions')
                         
                     if instructions:
-                        config['system_prompt'] = f"{self.default_system_prompt}\n\nIMPORTANT INSTRUCTIONS:\n{instructions}"
+                        # Inject Company Name to override generic "THIS company" in default prompt
+                        context_header = f"OPERATIONAL CONTEXT: You are the AI Assistant for '{company_name}'.\nYour knowledge base and answers must focus on '{company_name}'."
+                        config['system_prompt'] = f"{self.default_system_prompt}\n\n{context_header}\n\nIMPORTANT INSTRUCTIONS:\n{instructions}"
                         
                     # 4b. Language
                     language = settings.get('language')
