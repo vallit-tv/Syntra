@@ -1,45 +1,33 @@
 {
     "version": 2,
-    "builds": [
+    "rewrites": [
         {
-            "src": "app.py",
-            "use": "@vercel/python",
-            "config": {
-                "includeFiles": [
-                    "static/**",
-                    "templates/**"
-                ]
-            }
+            "source": "/api/(.*)",
+            "destination": "/api/index.py"
         },
         {
-            "src": "vallit-site/package.json",
-            "use": "@vercel/next"
-        }
-    ],
-    "routes": [
-        {
-            "src": "/api/(.*)",
-            "dest": "/app.py"
+            "source": "/status",
+            "destination": "/api/index.py"
         },
         {
-            "src": "/static/(.*)",
-            "dest": "/app.py"
+            "source": "/brand(.*)",
+            "destination": "/api/index.py"
         },
         {
-            "src": "/company(.*)",
-            "dest": "/app.py"
+            "source": "/widget/(.*)",
+            "destination": "/api/index.py"
         },
         {
-            "src": "/brand(.*)",
-            "dest": "/app.py"
+            "source": "/static/(.*)",
+            "destination": "/api/index.py"
         },
         {
-            "src": "/status",
-            "dest": "/app.py"
+            "source": "/health",
+            "destination": "/api/index.py"
         },
         {
-            "src": "/(.*)",
-            "dest": "/vallit-site/$1"
+            "source": "/(.*)",
+            "destination": "/vallit-site/$1"
         }
     ]
 }
