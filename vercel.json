@@ -1,5 +1,27 @@
 {
     "version": 2,
+    "builds": [
+        {
+            "src": "api/index.py",
+            "use": "@vercel/python",
+            "config": {
+                "maxDuration": 15,
+                "includeFiles": [
+                    "templates/**",
+                    "static/**",
+                    "*.py",
+                    "bot/**",
+                    "migrations/**",
+                    "requirements.txt",
+                    ".env"
+                ]
+            }
+        },
+        {
+            "src": "vallit-site/package.json",
+            "use": "@vercel/next"
+        }
+    ],
     "rewrites": [
         {
             "source": "/api/(.*)",
