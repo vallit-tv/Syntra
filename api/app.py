@@ -2091,8 +2091,11 @@ def chat_message():
 
     except Exception as e:
         print(f"Chat error: {e}")
+        import traceback
+        traceback.print_exc()
         # IMPORTANT: Return JSON error WITH CORS headers so frontend can read it
-        response = jsonify({'error': str(e), 'status': 'error'})
+        detailed_error = f"Server Error: {str(e)}\n\nTraceback:\n{traceback.format_exc()[-500:]}"
+        response = jsonify({'error': detailed_error, 'status': 'error'})
         response.headers['Access-Control-Allow-Origin'] = '*'
         return response, 500
 
