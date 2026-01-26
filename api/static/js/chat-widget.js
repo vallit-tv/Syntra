@@ -1226,14 +1226,14 @@
             const pickerId = 'dp-' + Date.now();
             const pickerHtml = `
                 <div class="syntra-date-picker" id="${pickerId}">
-                    <span class="syntra-picker-label">Select a Date</span>
+                    <span class="syntra-picker-label">Datum auswählen</span>
                     <div class="syntra-date-scroll"></div>
                     
-                    <span class="syntra-picker-label" style="display:none;" id="${pickerId}-time-lbl">Available Times</span>
+                    <span class="syntra-picker-label" style="display:none;" id="${pickerId}-time-lbl">Verfügbare Zeiten</span>
                     <div class="syntra-time-grid" id="${pickerId}-time-grid"></div>
                     
                     <div class="syntra-picker-footer">
-                        <button class="syntra-picker-confirm" id="${pickerId}-confirm">Confirm Booking</button>
+                        <button class="syntra-picker-confirm" id="${pickerId}-confirm">Buchung bestätigen</button>
                     </div>
                 </div>
             `;
@@ -1261,7 +1261,8 @@
                 // Skip weekends
                 if (currentDay.getDay() !== 0 && currentDay.getDay() !== 6) {
                     const dateStr = currentDay.toISOString().split('T')[0];
-                    const dayName = currentDay.toLocaleDateString('en-US', { weekday: 'short' });
+                    // USE GERMAN LOCALE
+                    const dayName = currentDay.toLocaleDateString('de-DE', { weekday: 'short' });
                     const dayNum = currentDay.getDate();
 
                     const chip = document.createElement('div');
@@ -1299,15 +1300,22 @@
                 // Construct ISO format: YYYY-MM-DDTHH:mm:00
                 const isoString = `${selectedDate}T${selectedTime}:00`;
 
-                // Visual feedback
+                // Visual feedback (German)
+                // Format date nicely: 2026-01-28 -> 28.01.2026
+                const dateObj = new Date(selectedDate);
+                const niceDate = dateObj.toLocaleDateString('de-DE');
+
                 pickerWrapper.innerHTML = `
                     <div style="padding: 10px; background: #e8f5e9; border-radius: 8px; color: #2e7d32; font-size: 13px; margin-top: 8px;">
-                        Selected: ${selectedDate} at ${selectedTime}
+                        Ausgewählt: ${niceDate} um ${selectedTime} Uhr
                     </div>
                  `;
 
                 // Send hidden booking message
-                this.sendMessage(`BOOKING_ISO: ${isoString}`, `Selected: ${selectedDate} at ${selectedTime}`);
+                // Still send ISO in the code, but the second arg is what user sees? 
+                // Wait, sendMessage(content, displayText). 
+                // "Selected: ..." was the displayText.
+                this.sendMessage(`BOOKING_ISO: ${isoString}`, `Ausgewählt: ${niceDate} um ${selectedTime} Uhr`);
             });
 
             this.scrollToBottom();
