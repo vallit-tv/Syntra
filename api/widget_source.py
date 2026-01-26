@@ -1,4 +1,3 @@
-
 WIDGET_JS = r"""/**
  * Vallit AI Chat Widget
  * Embeddable chat widget with n8n/ChatGPT integration
@@ -200,8 +199,8 @@ WIDGET_JS = r"""/**
                         const titleEl = this.container.querySelector('.syntra-header-title');
                         if (titleEl) titleEl.textContent = this.config.headerTitle;
 
-                        const avatarEl = this.container.querySelector('.syntra-avatar');
-                        if (avatarEl) avatarEl.textContent = this.config.headerTitle.charAt(0);
+                        // const avatarEl = this.container.querySelector('.syntra-avatar');
+                        // if (avatarEl) avatarEl.textContent = this.config.headerTitle.charAt(0);
                     }
                 }
 
@@ -231,8 +230,6 @@ WIDGET_JS = r"""/**
             document.head.appendChild(link);
         }
 
-        // ... (previous code)
-
         createWidget() {
             // Ensure valid class names
             const theme = this.config.theme || 'glassmorphism';
@@ -247,8 +244,10 @@ WIDGET_JS = r"""/**
                 <!-- Toggle Button -->
                 <button class="syntra-toggle-btn">
                     <div class="syntra-icon-chat">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        <svg width="24" height="24" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%;">
+                            <path d="M20 20H70L60 40H10L20 20Z" fill="currentColor"/>
+                            <path d="M25 45H85L75 65H15L25 45Z" fill="currentColor" fill-opacity="0.8"/>
+                            <path d="M30 70H60L50 90H20L30 70Z" fill="currentColor" fill-opacity="0.6"/>
                         </svg>
                     </div>
                     <div class="syntra-icon-close">
@@ -265,7 +264,11 @@ WIDGET_JS = r"""/**
                     <div class="syntra-header">
                         <div class="syntra-header-info">
                             <div class="syntra-avatar">
-                                ${this.config.headerTitle.charAt(0)}
+                                <svg width="24" height="24" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 60%; height: 60%;">
+                                    <path d="M20 20H70L60 40H10L20 20Z" fill="white"/>
+                                    <path d="M25 45H85L75 65H15L25 45Z" fill="white" fill-opacity="0.8"/>
+                                    <path d="M30 70H60L50 90H20L30 70Z" fill="white" fill-opacity="0.6"/>
+                                </svg>
                             </div>
                             <div class="syntra-header-text">
                                 <div class="syntra-header-title">${this.config.headerTitle}</div>
@@ -610,16 +613,25 @@ WIDGET_JS = r"""/**
 
         // ... messages ...
 
-        async sendMessage() {
-            const message = this.inputField.value.trim();
+        async sendMessage(content = null, displayText = null) {
+            let message = content;
+            const usingInput = !content;
+
+            if (usingInput) {
+                message = this.inputField.value.trim();
+                displayText = message;
+            }
+
             if (!message || this.isLoading) return;
 
-            // Clear input
-            this.inputField.value = '';
-            this.inputField.style.height = 'auto';
+            // Clear input if using form
+            if (usingInput) {
+                this.inputField.value = '';
+                this.inputField.style.height = 'auto';
+            }
 
             // Add user message
-            this.addMessage('user', message);
+            this.addMessage('user', displayText || message);
             this.isLoading = true;
             this.showTypingIndicator();
 
@@ -640,7 +652,9 @@ WIDGET_JS = r"""/**
 
                 if (data.status === 'success') {
                     this.removeTypingIndicator();
-                    this.addMessage('assistant', data.response);
+                    console.log('Received response from API:', data); // DEBUG
+                    // Pass full data object to renderMessage to handle actions
+                    this.addMessage('assistant', data.response, true, data.action);
                     this.isLoading = false;
                 } else if (data.status === 'pending') {
                     // n8n processing
@@ -651,10 +665,7 @@ WIDGET_JS = r"""/**
             } catch (error) {
                 console.error('Send error:', error);
                 this.removeTypingIndicator();
-                // DEBUG: Show actual error in UI
-                let errorMsg = error.message || error.toString();
-                if (errorMsg === '[object Object]') errorMsg = JSON.stringify(error);
-                this.addMessage('assistant', `Debug Error: ${errorMsg}`, false);
+                this.addMessage('assistant', 'Sorry, I encountered an error. Please try again.', false);
                 this.isLoading = false;
             }
         }
@@ -698,14 +709,14 @@ WIDGET_JS = r"""/**
             poll();
         }
 
-        addMessage(role, content, animate = true) {
+        addMessage(role, content, animate = true, action = null) {
             // Check for multi-message delimiter (|||)
             if (role === 'assistant' && content && content.includes('|||')) {
                 const parts = content.split('|||').map(p => p.trim()).filter(p => p);
 
                 if (parts.length > 0) {
                     // Render first part immediately
-                    this.doAddMessage(role, parts[0], animate);
+                    this.doAddMessage(role, parts[0], animate, action);
 
                     // Render subsequent parts with delay simulation
                     let cumulativeDelay = 0;
@@ -729,22 +740,23 @@ WIDGET_JS = r"""/**
 
                         setTimeout(() => {
                             this.removeTypingIndicator();
-                            this.doAddMessage(role, part, animate);
+                            this.doAddMessage(role, part, animate, null);
                         }, cumulativeDelay);
                     });
                 }
                 return;
             }
 
-            this.doAddMessage(role, content, animate);
+            this.doAddMessage(role, content, animate, action);
         }
 
-        doAddMessage(role, content, animate) {
+        doAddMessage(role, content, animate, action) {
             const message = {
                 id: Date.now() + Math.random(),
                 role: role,
                 content: content,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                action: action
             };
 
             this.messages.push(message);
@@ -764,12 +776,42 @@ WIDGET_JS = r"""/**
             // Parse markdown for assistant
             const contentHtml = message.role === 'assistant' ? parseMarkdown(message.content) : escapeHtml(message.content);
 
-            messageEl.innerHTML = `
-                <div class="syntra-message-content">
-                    ${contentHtml}
-                </div>
-                <div class="syntra-message-time">${time}</div>
-            `;
+            if (message.role === 'assistant') {
+                messageEl.classList.add('syntra-has-avatar');
+
+                // SVG Logo for avatar
+                const avatarHtml = `
+                    <div class="syntra-message-avatar">
+                        <svg width="24" height="24" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%;">
+                            <path d="M20 20H70L60 40H10L20 20Z" fill="currentColor" color="#000"/>
+                            <path d="M25 45H85L75 65H15L25 45Z" fill="currentColor" fill-opacity="0.8" color="#000"/>
+                            <path d="M30 70H60L50 90H20L30 70Z" fill="currentColor" fill-opacity="0.6" color="#000"/>
+                        </svg>
+                    </div>
+                `;
+
+                messageEl.innerHTML = `
+                    ${avatarHtml}
+                    <div class="syntra-message-group">
+                        <div class="syntra-message-content">
+                            ${contentHtml}
+                        </div>
+                        <div class="syntra-message-time">${time}</div>
+                    </div>
+                `;
+
+                // CHECK FOR ACTION: request_date
+                if (message.action === 'request_date') {
+                    this.renderDatePicker(messageEl.querySelector('.syntra-message-group'));
+                }
+            } else {
+                messageEl.innerHTML = `
+                    <div class="syntra-message-content">
+                        ${contentHtml}
+                    </div>
+                    <div class="syntra-message-time">${time}</div>
+                `;
+            }
 
             this.messagesContainer.appendChild(messageEl);
             this.scrollToBottom();
@@ -813,11 +855,14 @@ WIDGET_JS = r"""/**
                         const role = msg.role || msg.sender;
                         const content = msg.content || msg.text;
                         const timestamp = msg.timestamp || new Date().toISOString();
+                        const action = msg.action || (msg.metadata ? msg.metadata.action : null);
+
                         const msgObj = {
                             id: Date.now() + Math.random(),
                             role: role,
                             content: content,
-                            timestamp: timestamp
+                            timestamp: timestamp,
+                            action: action
                         };
                         this.messages.push(msgObj);
                         this.renderMessage(msgObj, false);
@@ -1073,6 +1118,123 @@ WIDGET_JS = r"""/**
             } else {
                 modal.remove();
             }
+        }
+
+        renderDatePicker(container) {
+            const pickerId = 'dp-' + Date.now();
+            const pickerHtml = `
+                <div class="syntra-date-picker" id="${pickerId}">
+                    <span class="syntra-picker-label">Select a Date</span>
+                    <div class="syntra-date-scroll"></div>
+                    
+                    <span class="syntra-picker-label" style="display:none;" id="${pickerId}-time-lbl">Available Times</span>
+                    <div class="syntra-time-grid" id="${pickerId}-time-grid"></div>
+                    
+                    <div class="syntra-picker-footer">
+                        <button class="syntra-picker-confirm" id="${pickerId}-confirm">Confirm Booking</button>
+                    </div>
+                </div>
+            `;
+
+            const pickerWrapper = document.createElement('div');
+            pickerWrapper.innerHTML = pickerHtml;
+            container.appendChild(pickerWrapper);
+
+            const scrollContainer = pickerWrapper.querySelector('.syntra-date-scroll');
+            const timeGrid = pickerWrapper.querySelector(`#${pickerId}-time-grid`);
+            const timeLabel = pickerWrapper.querySelector(`#${pickerId}-time-lbl`);
+            const confirmBtn = pickerWrapper.querySelector(`#${pickerId}-confirm`);
+
+            let selectedDate = null;
+            let selectedTime = null;
+
+            // Generate next 14 weekdays
+            const today = new Date();
+            let daysGenerated = 0;
+            let currentDay = new Date(today);
+            currentDay.setDate(currentDay.getDate() + 2); // Start +2 days (36h rule safety)
+
+            // Generate Chips
+            while (daysGenerated < 14) {
+                // Skip weekends
+                if (currentDay.getDay() !== 0 && currentDay.getDay() !== 6) {
+                    const dateStr = currentDay.toISOString().split('T')[0];
+                    const dayName = currentDay.toLocaleDateString('en-US', { weekday: 'short' });
+                    const dayNum = currentDay.getDate();
+
+                    const chip = document.createElement('div');
+                    chip.className = 'syntra-date-chip';
+                    chip.dataset.date = dateStr;
+                    chip.innerHTML = `<span class="syntra-date-day">${dayName}</span><span class="syntra-date-num">${dayNum}</span>`;
+
+                    chip.addEventListener('click', () => {
+                        // Deselect all
+                        scrollContainer.querySelectorAll('.syntra-date-chip').forEach(c => c.classList.remove('selected'));
+                        chip.classList.add('selected');
+
+                        selectedDate = dateStr;
+                        selectedTime = null;
+
+                        // Show times
+                        timeLabel.style.display = 'block';
+                        this.renderTimeSlots(timeGrid, dateStr, (time) => {
+                            selectedTime = time;
+                            confirmBtn.classList.add('active');
+                        });
+                        confirmBtn.classList.remove('active');
+                    });
+
+                    scrollContainer.appendChild(chip);
+                    daysGenerated++;
+                }
+                currentDay.setDate(currentDay.getDate() + 1);
+            }
+
+            // Confirm Action
+            confirmBtn.addEventListener('click', () => {
+                if (!selectedDate || !selectedTime) return;
+
+                // Construct ISO format: YYYY-MM-DDTHH:mm:00
+                const isoString = `${selectedDate}T${selectedTime}:00`;
+
+                // Visual feedback
+                pickerWrapper.innerHTML = `
+                    <div style="padding: 10px; background: #e8f5e9; border-radius: 8px; color: #2e7d32; font-size: 13px; margin-top: 8px;">
+                        Selected: ${selectedDate} at ${selectedTime}
+                    </div>
+                 `;
+
+                // Send hidden booking message
+                this.sendMessage(`BOOKING_ISO: ${isoString}`, `Selected: ${selectedDate} at ${selectedTime}`);
+            });
+
+            this.scrollToBottom();
+        }
+
+        renderTimeSlots(grid, dateStr, onSelect) {
+            grid.innerHTML = '';
+            grid.classList.add('active');
+
+            // Generate slots 8:00 - 18:00
+            const times = [];
+            for (let i = 8; i < 18; i++) {
+                times.push(`${i < 10 ? '0' + i : i}:00`);
+                times.push(`${i < 10 ? '0' + i : i}:30`);
+            }
+
+            times.forEach(time => {
+                const slot = document.createElement('div');
+                slot.className = 'syntra-time-slot';
+                slot.textContent = time;
+
+                slot.addEventListener('click', () => {
+                    grid.querySelectorAll('.syntra-time-slot').forEach(s => s.classList.remove('selected'));
+                    slot.classList.add('selected');
+                    onSelect(time);
+                });
+
+                grid.appendChild(slot);
+            });
         }
 
         destroy() {
