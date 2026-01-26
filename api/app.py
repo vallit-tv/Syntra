@@ -147,6 +147,31 @@ def api_debug_logs():
         }
     })
 
+@app.route('/api/debug/diagnose')
+def api_debug_diagnose():
+    """
+    Public-facing system health check for status page.
+    Checks DB, OpenAI, and Environment.
+    """
+    # 1. Database Check
+    db_connected, db_error = db.test_db_connection()
+    db_status = 'CONNECTED' if db_connected else f"ERROR: {db_error}"
+
+    # 2. OpenAI Check
+    from chat_service import get_chat_service
+    ai_health = get_chat_service().check_health()
+    ai_status = 'CONNECTED' if ai_health['status'] == 'ok' else ai_health['message']
+
+    # 3. Environment Check
+    required_vars = ['SUPABASE_URL', 'SUPABASE_KEY', 'OPENAI_API_KEY']
+    env_status = {var: 'OK' if os.getenv(var) else 'MISSING' for var in required_vars}
+
+    return jsonify({
+        'database': db_status,
+        'openai': ai_status,
+        'environment': env_status
+    })
+
 # Global Error Handlers to ensure JSON response
 @app.errorhandler(500)
 def internal_error(error):

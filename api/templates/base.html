@@ -38,8 +38,7 @@
     <header class="navbar" id="navbar">
         <div class="container">
             <div class="navbar-inner">
-                <a href="{{ url_for('index') }}" class="navbar-logo"
-                    style="display: flex; align-items: center; gap: 8px;">
+                <a href="/" class="navbar-logo" style="display: flex; align-items: center; gap: 8px;">
                     <svg width="24" height="24" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"
                         style="color: inherit;">
                         <path d="M20 20H70L60 40H10L20 20Z" fill="currentColor" />
@@ -51,21 +50,16 @@
 
                 <nav>
                     <ul class="navbar-nav">
-                        <li><a href="{{ url_for('index') }}" {% if request.endpoint=='index' %}class="active" {% endif
-                                %}>Home</a></li>
-                        <li><a href="{{ url_for('features') }}" {% if request.endpoint=='features' %}class="active" {%
-                                endif %}>Features</a></li>
-                        <li><a href="{{ url_for('solutions') }}" {% if request.endpoint=='solutions' %}class="active" {%
-                                endif %}>Solutions</a></li>
-                        <li><a href="{{ url_for('pricing') }}" {% if request.endpoint=='pricing' %}class="active" {%
-                                endif %}>Pricing</a></li>
-                        <li><a href="{{ url_for('about') }}" {% if request.endpoint=='about' %}class="active" {% endif
-                                %}>About</a></li>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/features">Features</a></li>
+                        <li><a href="/solutions">Solutions</a></li>
+                        <li><a href="/pricing">Pricing</a></li>
+                        <li><a href="/about">About</a></li>
                     </ul>
                 </nav>
 
                 <div class="navbar-actions">
-                    <a href="{{ url_for('pricing') }}#contact" class="btn btn-primary btn-sm">Kontakt</a>
+                    <a href="/pricing#contact" class="btn btn-primary btn-sm">Kontakt</a>
                 </div>
 
                 <button class="navbar-toggle" aria-label="Menü öffnen" aria-expanded="false">
@@ -100,8 +94,7 @@
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-brand">
-                    <a href="{{ url_for('index') }}" class="navbar-logo"
-                        style="display: flex; align-items: center; gap: 8px;">
+                    <a href="/" class="navbar-logo" style="display: flex; align-items: center; gap: 8px;">
                         <svg width="24" height="24" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"
                             style="color: inherit;">
                             <path d="M20 20H70L60 40H10L20 20Z" fill="currentColor" />
@@ -135,26 +128,27 @@
                 <div class="footer-links">
                     <h4>Produkt</h4>
                     <ul>
-                        <li><a href="{{ url_for('features') }}">Features</a></li>
-                        <li><a href="{{ url_for('solutions') }}">Solutions</a></li>
-                        <li><a href="{{ url_for('pricing') }}">Pricing</a></li>
+                        <li><a href="/features">Features</a></li>
+                        <li><a href="/solutions">Solutions</a></li>
+                        <li><a href="/pricing">Pricing</a></li>
                     </ul>
                 </div>
 
                 <div class="footer-links">
                     <h4>Unternehmen</h4>
                     <ul>
-                        <li><a href="{{ url_for('about') }}">Über uns</a></li>
+                        <li><a href="/about">Über uns</a></li>
                         <li><a href="{{ url_for('brand') }}">Brand</a></li>
-                        <li><a href="{{ url_for('pricing') }}#contact">Kontakt</a></li>
+                        <li><a href="{{ url_for('status_page') }}">System Status</a></li>
+                        <li><a href="/pricing#contact">Kontakt</a></li>
                     </ul>
                 </div>
 
                 <div class="footer-links">
                     <h4>Rechtliches</h4>
                     <ul>
-                        <li><a href="{{ url_for('impressum') }}">Impressum</a></li>
-                        <li><a href="{{ url_for('datenschutz') }}">Datenschutz</a></li>
+                        <li><a href="/impressum">Impressum</a></li>
+                        <li><a href="/datenschutz">Datenschutz</a></li>
                     </ul>
                 </div>
             </div>
@@ -162,8 +156,8 @@
             <div class="footer-bottom">
                 <p>&copy; 2025 Vallit. Alle Rechte vorbehalten.</p>
                 <nav>
-                    <a href="{{ url_for('impressum') }}">Impressum</a>
-                    <a href="{{ url_for('datenschutz') }}">Datenschutz</a>
+                    <a href="/impressum">Impressum</a>
+                    <a href="/datenschutz">Datenschutz</a>
                 </nav>
             </div>
         </div>

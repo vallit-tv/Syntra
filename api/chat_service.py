@@ -58,9 +58,26 @@ WHATSAPP STYLE MESSAGING:
     
 
     
-    # =========================================================================
-    # Session Management
-    # =========================================================================
+
+    def check_health(self) -> Dict[str, Any]:
+        """
+        Check health of the AI service (OpenAI connectivity).
+        Returns a dict with status and details.
+        """
+        if not self.is_configured():
+            return {'status': 'error', 'message': 'OpenAI API key not configured'}
+            
+        try:
+            # Simple lightweight call to verify connectivity and auth
+            # Listing models is a fast way to check validity without generating tokens
+            requests.get(
+                'https://api.openai.com/v1/models',
+                headers={'Authorization': f'Bearer {self.openai_api_key}'},
+                timeout=5
+            )
+            return {'status': 'ok', 'message': 'Connected to OpenAI'}
+        except Exception as e:
+            return {'status': 'error', 'message': f'OpenAI connection failed: {str(e)}'}
     
     def get_or_create_session(self, db_module, session_key: str, 
                                widget_id: str = None,
