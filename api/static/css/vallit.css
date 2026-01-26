@@ -292,6 +292,10 @@ p {
 
 .navbar .container {
     height: 100%;
+}
+
+.navbar-inner {
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -346,6 +350,36 @@ p {
     display: flex;
     align-items: center;
     gap: var(--space-4);
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    transition: all var(--transition-fast);
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.875rem;
+}
+
+.btn-primary {
+    background: var(--color-accent);
+    color: #000;
+    border: 1px solid var(--color-accent);
+}
+
+.btn-primary:hover {
+    background: #1eb854;
+    /* Slightly darker green */
+    border-color: #1eb854;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
 }
 
 @media (max-width: 768px) {
