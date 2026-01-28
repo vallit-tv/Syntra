@@ -115,11 +115,11 @@ END:VCALENDAR"""
 
     @staticmethod
     def send_confirmation_email(user_email, user_name, topic, date_time, zoom_link, ics_content):
-        # Update default host to official DomainFactory SSL host
-        smtp_host = os.getenv('SMTP_HOST', 'sslout.df.eu')
+        # Update default host to Strato (WTM Provider)
+        smtp_host = os.getenv('SMTP_HOST', 'smtp.strato.de')
         smtp_port = int(os.getenv('SMTP_PORT', 465))
-        smtp_user = os.getenv('SMTP_USER')
-        smtp_pass = os.getenv('SMTP_PASS')
+        smtp_user = os.getenv('SMTP_USER', 'Kontakt@wtm-consulting.de')
+        smtp_pass = os.getenv('SMTP_PASS', '#TRTRMWgrind2026!0409')
         
         # WTM Specific Contact
         wtm_contact_email = "kontakt@wtm-consulting.de"
